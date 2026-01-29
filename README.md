@@ -21,3 +21,9 @@ in root dir:
 `pip install -r requirements-dev.txt`
 
 `pre-commit install`
+
+## run with CLI interface
+
+in root dir, under venv:
+
+- activations: `python -m src.main activations`
