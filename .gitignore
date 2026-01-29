@@ -1,0 +1,10 @@
+# lecture notes
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# code

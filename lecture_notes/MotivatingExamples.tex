@@ -1,0 +1,240 @@
+
+\section{Motivating Examples}
+\label{Sec:MotivatingExamples}
+
+
+\subsection{Supervised  Learning}\label{Sec:MotivatingExamples:SupervisedLearning}
+
+\noindent{\textsc{Empirical Risk Minimization}}
+
+Supervised Learning: Given training data points $(x_1, y_1), ... , (x_n, y_n)$, construct a learning model
+$y=g(x,\om)$ that best fits the training data. Here $\om$ stands for the parameters of the learning model, say $\om=(\om_1, ..., \om_d)$.
+
+Here $(x_i, y_i)$ comes from an independent identically distributed family $(x_i, y_i)\sim p(x,y)$, where $p(x,y)$ is the joint density. The model $x\ra y$ is a black-box $p(y|x)$, which is to be fit by $g(x, \om)$.
+
+``Loss function" $L(g(x, \om), y)$, for example, can be $L(g(x, \om), y)=(g(x, \om)-y)^2$.
+
+Empirical Risk Minimization (ERM):
+
+\begin{equation}\label{Eq:ERM}
+\om_n^*=\arg\min\li_{\om} \dfrac{1}{n}\sum\li_{i=1}^n L(y_i, g(x_i, \om)) \ .
+\end{equation}
+
+Regularized Empirical Risk Minimization (R-ERM):
+
+\begin{equation}\label{Eq:R-ERM}
+\om_n^*=\arg\min\li_{\om} \dfrac{1}{n}\sum\li_{i=1}^n L(y_i, g(x_i, \om))+\lb R(\om) \ .
+\end{equation}
+
+For example, we can take $R(\om)=\|\om\|^2=\om_1^2+...+\om_d^2$. This regularization helps to control very irregular minimizers (unwanted $\om$).
+
+In general let $f_i(\om)=L(y_i, g(x_i, \om))$ or $f_i(\om)=L(y_i, g(x_i, \om))+\lb R(\om)$, then
+the optimization problem is
+
+\begin{equation}\label{Eq:OptimizationProblem}
+\om_n^*=\arg\min\li_{\om} \dfrac{1}{n}\sum\li_{i=1}^n f_i(\om) \ .
+\end{equation}
+
+Key features of nonlinear optimization problem in machine learning: large--scale, nonconvex, ... etc.
+
+Key problems in machine learning: optimization combined with generalization.
+``Population Loss": $\E L(g(x, \om), y)$, minimizer $$\om^*=\arg\min\li_{\om}\E L(g(x, \om), y) \ .$$ Generalization Error: $\E L(y, g(x,\om_n^*))$. Consistency: Do we have $\om_n^*\ra \om^*$? At what speed?
+
+Key problems in optimization: convergence, acceleration, variance reduction.
+
+How can optimization be related to generalization? There are quite abstract notions related to this topic, such as  Vapnik--Chervonenkis dimension (VC dimension) and Radmacher complexity, which we might touch later. Also, we want to look at the geometry of the loss landscape, which is closely related to neural network structure.
+
+\
+
+\noindent{\textsc{Loss Functions}}
+
+Classification Problems: label $y=1 \text{ or } -1$. Choice of Loss function $L(y,g)$, $y=1, -1$.
+$0/1$ Loss: $\ell_{0/1}(y,g)=1$ if $yg<0$ and $\ell_{0/1}(y,g)=0$ otherwise.
+
+(1) Hinge Loss.
+\begin{equation}\label{Eq:HingeLoss}
+L(y, g)=\max(0, 1-yg) \ ;
+\end{equation}
+
+(2) Exponential Loss.
+\begin{equation}\label{Eq:ExponentialLoss}
+L(y, g)=\exp(-yg) \ ;
+\end{equation}
+
+(3) Cross Entropy Loss.
+\begin{equation}\label{Eq:CrossEntropyLoss}
+L(y,g)=-\left(I_{\{y=1\}}\ln\dfrac{e^g}{e^g+e^{-g}}+I_{\{y=-1\}}\ln\dfrac{e^{-g}}{e^g+e^{-g}}\right) \ .
+\end{equation}
+
+This is to use $p(y)=\dfrac{e^{yg}}{e^{yg}+e^{-yg}} \ , \ y=\pm 1$ and the binary cross entropy as $$-(I_{\{y=1\}}\ln p(1)+I_{\{y=-1\}}\ln p(-1)) \ .$$
+
+Regression Problems: Choice of Loss function $L(y,g)$.
+
+(1) $L^2$--Loss.
+\begin{equation}\label{Eq:L2Loss}
+L(y,g)=|y-g|_2^2 \ .
+\end{equation}
+
+$L^2$--norm: $|x|_2^2=x_1^2+...+x_d^2$
+
+(2) $L^1$--Loss.
+\begin{equation}\label{Eq:L1Loss}
+L(y,g)=|y-g|_1 \ .
+\end{equation}
+
+$L^1$--norm: $|x|_1=|x_1|+...+|x_d|$.
+
+(3) $L^0$--Loss.
+\begin{equation}\label{Eq:L0Loss}
+L(y,g)=|y-g|_0 \ .
+\end{equation}
+
+$L^0$--norm: $|x|_0=\sharp\{i: x_i\neq 0, 1\leq i\leq d\}$.
+
+Regularized (penalize) term $R(\om)$:
+
+\qquad $L^1$--regularized $R(\om)=|\om|_1$; 
+
+\qquad $L^0$--regularized $R(\om)=|\om|_0$.
+
+\
+
+\noindent{\textsc{Learning Models}}
+
+(1) Linear regression: $g(x,\om)=\om^Tx$. $g(x,\om)=\dfrac{1}{1+\exp(-\om^T x)}$.
+
+Least squares problem:
+\begin{equation}\label{Eq:LeastSquare}
+\min\li_{\om\in \R^d}\dfrac{1}{2m}\sum\li_{j=1}^m (x_j^T\om-y_j)^2=\dfrac{1}{2m}|A\om-y|_2^2
+\end{equation}
+Here training data $(x_1, y_1), ..., (x_m, y_m)$ where $x_i\in \R^d$, $y\in \R$, and $A=\begin{pmatrix}x_1^T \\ ... \\ x_m^T\end{pmatrix}$.
+
+Tikhonov regularization:
+\begin{equation}\label{Eq:TikhonovRegularization}
+\min\li_{\om}\dfrac{1}{2m}|A\om-y|_2^2+\lb |\om|_2^2 \ .
+\end{equation}
+
+LASSO (Least Absolute Shrinkage and Selection Operator):
+\begin{equation}\label{Eq:LASSO}
+\min\li_{\om}\dfrac{1}{2m}|A\om-y|_2^2+\lb |\om|_1 \ .
+\end{equation}
+
+See \cite{ESLBook}.
+
+(2) Support Vector Machines (SVM): 
+
+Set-up: $x_j\in \R^n$, $y_j\in \{1, -1\}$. Separating hyperplane $\om^T x + \bt = 0$ where $\om \in \R^n$ and $\bt \in \R$.
+
+Classification Problem: Goal is to find a hyperplane $\om^T x+\bt=0$ such that it classifies the two kinds of data points most efficiently.
+The signed distance of any point $x\in \R^n$ to the hyperplane is given by $r=\dfrac{\om^Tx+\bt}{|\om|}$. If the classification is good enough, we
+expect to have $\om^Tx_j+\bt>0$ when $y=1$ and $\om^Tx_j+\bt<0$ when $y=-1$. After rescaling $\om$ and $\bt$, we can then formulate the problem as looking for
+optimal $\om$ and $\bt$ such that $\om^Tx_j+\bt\geq 1$ when $y_j=1$ and $\om^Tx_j+\bt\leq -1$ when $y_i=-1$.
+The closest few data points that match these two inequalities are called ``support vectors". The distance to the separating hyperplane
+created by two support vectors of opposite type is $$\left|\dfrac{1}{|\om|}\right|+\left|\dfrac{-1}{|\om|}\right|=\dfrac{2}{|\om|} \ .$$ 
+So we can formulate the following optimization problem
+$$\max\li_{\om\in \R^n, \bt\in \R}\dfrac{2}{|\om|} \text{ such that } y_j(\om^Tx_j+\bt)\geq 1 \text{ for } j=1,2,...,m \ .$$
+Or in other words we have the \textit{constrained} optimization problem
+\begin{equation}\label{Eq:SVMHardMargin}
+\min\li_{\om\in \R^n, \bt\in \R}\dfrac{1}{2}|\om|^2 \text{ such that } y_j(\om^Tx_j+\bt)\geq 1 \text{ for } j=1,2,...,m \ .
+\end{equation}
+``Soft margin": We allow the SVM to make errors on some training data points but we want to minimize the error.
+In fact, we allow some training data to violate $y_j(\om^Tx_j+\bt)\geq 1$, so that ideally we minimize
+$$\min\li_{\om\in \R^n, \bt\in \R}\dfrac{1}{2}|\om|^2+C\sum\li_{j=1}^m \ell_{0/1}(y_j(\om^Tx_j+\bt)-1) \ .$$
+Here the $0/1$ loss is $\ell_{0/1}(z)=1$ if $z<0$ and $\ell_{0/1}(z)=0$ otherwise, and $C>0$ is a penalization parameter.
+We can then turn the $0/1$ loss to Hinge Loss, that is why Hinge Loss comes in:
+\begin{equation}\label{Eq:SVMSoftMarginHingeLoss}
+\min\li_{\om\in \R^n, \bt\in \R}\dfrac{1}{2}|\om|^2+C\sum\li_{j=1}^m \max(0, 1-y_j(\om^Tx_j+\bt)) \ .
+\end{equation}
+
+We can introduce ``slack variables" $\xi_i\geq 0$ to introduce weights to classification errors in the above problem. This leads to ``Soft margin SVM with slack variables":
+
+\begin{equation}\label{Eq:SVMSoftMargin}
+\min\li_{\om\in \R^n, \bt\in \R}\dfrac{1}{2}|\om|^2+C\sum\li_{j=1}^m \xi_j \text{ s.t. } y_j(\om^Tx_j+b)\geq 1-\xi_j \ , \xi_j\geq 0 \ , j=1,2,...,m \ .
+\end{equation}
+
+See \cite{VapnikStatisticalLearningTheory}.
+
+(3) Neural Network: ``activation function" $\sm$.
+
+Sigmoid:
+\begin{equation}\label{Eq:ActivationSigmoid}
+\sm(z)=\dfrac{1}{1+\exp(-z)} \ ;
+\end{equation}
+
+tanh:
+\begin{equation}\label{Eq:ActivationTanh}
+\sm(z)=\dfrac{\exp(z)-\exp(-z)}{\exp(z)+\exp(-z)} \ ;
+\end{equation}
+
+ReLU (Rectified Linear Unit):
+\begin{equation}\label{Eq:ActivationReLU}
+\sm(z)=\max(0,z) \ .
+\end{equation}
+
+Vector--valued activation: if $z\in \R^n$ then $\sm: \R^n\ra \R^n$ is defined by
+$(\sm(z))_i=\sm(z_i)$ where each $\sm(z_i)$ is the scalar activation function.
+
+Fully connected neural network prediction function
+\begin{equation}\label{Eq:NNApproximatingFunction-FullyConnected}
+g(x,\om)=a^T\left(\sm\left(W^{(H)}(\sm(W^{(H-1)}(...(\sm(W^{(1)}x+b_1))...)+b_{H-1})+b_H\right)\right) \ .
+\end{equation}
+Optimization
+$$\min\li_{\om}\dfrac{1}{2}\sum\li_{i=1}^n (g(x_i, \om)-y_i)^2 \ .$$
+
+Many other different network structures that we do not expand here: convolutional, recurrent (Gate: GRU, LSTM), ResNet, Transformer, ...
+
+Two layer (one hidden layer) fully connected ReLU neural network has specific loss function structure: our
+$W^{(1)}=\begin{pmatrix}\om_1^T \\ ... \\ \om_m^T \end{pmatrix}$ and
+\begin{equation}\label{Eq:NNApproximatingFunction-TwoLayerReLU}
+g(x,\om)=\sum\li_{r=1}^m a_r \max\left(\om_r^T x, 0\right) \ .
+\end{equation}
+Optimization problem is given by
+$$\min\li_{\om}\dfrac{1}{2}\sum\li_{i=1}^n \left(\sum\li_{r=1}^m a_r \max\left(\om_r^T x_i, 0\right)-y_i\right)^2 \ .$$
+
+Non--convexity issues: see \cite{NonConvexityNN-ICLRpaper}.
+
+\subsection{Matrix Optimizations}\label{Sec:MotivatingExamples:MatrixOptimization}
+
+Many machine learning/statistical learning problems are related to matrix optimizations.
+
+(1) Matrix Completion: Each $A_j$ is $n\times p$ matrix, and we seek for another $n\times p$ matrix such that
+\begin{equation}\label{Eq:MatrixCompletion}
+\min\li_{X}\dfrac{1}{2m}\sum\li_{j=1}^m (\langle A_j, X\rangle-y_j)^2
+\end{equation}
+where $\langle A, B\rangle=\text{tr}(A^TB)$. We can think of the $A_j$ as ``probing" the unknown matrix $X$.
+
+(2) Nonnegative Matrix Factorization: If the full matrix $Y\in \R^{n\times p}$ is observed, then we seek for
+$L\in \R^{n\times r}$ and $R\in \R^{p\times r}$ such that
+\begin{equation}\label{Eq:MatrixFactorization}
+\min\li_{L, R}\|LR^T-Y\|_F^2 \text{ subject to } L\geq 0 \text{ and } R\geq 0 \ .
+\end{equation}
+Here $\|A\|_F=\left(\sum\sum|a_{ij}|^2\right)^{1/2}$ is the Frobenius norm of a matrix $A$.
+
+See \cite{MatrixFactorizationReviewPaperChiEtAl}.
+
+(3) Principle Component Analysis (PCA):
+PCA:
+\begin{equation}\label{Eq:PCA}
+\max\li_{v\in \R^n}v^TSv \text{ such that } \|v\|_2=1 \ , \ \|v\|_0\leq k \ .
+\end{equation}
+The objective function is convex, but if you take into account the constraint, then this problem becomes non--convex. A picture for dimension $1$ example can be shown below.
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/Fig_PCA}
+\caption{Loss Landscape of 1-dimensional PCA.}
+\label{Fig:PCAdim1LossLandscape}
+\end{figure}
+
+Online PCA: see \cite{OnlinePCAMathProgramming}.
+
+(4) Sparse inverse covariance matrix estimation:
+Sample covariance matrix $S=\dfrac{1}{m-1}\sum\li_{j=1}^m a_ja_j^T$.
+$S^{-1}=X$.
+``Graphical LASSO":
+\begin{equation}\label{Eq:GraphicalLASSO}
+\min\li_{X\in \text{ Symmetric } \R^{n\times n}, X\succeq 0}\langle S, X\rangle-\ln\det X+\lb\|X\|_1
+\end{equation}
+where $\|X\|_1=\sum|X_{ij}|$.
+
+

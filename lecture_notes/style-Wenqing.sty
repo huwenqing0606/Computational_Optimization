@@ -1,0 +1,174 @@
+%Style file of Wenqing Hu
+
+\usepackage{stmaryrd}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsmath,amsthm}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{indentfirst}
+\usepackage{titlesec}
+\usepackage{caption3}
+\usepackage{color}
+\usepackage[normalem]{ulem}
+\usepackage{float}
+\usepackage[english]{babel}
+\usepackage{cite}
+\usepackage{bbm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage[colorlinks, linkcolor=blue]{hyperref}
+
+
+%\usepackage[notref,notcite]{showkeys}
+
+
+\renewcommand{\baselinestretch}{1.2}
+\topmargin 0cm \oddsidemargin 0.66cm \evensidemargin 0.66cm
+\textwidth 14.66cm \textheight 22.23cm
+\parindent 5ex
+
+
+\renewcommand{\abstractname}{Abstract}
+\renewcommand{\figurename}{Fig.}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{example}{Example}[section]
+\newtheorem{condition}{Condition}[section]
+\newtheorem{assumption}{Assumption}[section]
+
+
+\providecommand{\play}{\displaystyle}
+\providecommand{\li}{\limits}
+\providecommand{\pt}{\partial}
+\providecommand{\ra}{\rightarrow}
+\providecommand{\da}{\downarrow}
+\providecommand{\Prob}{\mathbf P}
+\providecommand{\E}{\mathbf E}
+\providecommand{\Var}{\mathbf {Var}}
+\providecommand{\Cov}{\mathbf {Cov}}
+\providecommand{\al}{\alpha}
+\providecommand{\bt}{\beta}
+\providecommand{\gm}{\gamma}
+\providecommand{\Gm}{\Gamma}
+\providecommand{\dt}{\delta}
+\providecommand{\Dt}{\Delta}
+\providecommand{\ve}{\varepsilon}
+\providecommand{\tht}{\theta}
+\providecommand{\Tht}{\Theta}
+\providecommand{\ththat}{\widehat{\theta}_n}
+\providecommand{\kp}{\kappa}
+\providecommand{\lb}{\lambda}
+\providecommand{\Lb}{\Lambda}
+\providecommand{\sm}{\sigma}
+\providecommand{\Sm}{\Sigma}
+\providecommand{\om}{\omega}
+\providecommand{\Om}{\Omega}
+\providecommand{\zt}{\zeta}
+\providecommand{\A}{\mathbb A}
+\providecommand{\C}{\mathbb C}
+\providecommand{\Half}{\mathbb H}
+\providecommand{\N}{\mathbb N}
+\providecommand{\R}{\mathbb R}
+\providecommand{\T}{\mathbb T}
+\providecommand{\Z}{\mathbb Z}
+\providecommand{\cA}{\mathcal A}
+\providecommand{\cB}{\mathcal B}
+\providecommand{\cC}{\mathcal C}
+\providecommand{\cD}{\mathcal D}
+\providecommand{\cE}{\mathcal E}
+\providecommand{\cF}{\mathcal F}
+\providecommand{\cG}{\mathcal G}
+\providecommand{\cH}{\mathcal H}
+\providecommand{\cK}{\mathcal K}
+\providecommand{\cL}{\mathcal L}
+\providecommand{\cM}{\mathcal M}
+\providecommand{\cN}{\mathcal N}
+\providecommand{\cO}{\mathcal O}
+\providecommand{\cP}{\mathcal P}
+\providecommand{\cQ}{\mathcal Q}
+\providecommand{\cS}{\mathcal S}
+\providecommand{\cT}{\mathcal T}
+\providecommand{\cU}{\mathcal U}
+\providecommand{\cV}{\mathcal V}
+\providecommand{\cW}{\mathcal W}
+\providecommand{\cX}{\mathcal X}
+\providecommand{\cY}{\mathcal Y}
+\providecommand{\cZ}{\mathcal Z}
+\providecommand{\cu}{\mathcal u}
+\providecommand{\cx}{\mathcal x}
+\providecommand{\rH}{\mathscr{H}}
+\providecommand{\rL}{\mathscr{L}}
+\providecommand{\rF}{\mathscr{F}}
+\providecommand{\rmX}{\mathrm{X}}
+\providecommand{\rmY}{\mathrm{Y}}
+\providecommand{\rmP}{\mathrm{P}}
+\providecommand{\ig}{\mathfrak{g}}
+\providecommand{\iX}{\mathfrak{X}}
+\providecommand{\iY}{\mathfrak{Y}}
+\providecommand{\iiY}{\mathbf{\mathfrak{Y}}}
+\providecommand{\X}{\mathbf X}
+\providecommand{\hX}{\widehat X}
+\providecommand{\hY}{\widehat Y}
+\providecommand{\Xbar}{\bar{X}}
+\providecommand{\cPhi}{{\mathbf \Phi}}
+\providecommand{\One}{\mathbf 1}
+\providecommand{\contfunc}{\mathbf{C}}
+\providecommand{\contfuncGm}{\mathbf{C}_{[0,\infty)}(\Gamma)}
+\providecommand{\contfuncz}{\mathbf{C}_{[0,\infty)}(\Gamma(z))}
+\providecommand{\contfuncopenbook}{\mathbf{C}_{[0,\infty)}(\mathbf{\Gamma})}
+\providecommand{\contfuncR}{\mathbf{C}_{[0,T]}(\R)}
+\providecommand{\contfuncRslash}{\mathbf{C}_{[0,T]}(\R\backslash(-1,1))}
+\providecommand{\grad}{\nabla}
+\providecommand{\openbook}{\mathbf{\Gamma}}
+\providecommand{\operator}{\overline{\mathbf{L}}}
+\providecommand{\domain}{\mathbf{D}}
+\providecommand{\torus}{\mathbb{T}}
+\providecommand{\boldA}{\boldsymbol{A}}
+\providecommand{\boldB}{\boldsymbol{B}}
+\providecommand{\boldC}{\boldsymbol{C}}
+\providecommand{\boldR}{\boldsymbol{R}}
+\providecommand{\boldN}{\boldsymbol{N}}
+\providecommand{\boldV}{\boldsymbol{V}}
+\providecommand{\boldW}{\boldsymbol{W}}
+\providecommand{\boldX}{\boldsymbol{X}}
+\providecommand{\boldb}{\boldsymbol{b}}
+\providecommand{\boldd}{\boldsymbol{d}}
+\providecommand{\bolde}{\boldsymbol{e}}
+\providecommand{\boldf}{\boldsymbol{f}}
+\providecommand{\boldg}{\boldsymbol{g}}
+\providecommand{\boldh}{\boldsymbol{h}}
+\providecommand{\boldn}{\boldsymbol{n}}
+\providecommand{\boldp}{\boldsymbol{p}}
+\providecommand{\boldq}{\boldsymbol{q}}
+\providecommand{\boldu}{\boldsymbol{u}}
+\providecommand{\boldv}{\boldsymbol{v}}
+\providecommand{\boldw}{\boldsymbol{w}}
+\providecommand{\boldx}{\boldsymbol{x}}
+\providecommand{\boldy}{\boldsymbol{y}}
+\providecommand{\boldal}{\boldsymbol{\alpha}}
+\providecommand{\boldbt}{\boldsymbol{\beta}}
+\providecommand{\boldgm}{\boldsymbol{\gamma}}
+\providecommand{\boldnu}{\boldsymbol{\nu}}
+\providecommand{\boldphi}{\boldsymbol{\varphi}}
+\providecommand{\fC}{\mathfrak{C}}
+\providecommand{\fh}{\mathfrak{h}}
+\providecommand{\fo}{\mathfrak{o}}
+\providecommand{\vphi}{\varphi}
+\providecommand{\bbar}{\bar{b}}
+\providecommand{\gbar}{\bar{g}}
+\providecommand{\Vbar}{\overline{V}}
+\providecommand{\boldXhat}{\widehat{\boldX}}
+\providecommand{\Xhat}{\widehat{X}}
+\providecommand{\Zhat}{\widehat{Z}}
+\providecommand{\Atilde}{\widetilde{A}}
+\providecommand{\Ylow}{Y_{\text{low}}}
+\providecommand{\spaceX}{\mathcal{X}}
+\providecommand{\transitionP}{\mathcal{P}}
+
+\numberwithin{equation}{section}
+\numberwithin{algorithm}{section}
