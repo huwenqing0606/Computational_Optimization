@@ -22,8 +22,13 @@ in root dir:
 
 `pre-commit install`
 
-## run with CLI interface
+## run via CLI
 
 in root dir, under venv:
 
 - activations: `python -m src.main activations`
+
+## (for students) how to contribute
+
+you must checkout your own branch from main, and then propose a PR to main.
+Your branch can be merged only after my review and approval.
