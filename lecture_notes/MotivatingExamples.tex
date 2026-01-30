@@ -197,27 +197,30 @@ Non--convexity issues: see \cite{NonConvexityNN-ICLRpaper}.
 
 Many machine learning/statistical learning problems are related to matrix optimizations.
 
-(1) Matrix Completion: Each $A_j$ is $n\times p$ matrix, and we seek for another $n\times p$ matrix such that
+(1) Matrix Completion: Each $A_j$ is $n\times p$ matrix, and we seek for another $n\times p$ matrix $\widehat{X}$ such that
 \begin{equation}\label{Eq:MatrixCompletion}
-\min\li_{X}\dfrac{1}{2m}\sum\li_{j=1}^m (\langle A_j, X\rangle-y_j)^2
+\widehat{X}=\arg\min\li_{X}\dfrac{1}{2m}\sum\li_{j=1}^m (\langle A_j, X\rangle-y_j)^2
 \end{equation}
-where $\langle A, B\rangle=\text{tr}(A^TB)$. We can think of the $A_j$ as ``probing" the unknown matrix $X$.
+where $\langle A, B\rangle=\text{tr}(A^TB)$. We can think of the $A_j$ as ``probing" the unknown matrix $X$. In other words, we want the best $X$ such that $\langle A_j, X\rangle \approx y_j$ for all $1\leq j \leq m$.
 
 (2) Nonnegative Matrix Factorization: If the full matrix $Y\in \R^{n\times p}$ is observed, then we seek for
 $L\in \R^{n\times r}$ and $R\in \R^{p\times r}$ such that
 \begin{equation}\label{Eq:MatrixFactorization}
 \min\li_{L, R}\|LR^T-Y\|_F^2 \text{ subject to } L\geq 0 \text{ and } R\geq 0 \ .
 \end{equation}
-Here $\|A\|_F=\left(\sum\sum|a_{ij}|^2\right)^{1/2}$ is the Frobenius norm of a matrix $A$.
+Here $\|A\|_F=\left(\sum\sum|a_{ij}|^2\right)^{1/2}$ is the Frobenius norm of a matrix $A$. This is used very often in recommendation systems (see \cite{RecommendationSystemMatrixFactorization}). 
 
-See \cite{MatrixFactorizationReviewPaperChiEtAl}.
+See \cite{MatrixFactorizationReviewPaperChiEtAl} for an overview.
 
-(3) Principle Component Analysis (PCA):
+(3) Principle Component Analysis (PCA): Let $S$ be a positive-definite (non-negative definite) matrix of size $n\times n$. Then we can diagonalize it as $S e_i=\lb_i e_i$, $1\leq i\leq n$, $\lb_1\geq ... \geq \lb_n>0$ (or $\geq 0$). Let $v\in \R^n$ be written as $v=v_1e_1+...+v_ne_n$. Then 
+$$v^T S v=\lb_1 v_1^2+...+\lb_n v_n^2$$
+is a quadratic form. If we restrict $v_1^2+...+v_n^2=1$, then the maximum of above quadratic form will give the direction of $e_1$ and value $\lb_1$ (principle component).
+
 PCA:
 \begin{equation}\label{Eq:PCA}
 \max\li_{v\in \R^n}v^TSv \text{ such that } \|v\|_2=1 \ , \ \|v\|_0\leq k \ .
 \end{equation}
-The objective function is convex, but if you take into account the constraint, then this problem becomes non--convex. A picture for dimension $1$ example can be shown below.
+Here $S$ is a positive-definite (or non-negative definite) matrix. The objective function is convex, but if you take into account the constraint, then this problem becomes non--convex. A picture for dimension $1$ example can be shown below.
 
 \begin{figure}[H]
 \centering
