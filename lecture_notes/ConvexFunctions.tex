@@ -1,1 +1,263 @@
-convex functions
+\section{Convex Functions}
+\label{Sec:ConvexFunctions}
+
+
+\subsection{Optimization problem: set-up and its solutions}
+\label{Sec:ConvexFunctions:Set-up}
+
+For the objective function $f: \R^n \supset\cD\ra \R$, we have various notions of minimizers: 
+
+\begin{itemize}
+\item Local minimizer: $x^*\in \cD$ is a local minimizer if there exist a neighborhood $\cN$ containing $x^*$, such that $f(x)\geq f(x^*)$ for all $x\in \cN \cap \cD$;
+
+\item Global minimizer: $x^*\in \cD$ is a global minimizer if $f(x)\geq f(x^*)$ for all $x\in \cD$;
+
+\item Strict Local Minimizer: $x^*\in \cD$ is a strict local minimizer iff $x^*$ is a local minimizer and $f(x)\geq f(x^*)$ if $x\neq x^*$, $x\in \cN$;
+
+\item Isolated Local Minimizer: $x^*\in \cD$ is an isolated local minimizer iff there exists a neighborhood $\cN$ containing $x^*$ such that $f(x)\geq f(x^*)$ for all $x\in \cN\cap \cD$ and $\cN$ does not contain any other local minimizers.
+\end{itemize}
+
+Constrained optimization problem
+\begin{equation}\label{Eq:ConstrainedOptimization}
+\min\li_{x\in \Om}f(x) \ ,
+\end{equation}
+where $\Om\subset \cD\subset \R^n$ is a closed set.
+
+$x^*$ is a \textit{local solution}: there exist a neighborhood $\cN$ containing $x^*$ such that $f(x)\geq f(x^*)$ for any $x\in \cN\cap \Om$.
+
+$x^*$ is a \textit{global solution}: $f(x)\geq f(x^*)$ for any $x\in \Om$.
+
+\subsection{Convexity}
+\label{Sec:ConvexFunctions:Convexity}
+
+\begin{definition}[Convex Set]\label{Def:ConvexSet}
+A set $\Om$ is called a convex set if for any $x,y\in \Om$ we have $$(1-\al)x+\al y\in \Om$$ for all $\al\in [0,1]$.
+\end{definition}
+
+Given convex set $\Om\subset \R^n$, the \textit{projection operator} $P: \R^n\ra \Om$ is given by
+\begin{equation}\label{Eq:ProjectionOperator}
+P(y)=\arg\min\li_{z\in \Om}\|z-y\|_2^2 \ .
+\end{equation}
+$P(y)$ is the point in $\Om$ that is closest to $y$ in the sense of Euclidean norm. If $x\in \Om$, then $P(x)=x$.
+
+\begin{definition}[Convex Function]\label{Def:ConvexFunction}
+A function $\phi: \R^n\ra \R\cup \{\pm \infty\}$ is convex if for all $x,y\in \R^n$ we have 
+\begin{equation}\label{Eq:ConvexFunction}
+\phi((1-\al)x+\al y)\leq (1-\al)\phi(x)+\al \phi(y)
+\end{equation}
+for all $\al \in [0,1]$.
+\end{definition}
+
+\begin{definition}[Strongly Convex Function]\label{Def:StronglyConvexFunction}
+A convex function $\phi$ is called strongly convex with modulus of convexity $m>0$ if
+\begin{equation}\label{Eq:StronglyConvexFunction}
+\phi((1-\al)x+\al y)\leq (1-\al)\phi(x)+\al \phi(y)-\dfrac{1}{2}m\al(1-\al)\|x-y\|_2^2
+\end{equation}
+for all $x, y$ in the domain of $\phi$.
+\end{definition}
+
+Let $\Om\subset \R^n$ be convex. We define the indicator function
+\begin{equation}\label{Eq:Indicator}
+I_\Om(x)=\left\{\begin{array}{ll}0 & \text{ if } x\in \Om \ , \\ +\infty & \text{ otherwise} \ .\end{array}\right.
+\end{equation}
+Constrained optimization problem $\min\li_{x\in \Om}f(x)$ is the same thing as the unconstrained optimization problem
+$\min [f(x)+I_\Om(x)]$. We can set a sequence of functions $F_{\lb \Om} \uparrow I_\Om(x)$ as $\lb \uparrow \infty$, and then we solve the relaxed problem $\min\li_{x\in \R^d}[f(x)+F_{\lb \Om}(x)]$.
+
+\begin{theorem}[Minimizers for convex functions]\label{Thm:MinimizerConvexFunctions}
+If the function $f$ is convex and the set $\Om$ is closed and convex, then
+
+(a) Any local solution of \eqref{Eq:ConstrainedOptimization} is also global;
+
+(b) The set of global solutions of \eqref{Eq:ConstrainedOptimization} is a convex set.
+\end{theorem}
+
+A few more auxiliary notions:
+\begin{itemize}
+\item ``Effective domain" of $\phi$: $\{x\in \Om: \phi(x)<\infty\}$;
+
+\item ``Epigraph" of $\phi$: $$\text{epi}(\phi)=\{(x,t)\in \Om\times \R: t\geq \phi(x)\} \ .$$
+
+\item $\phi$ is a ``proper convex function" if $\phi(x)<\infty$ for some $x\in \Om$ and $\phi(x)>-\infty$ for all $x\in \Om$;
+
+\item $\phi$ is a ``closed proper convex function" if $\phi$ is a proper convex function and $\{x\in \Om: \phi(x)\leq t\}$ is a closed set for all $t\in \R$.
+\end{itemize}
+
+\subsection{Taylor's theorem and convexity in Taylor's expansion}
+\label{Sec:ConvexFunctions:Taylor}
+
+\begin{theorem}[Taylor's theorem]\label{Thm:Taylor}
+Given a continuously differentiable function $f: \R^n\ra \R$ and given $x,p\in \R^n$ we have
+\begin{equation}\label{Thm:Taylor:Eq:IntegralForm}
+f(x+p)=f(x)+\int_0^1 \grad f(x+\gm p)^Tpd\gm \ ,
+\end{equation}
+\begin{equation}\label{Thm:Taylor:Eq:MeanValueForm}
+f(x+p)=f(x)+\grad f(x+\gm p)^Tp \ , \ \text{ for some } \gm\in (0,1) \ .
+\end{equation}
+If $f$ is twice continuously differentiable, then
+\begin{equation}\label{Thm:Taylor:Eq:GradientIntegralForm}
+\grad f(x+p)=\grad f(x)+\int_0^1 \grad^2 f(x+\gm p)^Tpd\gm \ ,
+\end{equation}
+\begin{equation}\label{Thm:Taylor:Eq:GradientMeanValueForm}
+f(x+p)=f(x)+\grad f(x)^Tp+\dfrac{1}{2}p^T\grad^2 f(x+\gm p)p \ , \ \text{ for some } \gm\in (0,1) \ .
+\end{equation}
+\end{theorem}
+
+$L$--Lipschitz: If $f: \R^n\ra \R$ is such that
+\begin{equation}\label{Eq:L-Lipschitz}
+|f(x)-f(y)|\leq L\|x-y\|
+\end{equation}
+for $L>0$ and any $x,y\in \R^n$, then $f(x)$ is $L$--Lipschitz.
+
+Optimization literatures often assume that $\grad f$ is $L$--Lipschitz
+
+\begin{equation}\label{Eq:gradf-L-Lipschitz}
+\|\grad f(x)-\grad f(y)\|\leq L\|x-y\| \ .
+\end{equation}
+
+\begin{theorem}\label{Thm:ConvexFunctionMainTheorem}
+(1) If $f$ is continuously differentiable and convex then
+\begin{equation}\label{Thm:ConvexFunctionMainTheorem:Eq:FirstOrder}
+f(y)\geq f(x)+(\grad f(x))^T (y-x)
+\end{equation}
+for any $x,y \in \text{dom}(f)$.
+
+(2) If $f$ is differentiable and $m$--strongly convex then
+\begin{equation}\label{Thm:ConvexFunctionMainTheorem:Eq:SecondOrderLowerBound}
+f(y)\geq f(x)+(\grad f(x))^T(y-x)+\dfrac{m}{2}\|y-x\|^2
+\end{equation}
+for any $x,y\in \text{dom}(f)$.
+
+(3) If $\grad f$ is uniformly Lipschitz continuous with Lipschitz constant $L>0$ and $f$ is convex then
+\begin{equation}\label{Thm:ConvexFunctionMainTheorem:Eq:SecondOrderUpperBound}
+f(y)\leq f(x)+(\grad f(x))^T(y-x)+\dfrac{L}{2}\|y-x\|^2
+\end{equation}
+for any $x,y\in \text{dom}(f)$.
+\end{theorem}
+
+\begin{theorem}\label{Thm:ConvexFunctionHessianCharacteristics}
+Suppose that the function $f$ is twice continuously differentiable on $\R^n$. Then
+
+(1) $f$ is strongly convex with modulus of convexity $m$ if and only if $\grad^2 f(x) \succeq mI$ for all $x$;
+
+(2) $\grad f$ is Lipschitz continuous with Lipschitz constant $L$ if and only if $\grad^2 f(x) \preceq LI$ for all $x$.
+\end{theorem}
+
+\begin{proof}(Part (1))
+Suppose that the function $f$ is strongly--$m$ convex with the standard inequality \eqref{Eq:StronglyConvexFunction} above for $m$--convexity. Set $z_\al=(1-\al)x+\al y$. Then by \eqref{Eq:StronglyConvexFunction} we have
+$$\al f(y)-\al f(x)\geq f(z_\al)-f(x)+\dfrac{1}{2}m\al(1-\al)\|x-y\|^2 \ .$$
+Making use of Taylor's expansion
+$$
+\al f(y)-\al f(x)\geq (\grad f(x))^T (z_\al-x)+O(\|z_\al-x\|^2)+\dfrac{1}{2}m\al (1-\al)\|x-y\|^2 \ .
+$$
+Since $z_\al\ra x$ as $\al\ra 0$, and $z_\al-x=\al(y-x)$, we can set $\al \ra 0$ to get from above that for any $x,y\in \R^n$
+\begin{equation}\label{Eq:Assignment2:mStrongConvexityDerivative}
+f(y)\geq f(x)+(\grad f(x))^T(y-x)+\dfrac{m}{2}\|y-x\|^2 \ . 
+\end{equation}
+Set $u\in \R^n$ and $\al>0$, then we consider the Taylor's expansion
+\begin{equation}\label{Eq:Assignment2:TaylorExpansion}
+f(x+\al u)=f(x)+\al \grad f(x)^T u+\dfrac{1}{2}\al^2 u^T\grad^2 f(x+t\al u)u 
+\end{equation}
+for some $0\leq t\leq 1$. We apply \eqref{Eq:Assignment2:mStrongConvexityDerivative} with $y=x+\al u$ so that
+\begin{equation}\label{Eq:Assignment2:TaylorExpansionStrongConvexity}
+f(x+\al u)\geq f(x)+\al (\grad f(x))^T u+\dfrac{m}{2}\al^2 \|u\|^2 \ .
+\end{equation}
+Comparing \eqref{Eq:Assignment2:TaylorExpansion} and \eqref{Eq:Assignment2:TaylorExpansionStrongConvexity} we see that for arbitrary choice of $u\in \R^n$ we have
+$$u^T \grad^2 f(x+t\al u)u\geq m \|u\|^2 \ .$$
+This implies that $\grad^2 f(x) \succeq mI$ as claimed. This shows the ``only if" part.
+
+Indeed one can also show the ``if" part. To this end assume that $\grad^2 f(x) \succeq mI$. Then for any $z\in \R^n$ we have that $(x-z)^T\grad^2 f(z+t(x-z))(x-z)\geq m\|x-z\|^2$. Thus
+\begin{equation}\label{Eq:Assignment2:mStrongConvexityDerivativex-z}
+\begin{array}{ll}
+f(x) & =f(z)+(\grad f(z))^T(x-z)+\dfrac{1}{2}(x-z)^T\grad^2f(z+t(x-z))(x-z)
+\\
+&\geq f(z)+(\grad f(z))^T(x-z)+\dfrac{m}{2}\|x-z\|^2 \ .
+\end{array} 
+\end{equation}
+Similarly
+\begin{equation}\label{Eq:Assignment2:mStrongConvexityDerivativey-z}
+\begin{array}{ll}
+f(y) & =f(z)+(\grad f(z))^T(y-z)+\dfrac{1}{2}(y-z)^T\grad^2f(z+t(y-z))(y-z)
+\\
+&\geq f(z)+(\grad f(z))^T(y-z)+\dfrac{m}{2}\|y-z\|^2 \ .
+\end{array}
+\end{equation}
+We consider $(1-\al)$\eqref{Eq:Assignment2:mStrongConvexityDerivativex-z}$+\al$\eqref{Eq:Assignment2:mStrongConvexityDerivativey-z} and we set $z=(1-\al) x+\al y$. This gives
+\begin{equation}\label{Eq:Assignment2:mStrongConvexityDerivative1-alphax-zalphay-z}
+\begin{array}{l}
+(1-\al) f(x)+\al f(y)
+\\
+\geq (\al+(1-\al))f(z)+
+(\grad f(z))^T((1-\al) (x-z)+\al(y-z))+\dfrac{m}{2}\left((1-\al)\|x-z\|^2+\al\|y-z\|^2\right)
+\\
+= f(z)+
+(\grad f(z))^T((1-\al) (x-z)+\al(y-z))+\dfrac{m}{2}\left((1-\al)\|x-z\|^2+\al\|y-z\|^2\right) \ .
+\end{array} 
+\end{equation}
+Since $x-z=\al (x-y)$ and $y-z=(1-\al)(y-x)$, we see that $((1-\al)(x-z)+\al(y-z))=0$. Moreover, this means that
+$$(1-\al)\|x-z\|^2+\al \|y-z\|^2=\left[(1-\al)\al^2+\al(1-\al)^2\right]\|x-y\|^2=\al(1-\al)\|x-y\|^2 \ .$$
+From these we see that \eqref{Eq:Assignment2:mStrongConvexityDerivative1-alphax-zalphay-z} is the same as saying
+$$(1-\al) f(x)+\al f(y)\geq f((1-\al)x+\al y)+\dfrac{m}{2}\al(1-\al)\|x-y\|^2 \ ,$$
+which is \eqref{Eq:StronglyConvexFunction}.
+\end{proof}
+
+\begin{theorem}[Strongly convex functions have unique minimizers]\label{Thm:MinimizerStronglyConvexFunctions}
+Let $f$ be differentiable and strongly convex with modulus $m>0$. Then the minimizer $x^*$ of $f$ exists and is unique.
+\end{theorem}
+
+More technical issues...
+
+\begin{theorem}\label{Thm:GeneralizedStrongConvexity}
+Let $f$ be convex and continuously differentiable and $\grad f$ be $L$--Lipschitz. Then for any
+$x,y\in \text{dom}(f)$ the following bounds hold:
+\begin{equation}\label{Thm:GeneralizedStrongConvexity:Eq:UpperBound}
+f(x)+\grad f(x)^T(y-x)+\dfrac{1}{2L}\|\grad f(x)-\grad f(y)\|^2\leq f(y) \ ,
+\end{equation}
+
+\begin{equation}\label{Thm:GeneralizedStrongConvexity:Eq:TwoSidedBound}
+\dfrac{1}{L}\|\grad f(x)-\grad f(y)\|^2\leq (\grad f(x)-\grad f(y))^T(x-y)\leq L\|x-y\|^2 \ .
+\end{equation}
+
+In addition, let $f$ be strongly convex with modulus $m$ and unique minimizer $x^*$. Then for any $x,y\in \text{dom}(f)$
+we have that
+
+\begin{equation}\label{Thm:GeneralizedStrongConvexity:Eq:GeneralizedStrongConvexity}
+f(y)-f(x)\geq -\dfrac{1}{2m}\|\grad f(x)\|^2 \ .
+\end{equation}
+\end{theorem}
+
+Generalized Strong Convexity: ($f^*=f(x^*)$)
+
+\begin{equation}\label{Eq:GeneralizedStrongConvexity}
+\|\grad f(x)\|^2\geq 2m[f(x)-f^*] \text{ for some } m>0 \ .
+\end{equation}
+It holds in situations other than when $f$ is strongly convex.
+
+\subsection{Optimality Conditions}
+\label{Sec:ConvexFunctions:OptimalityCondition}
+
+Smooth unconstrained problem
+
+\begin{equation}\label{Eq:SmoothUnconstrainedOptimization}
+\min\li_{x\in \R^n}f(x) \ ,
+\end{equation}
+where $f(x)$ is a smooth function.
+
+\begin{theorem}[Necessary conditions for smooth unconstrained optimization]\label{Thm:NecessaryConditionsSmoothUnconstrainedOptimization}
+We have 
+\begin{itemize}
+\item[(a)] (first--order necessary condition) Suppose that $f$ is continuously differentiable. Then if $x^*$ is a local minimizer of \eqref{Eq:SmoothUnconstrainedOptimization}, then $\grad f(x^*)=0$;
+
+\item[(b)] (second--order necessary condition) Suppose that $f$ is twice continuously differentiable. Then if $x^*$ is a local minimizer of \eqref{Eq:SmoothUnconstrainedOptimization}, then $\grad f(x^*)=0$ and $\grad^2 f(x^*)$ is positive definite.
+\end{itemize}
+\end{theorem}
+
+\begin{theorem}[Sufficient conditions for convex functions in smooth unconstrained optimization]
+\label{Thm:SufficientConditionsSmoothUnconstrainedOptimizationConvex}
+If $f$ is continuously differentiable and convex, then if $\grad f(x^*)=0$, then $x^*$ is a global minimizer of \eqref{Eq:SmoothUnconstrainedOptimization}.
+In addition, if $f$ is strongly convex, then $x^*$ is the unique global minimizer.
+\end{theorem}
+
+\begin{theorem}[Sufficient conditions for nonconvex functions in smooth unconstrained optimization]
+Suppose that $f$ is twice continuously differentiable and that for some $x^*$ we have $\grad f(x^*)=0$ and $\grad^2 f(x^*)$ is positive 
+definite, then $x^*$ is a strict local minimizer of \eqref{Eq:SmoothUnconstrainedOptimization}.
+\end{theorem}
