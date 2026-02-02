@@ -102,11 +102,41 @@ f(x+p)=f(x)+\grad f(x)^Tp+\dfrac{1}{2}p^T\grad^2 f(x+\gm p)p \ , \ \text{ for so
 \end{equation}
 \end{theorem}
 
-$L$--Lipschitz: If $f: \R^n\ra \R$ is such that
+\begin{proof}
+(1) Let $g(\gm)=f(x+\gm p)$, then $g'(\gm)=\grad f(x+\gm p)\cdot p =(\grad f(x+\gm p))^T p$. Then by Newton-Leibniz we have
+$$g(1)-g(0)=\int_0^1 g'(\gm)d\gm = \int_0^1 (\grad f(x+\gm p))^T p d\gm \ ,$$
+which gives (\ref{Thm:Taylor:Eq:IntegralForm}).
+
+(2) Using mean-value theorem $\play{\int_a^b h(t)dt} =(b-a)h(\xi)$ for some $\xi\in (a,b)$, we get $$\int_0^1 (\grad f(x+\gm p))^T p d\gm = (\grad f(x+\gm_0 p))^T p$$ for some $\gm_0\in (0,1)$, which is (\ref{Thm:Taylor:Eq:MeanValueForm}).
+
+Another way is to use the fact that $$f(y)=f(x)+(\grad f(x+\gm_0(y-x)))^T(y-x) \ .$$
+Set $p=y-x$, this gives
+$$f(x+p)=f(x)+(\grad f(x+\gm_0 p))^T p \ .$$
+
+(3) We apply (\ref{Thm:Taylor:Eq:GradientIntegralForm}) to each of $\dfrac{\pt f}{\pt x_i}$, and we get
+$$\dfrac{\pt f}{\pt x_i}(x+p)=\dfrac{\pt f}{\pt x_i}(x)+\int_0^1 \left[\grad\left(\dfrac{\pt f}{\pt x_i}\right)(x+\gm p)\right]^T p d \gm \ .$$
+
+Introduce the Hessian matrix $\grad^2 f(x)=\left(\dfrac{\pt ^2 f}{\pt x_i \pt x_j}\right)_{1\leq i, j\leq n}$. Then when we put the above equation for all $1\leq i\leq n$, we get (\ref{Thm:Taylor:Eq:GradientIntegralForm}).
+
+(4) We combine (\ref{Thm:Taylor:Eq:GradientIntegralForm}) with (\ref{Thm:Taylor:Eq:MeanValueForm}) to get
+
+$$\begin{array}{ll}
+f(x+p) & = f(x) + \grad f(x+\gm p)^T p 
+\\
+& = f(x)+\left(\grad f(x)+\grad^2 f(x+\mu\gm p)^T p \right)^T p
+\\
+& = f(x) + \grad f(x)^T p + p^T\grad^2 f(x+\mu \gm p) p
+\end{array}$$
+for some $\mu\in (0,1), \gm\in (0,1)$.
+\end{proof}
+
+\begin{definition}[$L$--Lipschitz]\label{Def:LLipschitz}
+If $f: \R^n\ra \R$ is such that
 \begin{equation}\label{Eq:L-Lipschitz}
-|f(x)-f(y)|\leq L\|x-y\|
+|f(x)-f(y)|\leq L\|x-y\| \ ,
 \end{equation}
 for $L>0$ and any $x,y\in \R^n$, then $f(x)$ is $L$--Lipschitz.
+\end{definition}
 
 Optimization literatures often assume that $\grad f$ is $L$--Lipschitz
 
