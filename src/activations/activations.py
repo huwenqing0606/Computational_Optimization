@@ -1,4 +1,24 @@
+from abc import ABC, abstractmethod
+
 import numpy as np
+
+
+class ActivationBase(ABC):
+    def __init__(self, **kwargs):
+        super().__init__()
+
+    def __call__(self, z):
+        if z.ndim == 1:
+            z = z.reshape(1, -1)
+        return self.fn(z)
+
+    @abstractmethod
+    def fn(self, z):
+        raise NotImplementedError
+
+    @abstractmethod
+    def grad(self, x, **kwargs):
+        raise NotImplementedError
 
 
 class Sigmoid(object):
