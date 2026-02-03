@@ -12,7 +12,7 @@ For the objective function $f: \R^n \supset\cD\ra \R$, we have various notions o
 
 \item Global minimizer: $x^*\in \cD$ is a global minimizer if $f(x)\geq f(x^*)$ for all $x\in \cD$;
 
-\item Strict Local Minimizer: $x^*\in \cD$ is a strict local minimizer iff $x^*$ is a local minimizer and $f(x)\geq f(x^*)$ if $x\neq x^*$, $x\in \cN$;
+\item Strict Local Minimizer: $x^*\in \cD$ is a strict local minimizer iff $x^*$ is a local minimizer and $f(x) > f(x^*)$ if $x\neq x^*$, $x\in \cN$;
 
 \item Isolated Local Minimizer: $x^*\in \cD$ is an isolated local minimizer iff there exists a neighborhood $\cN$ containing $x^*$ such that $f(x)\geq f(x^*)$ for all $x\in \cN\cap \cD$ and $\cN$ does not contain any other local minimizers.
 \end{itemize}
@@ -70,6 +70,16 @@ If the function $f$ is convex and the set $\Om$ is closed and convex, then
 
 (b) The set of global solutions of \eqref{Eq:ConstrainedOptimization} is a convex set.
 \end{theorem}
+
+\begin{proof}
+(a) Suppose $x^*_1$ is a local optimizer that is not global. This means there exists some $x^*_2\neq x^*_1$ such that $f(x^*_2)<f(x^*_1)$. Then by convexity for any $\al\in [0,1]$ we have 
+$$f((1-\al)x_1^*+\al x_2^*)\leq (1-\al)f(x_1^*)+\al f(x_2^*)< f(x_1^*) \ .$$
+If $\al$ is close to $0$ and the above inequality will violate the fact that $x_1^*$ is a local minimizer.
+
+(b) Let $S$ be the set of global minimizers. Then for any $x_1,x_2\in S$ we have $f(x_1)=f(x_2)=\min\li_{x\in \Om} f(x)$. By convexity we have
+$$f(\al x_1+ (1-\al)x_2)\leq \al f(x_1)+(1-\al)f(x_2)=\min\li_{x\in \Om}f(x) \ ,$$
+which means that $S$ is convex.
+\end{proof}
 
 A few more auxiliary notions:
 \begin{itemize}
@@ -164,6 +174,40 @@ f(y)\leq f(x)+(\grad f(x))^T(y-x)+\dfrac{L}{2}\|y-x\|^2
 for any $x,y\in \text{dom}(f)$.
 \end{theorem}
 
+\begin{proof}
+(1) Let $z_\al=\al x + (1-\al)y$. Then by convexity
+$$f(z_\al)\leq \al f(x) + (1-\al) f(y) \ ,$$
+which gives
+$$f(z_\al)-f(x)\leq (1-\al)(f(y)-f(x)) \ .$$
+We can use (\ref{Thm:Taylor:Eq:MeanValueForm}) to get
+$$f(z_\al)-f(x)=(\grad f(x+\gm (z_\al-x)))^T(z_\al-x)$$
+for some $\gm \in [0,1]$. Since $z_\al-x=(1-\al)(y-x)$, this gives 
+$$f(y)-f(x)\geq (\grad f(x+\gm (z_\al-x)))^T(y-x) \ .$$
+Letting $\al\ra 1$ we have $z_\al \ra x$, that will give (\ref{Thm:ConvexFunctionMainTheorem:Eq:FirstOrder}).
+
+(2) We extend the above argument using strong convexity (\ref{Eq:StronglyConvexFunction}). This means we have
+$$f(z_\al)\leq \al f(x)+(1-\al)f(y)-\dfrac{1}{2}m\al (1-\al)\|x-y\|_2^2 \ ,$$
+which gives
+$$f(z_\al)-f(x)+\dfrac{m}{2}\al(1-\al)\|x-y\|^2 \leq (1-\al)(f(y)-f(x)) \ .$$
+By (\ref{Thm:Taylor:Eq:MeanValueForm}) again we have
+$$(1-\al)(\grad f(x+\gm(z_\al-x)))^T (y-x)+\dfrac{m}{2}\al(1-\al)\|y-x\|^2\leq (1-\al)(f(y)-f(x)) \ .$$
+Dividing both sides by $1-\al$ and setting $\al \ra 1$ we get (\ref{Thm:ConvexFunctionMainTheorem:Eq:SecondOrderLowerBound}).
+
+(3) We app;y (\ref{Thm:Taylor:Eq:IntegralForm}) to get
+$$f(y)=f(x)+\int_0^1 (\grad f(x+\gm(y-x)))^T (y-x)d\gm \ .$$
+This gives us
+$$\begin{array}{ll}
+& f(y)-f(x)-(\grad f(x))^T(y-x)
+\\
+= & \play{\int_0^1 [(\grad f(x+\gm(y-x)))^T-(\grad f(x))^T](y-x)d\gm}
+\\
+\leq & \play{\int_0^1 \|(\grad f(x+\gm(y-x)))^T-(\grad f(x))^T\|\cdot \|y-x\| d\gm}
+\\
+\leq & \play{\int_0^1 L\gm \|y-x\|^2 d\gm=\dfrac{L}{2}\|y-x\|^2 \ ,}
+\end{array}$$
+which is (\ref{Thm:ConvexFunctionMainTheorem:Eq:SecondOrderUpperBound}).
+\end{proof}
+
 \begin{theorem}\label{Thm:ConvexFunctionHessianCharacteristics}
 Suppose that the function $f$ is twice continuously differentiable on $\R^n$. Then
 
@@ -172,8 +216,8 @@ Suppose that the function $f$ is twice continuously differentiable on $\R^n$. Th
 (2) $\grad f$ is Lipschitz continuous with Lipschitz constant $L$ if and only if $\grad^2 f(x) \preceq LI$ for all $x$.
 \end{theorem}
 
-\begin{proof}(Part (1))
-Suppose that the function $f$ is strongly--$m$ convex with the standard inequality \eqref{Eq:StronglyConvexFunction} above for $m$--convexity. Set $z_\al=(1-\al)x+\al y$. Then by \eqref{Eq:StronglyConvexFunction} we have
+\begin{proof}
+(1) Suppose that the function $f$ is strongly--$m$ convex with the standard inequality \eqref{Eq:StronglyConvexFunction} above for $m$--convexity. Set $z_\al=(1-\al)x+\al y$. Then by \eqref{Eq:StronglyConvexFunction} we have
 $$\al f(y)-\al f(x)\geq f(z_\al)-f(x)+\dfrac{1}{2}m\al(1-\al)\|x-y\|^2 \ .$$
 Making use of Taylor's expansion
 $$
