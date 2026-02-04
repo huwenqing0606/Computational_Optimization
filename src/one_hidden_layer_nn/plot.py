@@ -11,7 +11,7 @@ namelist = ["Sigmoid", "ReLU", "Tanh", "Exponential"]
 os.makedirs("output/one_hidden_layer_nn", exist_ok=True)
 
 
-def plot_network_loss(layer_neuron_number=10, training_size=10, N=100):
+def plot_network_loss(layer_neuron_number=20, training_size=10, N=100):
     weight_a_secondpart = np.random.randn(layer_neuron_number - 2)
     weight_b = np.random.randn(layer_neuron_number)
     weight_c = np.random.randn(layer_neuron_number)
@@ -74,7 +74,7 @@ def plot_network_loss(layer_neuron_number=10, training_size=10, N=100):
         plt.close()
 
 
-def plot_network_output(layer_neuron_number=10):
+def plot_network_output(layer_neuron_number=20):
     for name in namelist:
         X = np.linspace(-5, 5, 100)
         Y = []

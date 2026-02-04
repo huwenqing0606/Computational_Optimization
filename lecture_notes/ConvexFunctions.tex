@@ -335,3 +335,26 @@ In addition, if $f$ is strongly convex, then $x^*$ is the unique global minimize
 Suppose that $f$ is twice continuously differentiable and that for some $x^*$ we have $\grad f(x^*)=0$ and $\grad^2 f(x^*)$ is positive 
 definite, then $x^*$ is a strict local minimizer of \eqref{Eq:SmoothUnconstrainedOptimization}.
 \end{theorem}
+
+\subsection{Experiment: Nonconvexity of the Loss Landscape of Neural Networks}
+\label{Sec:ConvexFunctions:Experiment:NonConvexLossNN}
+
+Consider a neural network with one hidden layer that consists of $p$ neurons and input $x\in \mathbb{R}^1$, output $y\in \mathbb{R}^1$. The neural network function has the form 
+$y(x)=\sum\limits_{j=1}^p c_j \sigma(a_j x- b_j) \ , $
+where $\mathbf{a}=a_j, \mathbf{b}=b_j$ and $\mathbf{c}=c_j$ are the neural network weights. Assume $(a_j, b_j, c_j)\sim \mathcal{N}(0, I_3)$, $j=1,2,…,p$ is a family of i.i.d multivariate normal distributions. For different realizations of $(a_j, b_j, c_j)$, we plot the function $y(x)$ on $x$-$y$ graph. We have experimented different hidden layer sizes.
+
+With the above done, assume that the training data $(x, y)$ follows a bivariate normal distribution $\mathcal{N}(0, I_2)$. Let the variables $a_1$ and $a_2$ vary in a certain interval. Let all other neural network weights $a_j, b_j, c_j$ follow the same assumption as above. For different $(a_1, a_2)$, we plot the empirical loss function of this network as a function of $(a_1, a_2)$. We can see that the loss function may not be convex with respect to $(a_1, a_2)$. We show experiment results for different hidden layer sizes.
+
+We refer to \cite{ComputationalOptimizationGithubRepo}, \verb#activations# and \verb#one_hidden_layer_nn#.
+
+A typical non-convex loss landscape looks as follows:
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/Fig_OneHiddenLayerNN-Loss_Sigmoid_layersize=20, training size=10}
+\caption{Loss Landscape of a neural network.}
+\label{Fig:NN-Loss}
+\end{figure}
+
+
+
