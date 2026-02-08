@@ -1,9 +1,9 @@
-\section{Convex Functions}
-\label{Sec:ConvexFunctions}
+\chapter{Convex Functions}
+\label{Ch:ConvexFunctions}
 
 
-\subsection{Optimization problem: set-up and its solutions}
-\label{Sec:ConvexFunctions:Set-up}
+\section{Optimization problem: set-up and its solutions}
+\label{Ch:ConvexFunctions:Set-up}
 
 For the objective function $f: \R^n \supset\cD\ra \R$, we have various notions of minimizers: 
 
@@ -27,8 +27,8 @@ $x^*$ is a \textit{local solution}: there exist a neighborhood $\cN$ containing 
 
 $x^*$ is a \textit{global solution}: $f(x)\geq f(x^*)$ for any $x\in \Om$.
 
-\subsection{Convexity}
-\label{Sec:ConvexFunctions:Convexity}
+\section{Convexity}
+\label{Ch:ConvexFunctions:Convexity}
 
 \begin{definition}[Convex Set]\label{Def:ConvexSet}
 A set $\Om$ is called a convex set if for any $x,y\in \Om$ we have $$(1-\al)x+\al y\in \Om$$ for all $\al\in [0,1]$.
@@ -92,8 +92,8 @@ A few more auxiliary notions:
 \item $\phi$ is a ``closed proper convex function" if $\phi$ is a proper convex function and $\{x\in \Om: \phi(x)\leq t\}$ is a closed set for all $t\in \R$.
 \end{itemize}
 
-\subsection{Taylor's theorem and convexity in Taylor's expansion}
-\label{Sec:ConvexFunctions:Taylor}
+\section{Taylor's theorem and convexity in Taylor's expansion}
+\label{Ch:ConvexFunctions:Taylor}
 
 \begin{theorem}[Taylor's theorem]\label{Thm:Taylor}
 Given a continuously differentiable function $f: \R^n\ra \R$ and given $x,p\in \R^n$ we have
@@ -128,16 +128,21 @@ $$\dfrac{\pt f}{\pt x_i}(x+p)=\dfrac{\pt f}{\pt x_i}(x)+\int_0^1 \left[\grad\lef
 
 Introduce the Hessian matrix $\grad^2 f(x)=\left(\dfrac{\pt ^2 f}{\pt x_i \pt x_j}\right)_{1\leq i, j\leq n}$. Then when we put the above equation for all $1\leq i\leq n$, we get (\ref{Thm:Taylor:Eq:GradientIntegralForm}).
 
-(4) We combine (\ref{Thm:Taylor:Eq:GradientIntegralForm}) with (\ref{Thm:Taylor:Eq:MeanValueForm}) to get
+(4) Define an auxiliary function of a single variable $\phi(t) = f(x + tp)$ for $t \in [0, 1]$. By applying the univariate Taylor's Theorem with the Lagrange form of the remainder to $\phi(t)$ at $t=0$, we have:
+$$
+\phi(1) = \phi(0) + \phi'(0)(1-0) + \frac{1}{2} \phi''(\gamma)(1-0)^2
+$$
+for some $\gamma \in (0, 1)$.
 
-$$\begin{array}{ll}
-f(x+p) & = f(x) + \grad f(x+\gm p)^T p 
-\\
-& = f(x)+\left(\grad f(x)+\grad^2 f(x+\mu\gm p)^T p \right)^T p
-\\
-& = f(x) + \grad f(x)^T p + p^T\grad^2 f(x+\mu \gm p) p
-\end{array}$$
-for some $\mu\in (0,1), \gm\in (0,1)$.
+Now, we compute the derivatives of $\phi(t)$ using the multi-variable chain rule:
+$$ \phi'(t) = \frac{d}{dt} f(x + tp) = \nabla f(x + tp)^T p $$
+At $t=0$, we obtain $\phi'(0) = \nabla f(x)^T p$.
+
+$$ \phi''(t) = \frac{d}{dt} \left( \nabla f(x + tp)^T p \right) = p^T \nabla^2 f(x + tp) p $$
+    where $\nabla^2 f$ is the Hessian matrix of $f$.
+
+Substituting these expressions back into the Taylor expansion of $\phi(1)$:
+Since $\phi(1) = f(x+p)$ and $\phi(0) = f(x)$, we get (\ref{Thm:Taylor:Eq:GradientMeanValueForm}).
 \end{proof}
 
 \begin{definition}[$L$--Lipschitz]\label{Def:LLipschitz}
@@ -208,6 +213,8 @@ $$\begin{array}{ll}
 which is (\ref{Thm:ConvexFunctionMainTheorem:Eq:SecondOrderUpperBound}).
 \end{proof}
 
+We use the symbol $A \succeq B$ ($A \preceq B$) to mean $\lb_A\geq \lb_B$ ($\lb_A \leq \lb_B$) for every corresponding pair of eigenvalues of $A, B$.
+
 \begin{theorem}\label{Thm:ConvexFunctionHessianCharacteristics}
 Suppose that the function $f$ is twice continuously differentiable on $\R^n$. Then
 
@@ -217,21 +224,12 @@ Suppose that the function $f$ is twice continuously differentiable on $\R^n$. Th
 \end{theorem}
 
 \begin{proof}
-(1) Suppose that the function $f$ is strongly--$m$ convex with the standard inequality \eqref{Eq:StronglyConvexFunction} above for $m$--convexity. Set $z_\al=(1-\al)x+\al y$. Then by \eqref{Eq:StronglyConvexFunction} we have
-$$\al f(y)-\al f(x)\geq f(z_\al)-f(x)+\dfrac{1}{2}m\al(1-\al)\|x-y\|^2 \ .$$
-Making use of Taylor's expansion
-$$
-\al f(y)-\al f(x)\geq (\grad f(x))^T (z_\al-x)+O(\|z_\al-x\|^2)+\dfrac{1}{2}m\al (1-\al)\|x-y\|^2 \ .
-$$
-Since $z_\al\ra x$ as $\al\ra 0$, and $z_\al-x=\al(y-x)$, we can set $\al \ra 0$ to get from above that for any $x,y\in \R^n$
-\begin{equation}\label{Eq:Assignment2:mStrongConvexityDerivative}
-f(y)\geq f(x)+(\grad f(x))^T(y-x)+\dfrac{m}{2}\|y-x\|^2 \ . 
-\end{equation}
+(1) Suppose that the function $f$ is strongly--$m$ convex. 
 Set $u\in \R^n$ and $\al>0$, then we consider the Taylor's expansion
 \begin{equation}\label{Eq:Assignment2:TaylorExpansion}
 f(x+\al u)=f(x)+\al \grad f(x)^T u+\dfrac{1}{2}\al^2 u^T\grad^2 f(x+t\al u)u 
 \end{equation}
-for some $0\leq t\leq 1$. We apply \eqref{Eq:Assignment2:mStrongConvexityDerivative} with $y=x+\al u$ so that
+for some $0\leq t\leq 1$. We apply \eqref{Thm:ConvexFunctionMainTheorem:Eq:SecondOrderLowerBound} with $y=x+\al u$ so that
 \begin{equation}\label{Eq:Assignment2:TaylorExpansionStrongConvexity}
 f(x+\al u)\geq f(x)+\al (\grad f(x))^T u+\dfrac{m}{2}\al^2 \|u\|^2 \ .
 \end{equation}
@@ -272,13 +270,38 @@ $$(1-\al)\|x-z\|^2+\al \|y-z\|^2=\left[(1-\al)\al^2+\al(1-\al)^2\right]\|x-y\|^2
 From these we see that \eqref{Eq:Assignment2:mStrongConvexityDerivative1-alphax-zalphay-z} is the same as saying
 $$(1-\al) f(x)+\al f(y)\geq f((1-\al)x+\al y)+\dfrac{m}{2}\al(1-\al)\|x-y\|^2 \ ,$$
 which is \eqref{Eq:StronglyConvexFunction}.
+
+(2) We want to show $\|\nabla f(y) - \nabla f(x)\| \leq L\|y-x\|$ is equivalent to $\nabla^2 f(x) \preceq LI$. Assume $\nabla^2 f(x) \preceq LI$, which means the spectral norm $\|\nabla^2 f(x)\|_2 \leq L$. Using (\ref{Thm:Taylor:Eq:GradientIntegralForm}) we get
+$$ \begin{array}{ll}
+\|\nabla f(y) - \nabla f(x)\| & = \play{\left\|\int_0^1 \nabla^2 f(x + t(y-x)) (y-x) dt \right\|}
+\\
+& \leq \play{\int_0^1 \left\|\nabla^2 f(x + t(y-x))\right\|\cdot \left\|y-x\right\| dt }
+\\
+& \leq \play{\int_0^1 L\|y-x\|dt}=L\|y-x\| \ ,
+\end{array}$$
+which proves $\nabla f$ is $L$-Lipschitz continuous. 
+Assume $\nabla f$ is $L$-Lipschitz. For any vector $v$, consider the limit:
+$$ \nabla^2 f(x) v = \lim_{t \to 0} \frac{\nabla f(x + tv) - \nabla f(x)}{t} $$
+Taking the norm:
+$$ \|\nabla^2 f(x) v\| = \lim_{t \to 0} \frac{\|\nabla f(x + tv) - \nabla f(x)\|}{t} \leq \lim_{t \to 0} \frac{L \|tv\|}{t} = L\|v\| $$
+This implies the operator norm $\|\nabla^2 f(x)\|_2 \leq L$, which for a symmetric Hessian matrix is equivalent to $-LI \preceq \nabla^2 f(x) \preceq LI$. Since we usually deal with convex/semi-convex functions in this context, it implies $\nabla^2 f(x) \preceq LI$.
 \end{proof}
 
 \begin{theorem}[Strongly convex functions have unique minimizers]\label{Thm:MinimizerStronglyConvexFunctions}
 Let $f$ be differentiable and strongly convex with modulus $m>0$. Then the minimizer $x^*$ of $f$ exists and is unique.
 \end{theorem}
 
-More technical issues...
+\begin{proof}
+Uniqueness. Suppose there exist two distinct minimizers $x^*$ and $z^*$. Since $f$ is differentiable, we must have $\nabla f(x^*) = 0$ and $\nabla f(z^*) = 0$. Using the strong convexity property (\ref{Thm:ConvexFunctionMainTheorem:Eq:SecondOrderLowerBound}) at $x^*$:
+$$ f(z^*) \geq f(x^*) + \nabla f(x^*)^T(z^* - x^*) + \frac{m}{2}\|z^* - x^*\|^2 = f(x^*) + \frac{m}{2}\|z^* - x^*\|^2 \ . $$
+Similarly, using strong convexity at $z^*$:
+$$ f(x^*) \geq f(z^*) + \frac{m}{2}\|x^* - z^*\|^2 \ . $$
+Adding these two inequalities yields $f(x^*) + f(z^*) \geq f(x^*) + f(z^*) + m\|x^* - z^*\|^2$, which simplifies to $0 \geq m\|x^* - z^*\|^2$. Since $m > 0$, it must be that $\|x^* - z^*\| = 0$, hence $x^* = z^*$.
+
+Existence. From the strong convexity definition, $f(y) \to \infty$ as $\|y\| \to \infty$ (coercivity). Since $f$ is continuous and coercive, it must attain a minimum on any closed set in $\mathbb{R}^n$.
+\end{proof}
+
+Below are a few more technical issues regarding convex and strongly convex functions.
 
 \begin{theorem}\label{Thm:GeneralizedStrongConvexity}
 Let $f$ be convex and continuously differentiable and $\grad f$ be $L$--Lipschitz. Then for any
@@ -299,17 +322,49 @@ f(y)-f(x)\geq -\dfrac{1}{2m}\|\grad f(x)\|^2 \ .
 \end{equation}
 \end{theorem}
 
-Generalized Strong Convexity: ($f^*=f(x^*)$)
+\begin{proof} 
+Define an auxiliary function $g(z) = f(z) - \nabla f(x)^T z$. Since $f$ is convex, $g$ is also convex. Furthermore, $\nabla g(z) = \nabla f(z) - \nabla f(x)$, which is also $L$-Lipschitz continuous. Note that $\nabla g(x) = 0$, implying $x$ is a global minimizer of $g(z)$ via Theorem \ref{Thm:MinimizerConvexFunctions}.
+Using (\ref{Thm:ConvexFunctionMainTheorem:Eq:SecondOrderUpperBound}) we get
+$$ g(z) \leq g(y) + \nabla g(y)^T (z - y) + \frac{L}{2} \|z - y\|^2 \ .$$
+Setting $z = y - \dfrac{1}{L}\nabla g(y)$, and since $x$ minimizes $g$, we obtain:
+$$ g(x) \leq g(y) - \frac{1}{2L} \|\nabla g(y)\|^2 \ .$$
+Substituting $g(z) = f(z) - \nabla f(x)^T z$ back into the inequality:
+$$ f(x) - \nabla f(x)^T x \leq f(y) - \nabla f(x)^T y - \frac{1}{2L} \|\nabla f(y) - \nabla f(x)\|^2  \ ,$$
+which is (\ref{Thm:GeneralizedStrongConvexity:Eq:UpperBound}).
 
+We swap $x$ and $y$ in (\ref{Thm:GeneralizedStrongConvexity:Eq:UpperBound}) to get
+$$ f(y) + \nabla f(y)^T(x - y) + \frac{1}{2L}\|\nabla f(y) - \nabla f(x)\|^2 \leq f(x) \ .$$
+Adding this to (\ref{Thm:GeneralizedStrongConvexity:Eq:UpperBound}) and canceling $f(x) + f(y)$ from both sides we get
+$$ \nabla f(x)^T(y - x) + \nabla f(y)^T(x - y) + \frac{1}{L}\|\nabla f(x) - \nabla f(y)\|^2 \leq 0  \ ,$$
+which gives the first inequality in (\ref{Thm:GeneralizedStrongConvexity:Eq:TwoSidedBound}) by rearranging.
+
+The second inequality in (\ref{Thm:GeneralizedStrongConvexity:Eq:TwoSidedBound}) follows directly from Cauchy-Schwarz and the $L$-Lipschitz property:
+$$ (\nabla f(x) - \nabla f(y))^T(x - y) \leq \|\nabla f(x) - \nabla f(y)\| \cdot \|x - y\| \leq L\|x - y\|^2  \ .$$
+
+Assume $f$ is strongly convex with modulus $m$. Then we have
+\begin{align*}
+f(y) &\geq f(x) + \nabla f(x)^T (y-x) + \frac{m}{2} \|y-x\|^2 \\
+&= f(x) + \frac{m}{2} \left[ \|y-x\|^2 + \frac{2}{m} \nabla f(x)^T (y-x) \right] \\
+&= f(x) + \frac{m}{2} \left[ \|y-x\|^2 + 2\left( \frac{1}{m} \nabla f(x) \right)^T (y-x) + \frac{1}{m^2} \|\nabla f(x)\|^2 \right] - \frac{1}{2m} \|\nabla f(x)\|^2 \\
+&= f(x) + \frac{m}{2} \left\| y-x + \frac{1}{m} \nabla f(x) \right\|^2 - \frac{1}{2m} \|\nabla f(x)\|^2 \ ,
+\end{align*}
+which gives (\ref{Thm:GeneralizedStrongConvexity:Eq:GeneralizedStrongConvexity}).
+\end{proof}
+
+\begin{definition}[Generalized Strong Convexity]\label{Def:GeneralizedStrongConvexity}
+We say the convex function $f(x)$ has \emph{Generalized Strong Convexity} if
 \begin{equation}\label{Eq:GeneralizedStrongConvexity}
-\|\grad f(x)\|^2\geq 2m[f(x)-f^*] \text{ for some } m>0 \ .
+\|\grad f(x)\|^2\geq 2m[f(x)-f^*] \text{ for some } m>0 \ ,
 \end{equation}
-It holds in situations other than when $f$ is strongly convex.
+where $f^*=f(x^*)$ is the minimum of $f$. 
+\end{definition}
 
-\subsection{Optimality Conditions}
-\label{Sec:ConvexFunctions:OptimalityCondition}
+The Generalized Strong Convexity holds in situations other than when $f$ is strongly convex.
 
-Smooth unconstrained problem
+\section{Optimality Conditions}
+\label{Ch:ConvexFunctions:OptimalityCondition}
+
+We derive optimality conditions for the smooth unconstrained problem
 
 \begin{equation}\label{Eq:SmoothUnconstrainedOptimization}
 \min\li_{x\in \R^n}f(x) \ ,
@@ -325,19 +380,47 @@ We have
 \end{itemize}
 \end{theorem}
 
+\begin{proof}
+Suppose $x^*$ is a local minimizer of $f$. Then for any direction $d \in \mathbb{R}^n$ and sufficiently small step size $\alpha > 0$, we have $f(x^* + \alpha d) \geq f(x^*)$.
+
+(a) By (\ref{Thm:Taylor:Eq:GradientMeanValueForm}) we have
+$$ f(x^* + \alpha d) = f(x^*) + \alpha \nabla f(x^*)^T d + O(\alpha^2) $$
+Since $f(x^* + \alpha d) \geq f(x^*)$, it follows that $\alpha \nabla f(x^*)^T d + O(\alpha^2) \geq 0$. Dividing by $\alpha$ and letting $\alpha \to 0$, we obtain $\nabla f(x^*)^T d \geq 0$. Since this holds for any $d$, we choose $d = -\nabla f(x^*)$, which gives $-\|\nabla f(x^*)\|^2 \geq 0$. Thus, $\nabla f(x^*) = 0$.
+
+(b) Given $\nabla f(x^*) = 0$, by (\ref{Thm:Taylor:Eq:GradientMeanValueForm}) we get
+$$ f(x^* + \alpha d) = f(x^*) + \frac{\alpha^2}{2} d^T \nabla^2 f(x^*) d + o(\alpha^2) $$
+For $f(x^* + \alpha d) \geq f(x^*)$ to hold for small $\alpha$, we must have $d^T \nabla^2 f(x^*) d \geq 0$ for all $d$. This implies that the Hessian matrix $\nabla^2 f(x^*)$ is positive semi-definite.
+\end{proof}
+
 \begin{theorem}[Sufficient conditions for convex functions in smooth unconstrained optimization]
 \label{Thm:SufficientConditionsSmoothUnconstrainedOptimizationConvex}
 If $f$ is continuously differentiable and convex, then if $\grad f(x^*)=0$, then $x^*$ is a global minimizer of \eqref{Eq:SmoothUnconstrainedOptimization}.
 In addition, if $f$ is strongly convex, then $x^*$ is the unique global minimizer.
 \end{theorem}
 
+\begin{proof}
+Assume $f$ is convex and $\nabla f(x^*) = 0$. By (\ref{Thm:ConvexFunctionMainTheorem:Eq:FirstOrder}), for any $x \in \mathbb{R}^n$ we have
+$$ f(x) \geq f(x^*) + \nabla f(x^*)^T(x - x^*) \ . $$
+Since $\nabla f(x^*) = 0$, this gives $ f(x) \geq f(x^*)$. This proves that $x^*$ is a global minimizer. If $f$ is further assumed to be strongly convex, then $x^*$ is the unique global minimizer due to Theorem \ref{Thm:MinimizerStronglyConvexFunctions}.
+\end{proof}
+
 \begin{theorem}[Sufficient conditions for nonconvex functions in smooth unconstrained optimization]
 Suppose that $f$ is twice continuously differentiable and that for some $x^*$ we have $\grad f(x^*)=0$ and $\grad^2 f(x^*)$ is positive 
 definite, then $x^*$ is a strict local minimizer of \eqref{Eq:SmoothUnconstrainedOptimization}.
 \end{theorem}
 
-\subsection{Experiment: Nonconvexity of the Loss Landscape of Neural Networks}
-\label{Sec:ConvexFunctions:Experiment:NonConvexLossNN}
+\begin{proof}
+Suppose $\nabla f(x^*) = 0$ and $\nabla^2 f(x^*)$ is positive definite. Let $\lambda_{\min} > 0$ be the smallest eigenvalue of $\nabla^2 f(x^*)$. Then for any $d \neq 0$:
+$$ d^T \nabla^2 f(x^*) d \geq \lambda_{\min} \|d\|^2 \ .$$
+Using (\ref{Thm:Taylor:Eq:GradientMeanValueForm}), the second-order Taylor expansion around $x^*$, we get
+$$ f(x^* + d) = f(x^*) + \nabla f(x^*)^T d + \frac{1}{2} d^T \nabla^2 f(x^*) d + o(\|d\|^2) \ .$$
+Since $\nabla f(x^*) = 0$, we have:
+$$ f(x^* + d) \geq f(x^*) + \frac{\lambda_{\min}}{2} \|d\|^2 + o(\|d\|^2) $$
+For sufficiently small $\|d\|$, the term $\dfrac{\lambda_{\min}}{2} \|d\|^2$ dominates the higher-order terms $o(\|d\|^2)$, ensuring $f(x^* + d) > f(x^*)$. Thus, $x^*$ is a strict local minimizer.
+\end{proof}
+
+\section{Experiment: Nonconvexity of the Loss Landscape of Neural Networks}
+\label{Ch:ConvexFunctions:Experiment:NonConvexLossNN}
 
 Consider a neural network with one hidden layer that consists of $p$ neurons and input $x\in \mathbb{R}^1$, output $y\in \mathbb{R}^1$. The neural network function has the form 
 $y(x)=\sum\limits_{j=1}^p c_j \sigma(a_j x- b_j) \ , $

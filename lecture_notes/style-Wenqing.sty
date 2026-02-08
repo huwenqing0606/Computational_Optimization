@@ -29,17 +29,20 @@
 \parindent 5ex
 
 
-\renewcommand{\abstractname}{Abstract}
+%\renewcommand{\abstractname}{Abstract}
 \renewcommand{\figurename}{Fig.}
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{definition}{Definition}[chapter]
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{remark}[theorem]{Remark}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{example}{Example}[section]
-\newtheorem{condition}{Condition}[section]
-\newtheorem{assumption}{Assumption}[section]
+\newtheorem{example}{Example}[chapter]
+\newtheorem{condition}{Condition}[chapter]
+\newtheorem{assumption}{Assumption}[chapter]
+
+\numberwithin{equation}{chapter}
+\numberwithin{algorithm}{chapter}
 
 
 \providecommand{\play}{\displaystyle}
@@ -169,6 +172,3 @@
 \providecommand{\Ylow}{Y_{\text{low}}}
 \providecommand{\spaceX}{\mathcal{X}}
 \providecommand{\transitionP}{\mathcal{P}}
-
-\numberwithin{equation}{section}
-\numberwithin{algorithm}{section}
