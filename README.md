@@ -28,6 +28,8 @@ in root dir, under venv:
 
 - activations: `python -m src.main activations`
 
+- one hidden layer NN: `python -m src.main one_hidden_layer_nn`
+
 ## (for students) how to contribute
 
 you must checkout your own branch from main, and then propose a PR to main.
