@@ -1,0 +1,353 @@
+\chapter{Gradient Descent and Line Search Methods}
+\label{Ch:GDLineSearches}
+
+
+\section{Gradient Descent}
+
+We want to solve the optimization problem $$\min\li_{x\in \R^n}f(x) \ .$$
+
+The goal is to construct an approximating sequence $\{x^k\}$ such that
+$f(x^{k+1})<f(x^k)$, $k=0,1,2,...$.
+
+``descent direction" $d\in \R^n$ such that
+$$f(x+td)<f(x) \text{ for all } t>0 \text{ sufficiently small}.$$
+
+Say $f$ is continuously differentiable
+$$f(x+td)=f(x)+t\grad f(x+\gm td)^Td \text{ for some } \gm\in (0,1) \ .$$
+
+\begin{definition}\label{Def:DescentDirection}
+The vector $d\in \R^n$ is a \emph{descent direction} if $$d^T\grad f(x)<0 \ .$$
+It is a \emph{steepest descent direction} if 
+$$\inf\li_{\|d\|=1}d^T \grad f(x)=-\|\grad f(x)\| \ .$$
+\end{definition}
+
+The inf is achieved when $d=-\dfrac{\grad f(x)}{\|\grad f(x)\|}$. This gives the Gradient Descent Method:
+
+\begin{algorithm}[H]
+\caption{Gradient Descent}
+\label{Alg:GD}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $x^0$, stepsize $\al_k>0$, $k=0,1,2,...$
+\FOR {$k=0,1,2,...,K-1$}
+    \STATE Calculate $\grad f(x^k)$
+    \STATE $x^{k+1}=x^k-\al_k\grad f(x^k)$
+\ENDFOR
+\STATE \textbf{Output}: Output $x^K$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{definition}
+[Convergence of optimization algorithms]
+We consider any of the following estimates as characterizing the convergence of optimization algorithms:
+$$\|x_T-x^*\|\leq \ve(T)$$ 
+or $$\E \|x_T-x^*\|^2\leq \ve(T)$$ 
+or $$\E f(x_T)-f(x^*)\leq \ve(T) \ .$$
+Here $\ve(T)\ra 0$ as $T\ra \infty$. The \emph{convergence rates} are measured by $\ln \ve(T)$. We have the following cases:
+
+\begin{itemize}
+
+\item[\emph{(1)}] If $\ln \ve(T)=O(-T)$, then we say the algorithm has \emph{linear convergence rate};
+
+\item[\emph{(2)}] If $\ln \ve(T)$ decays slower than $O(-T)$, then we say the algorithm has \emph{sub--linear convergence rate};
+
+\item[\emph{(3)}] If $\ln \ve(T)$ decays faster than $O(-T)$, then we say the algorithm has \emph{super--linear convergence rate}. In particular, if $\ln\ln \ve(T)=O(-T)$, then we say the algorithm has \emph{second--order convergence rate}.
+
+\end{itemize}
+\end{definition}
+
+\begin{theorem}\label{Thm:LinearConvergenceGDStronglyConvex}
+Assume that $f$ is twice continuously differentiable, $m$--strongly convex and $\grad f$ is $L$--Lipschitz,
+so that $mI\preceq \grad^2 f(x) \preceq LI$ for all $x\in \R^n$. Then the GD Algorithm \ref{Alg:GD}
+with constant stepsize $\al_k=\al$ and $\al\in \left[\dfrac{1-\bt}{m}, \dfrac{1+\bt}{L}\right]$ for some $0\leq \bt<1$
+has linear convergence rate.
+\end{theorem}
+
+\begin{proof}
+Use fixed point iteration. Let $\Phi(x)=x-\al \grad f(x)$, $\al>0$. Then $x^{k+1}=\Phi(x^k)$.
+Calculate $\|\Phi(x)-\Phi(z)\|\leq \bt\|x-z\|$.
+
+In order $\|x^T-x^*\|\leq \ve$ we want $T\geq \dfrac{\ln\left(\dfrac{\|x^0-x^*\|}{\ve}\right)}{|\ln \bt|}$.
+
+Want $-\bt\leq 1-\al L\leq 1-\al m\leq \bt$, and when $1-\al L =1-\al m$, we have $\bt=\dfrac{L-m}{L+m}$ and
+$\al=\dfrac{2}{L+m}$.
+\end{proof}
+
+Standard procedure in optimization theory: make use of Taylor's expansion.
+
+Consider
+
+\begin{equation}\label{Eq:StandardExpansionOptimization}
+\begin{array}{ll}
+f(x+\al d)& =f(x)+\al \grad f(x)^T d+\al \play{\int_0^1 [\grad f(x+\gm \al d)-\grad f(x)]^Td \ d\gm}
+\\
+&\leq f(x)+\al \grad f(x)^T d+\al \play{\int_0^1 \|\grad f(x+\gm \al d)-\grad f(x)\|\|d\|d\gm}
+\\
+& \leq f(x)+\al \grad f(x)^T d+\al^2\dfrac{L}{2}\|d\|^2 \ .
+\end{array}
+\end{equation}
+
+From \eqref{Eq:StandardExpansionOptimization} and the line search $d=-\grad f(x^k)$, $x=x^k$ on RHS of \eqref{Eq:StandardExpansionOptimization}, then
+the $\al=\dfrac{1}{L}$ minimizes RHS of \eqref{Eq:StandardExpansionOptimization}, and thus for GD in particular
+
+\begin{equation}\label{Eq:StandardExpansionOptimization:GD}
+f(x^{k+1})\leq f(x^k)+\left(-\al +\al^2\dfrac{L}{2}\right)\|\grad f(x^k)\|^2=f(x^k)-\dfrac{1}{2L}\|\grad f(x^k)\|^2 \ .
+\end{equation}
+
+Estimates of type \eqref{Eq:StandardExpansionOptimization:GD} is a standard procedure that leads to
+convergence analysis of iterative optimization algorithms. Using it, for GD Algorithm \ref{Alg:GD} with $\al=\dfrac{1}{L}$ we have
+
+\begin{itemize}
+
+\item General nonconvex case: $\min\li_{0\leq k\leq T-1}\|\grad f(x^k)\|\leq \sqrt{\dfrac{2L(f(x^0)-f(x^*))}{T}}$.
+
+Number of iterations $0\leq k\leq T$ until
+$\|\grad f(x^k)\|\leq \ve$ is $T\geq \dfrac{2L(f(x^0)-f(x^*))}{\ve^2}$, sublinear;
+
+\item Convex case: $f(x^k)-f(x^*)\leq \dfrac{L}{2k}\|x^0-x^*\|^2$.
+
+Number of iterations $0\leq k\leq T$ until
+$f(x^k)-f(x^*)\leq \ve$ is $T\geq \dfrac{f(x^0)-f(x^*)}{\ve}$, sublinear;
+
+\item Strongly convex case: $f(x^k)-f(x^*)\leq \left(1-\dfrac{m}{L}\right)^k(f(x^0)-f(x^*))$.
+
+Number of iterations $0\leq k\leq T$ until
+$f(x^k)-f(x^*)\leq \ve$ is $T\geq \dfrac{L}{m}\ln\left(\dfrac{f(x^0)-f(x^*)}{\ve}\right)$, linear.
+
+\end{itemize}
+
+
+\section{Back Propagation and GD on Neural Networks}
+
+Classical algorithm of training multi--layer neural networks: Back--propagation.
+
+Reference: Catherine F. Higham, Desmond J. Higham, Deep Learning: An Introduction for Applied Mathematicians, arXiv:1801.05894[math.HO]
+
+Back--propagation method goes as follows. Let us set
+
+$$z^{[l]}=W^{[l]}a^{[l-1]}+b^{[l]} \text{ for } l=2,3,...,L \ ,$$
+in which $l$ stands for the number of layers in the neural network. The neural network iteration can be viewed as
+
+$$a^{[l]}=\sm(z^{[l]}) \text{ for } l=2,3,...,L \ .$$
+
+We can view the neural network function as a chain with $a^{[1]}=x$ and $a^{[L]}=g(x;\om)$.
+Let the training data be one point $(x,y)$. Then the loss function is given by
+
+$$C=C(\om, b)=\dfrac{1}{2}\|y-a^{[L]}\|^2 \ .$$
+
+To perform the GD algorithm as in Algorithm \ref{Alg:GD}, we shall need the derivatives of the loss function $C$ with respect
+to the neural--network parameters $\om$ and $b$, that is $\dfrac{\pt C}{\pt w^{[l]}_{jk}}$ and $\dfrac{\pt C}{\pt b_j^{[l]}}$.
+Set the \textit{error} in the $j$--th neuron at layer $l$ to be $\dt^{[l]}=(\dt_j^{[l]})_j$
+(viewed as a column vector) with
+$\dt_j^{[l]}=\dfrac{\pt C}{\pt z_j^{[l]}}$. Then one can calculate directly to obtain the following lemma
+
+\begin{lemma}\label{Lm:BackPropagation}
+If $x,y\in \R^n$, let $x\circ y\in \R^n$ to be the Hadamard product
+defined by $(x\circ y)_i=x_iy_i$. We can directly calculate
+\begin{equation}\label{Lm:BackPropagation:Eq:deltaL}
+\dt^{[L]}=\sm'(z^{[L]})\circ (a^{[L]}-y) \ ,
+\end{equation}
+\begin{equation}\label{Lm:BackPropagation:Eq:deltal}
+\dt^{[l]}=\sm'(z^{[l]})\circ (W^{[l+1]})^T \dt^{[l+1]} \ , \ \text{ for } 2\leq l \leq L-1 \ ,
+\end{equation}
+\begin{equation}\label{Lm:BackPropagation:Eq:CPartialb}
+\dfrac{\pt C}{\pt b_j^{[l]}}=\dt_j^{[l]} \ , \text{ for } 2\leq l \leq L \ ,
+\end{equation}
+\begin{equation}\label{Lm:BackPropagation:Eq:CPartialomega}
+\dfrac{\pt C}{\pt \om_{jk}^{[l]}}=\dt_j^{[l]}a_k^{[l-1]} \ , \text{ for } 2\leq l \leq L \ .
+\end{equation}
+\end{lemma}
+
+\begin{algorithm}
+\caption{Gradient Descent on Neural Networks: Backpropagation}
+\label{Alg:BackPropagation}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Training data $(x,y)$
+\STATE \textbf{Forward pass}: $x= a^{[1]}\ra a^{[2]}\ra...\ra a^{[L-1]} \ra a^{[L]}$
+\STATE Obtain $\dt^{[L]}$ from \eqref{Lm:BackPropagation:Eq:deltaL}
+\STATE \textbf{Backward pass}: Form \eqref{Lm:BackPropagation:Eq:deltal} obtain $\dt^{[L]}\ra \dt^{[L-1]}\ra \dt^{[L-2]}\ra ... \ra \dt^{[2]}$
+\STATE \textbf{Calculation of the gradient of the loss $C$}: Use \eqref{Lm:BackPropagation:Eq:CPartialb} and \eqref{Lm:BackPropagation:Eq:CPartialomega}
+\end{algorithmic}
+\end{algorithm}
+
+Training GD on Over--parametrized Neural Networks has been understood only recently.
+See the following references:
+
+Zhang, X., Yu, Y., Wang, L., Gu, Q., Learning One--hidden--layer ReLU networks via Gradient Descent,
+arXiv:1806.07808v1[stat.ML]
+
+Du, S.S., Zhai, X., P\'{o}czos, B., Singh, A., Gradient Descent Provably Optimizes Over--parameterized Neural Networks,
+arXiv:1810.02054v1[cs.LG]
+
+Allen--Zhu, Z., Li, Y., Song, Z., A Convergence Theory for Deep Learning via Over--Parametrization,
+arXiv:1811.03962v3[cs.LG]
+
+Du, S.S., Lee, J.D., Li, H., Wang, L., Zhai, X., Gradient Descent Finds Global Minima of Deep Neural Networks,
+arXiv:1811.03804v1[cs.LG]
+
+\
+
+Neural Tangent Kernel. See the following paper:
+
+Jacot, A., Gabriel, F., Hongler, C., Neural tangent kernel: Convergence and generalization in neural networks, NIPS, 2018.
+
+\
+
+Computational Graph and General Backpropagation for taking derivatives: basic idea in tensorflow. 
+\url{https://www.tensorflow.org/tutorials/customization/autodiff}
+
+
+\section{Online Principle Component Analysis (PCA)}
+
+Reference: Li, C.J., Wang, M., Liu, H. and Zhang, T., Near-optimal stochastic approximation for online
+principal component estimation, \textit{Mathematical Programming, Ser. B} (2018) 167:75-97.
+
+Let $\boldX$ be a random vector in $\R^d$ with mean $0$ and unknown covariance matrix
+
+$$\Sm=\E\left[\boldX\boldX^T\right]\in \R^{d\times d} \ .$$
+
+Let the eigenvalues of $\Sm$ be ordered as $\lb_1>\lb_2\geq ...\geq \lb_d\geq 0$. Principal Component Analysis (PCA) aims to find the principal eigenvector of $\Sm$ that corresponds to the largest
+eigenvalue $\lb_1$, based on independent and identically distributed sample realizations
+$\boldX^{(1)},..., \boldX^{(n)}$. This can be casted into a \textit{nonconvex stochastic optimization problem} given by
+
+$$\begin{array}{l}
+\text{maximize } \boldu^T \E\left[\boldX\boldX^T\right]\boldu \ ,
+\\
+\text{subject to } \|\boldu\|=1, \boldu\in \R^d \ .
+\end{array}$$
+Here $\|\bullet\|$ denotes the Euclidian norm. 
+Assume the principle component $\boldu^*$ is unique. 
+
+Classical PCA: 
+$$\widehat{\boldu}^{(n)}=\arg\max\li_{\|\boldu\|=1}\boldu^T \widehat{\Sm}^{(n)}\boldu \ .$$
+Here $\widehat{\Sm}^{(n)}$ is the empirical covariance matrix based on $n$ samples:
+
+$$\widehat{\Sm}^{(n)}=\dfrac{1}{n}\sum\li_{i=1}^n \boldX^{(i)}(\boldX^{(i)})^T \ .$$
+
+Online PCA: $\Pi \boldu=\dfrac{\boldu}{\|\boldu\|}$ retraction.
+
+\begin{algorithm}
+\caption{Online PCA Algorithm}
+\label{Alg:OnlinePCA}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Initialize $\boldu^{(0)}$ and choose the stepsize $\beta>0$ 
+\FOR {$n=1,2,...,N$} 
+    \STATE Draw one sample $\boldX^{(n)}$ from the (streaming) data source
+    \STATE Update the iterate $\boldu^{(n)}$ by
+    $$\boldu^{(n)}=\Pi\left\{\boldu^{(n-1)}+\bt \boldX^{(n)}(\boldX^{(n)})^T\boldu^{(n-1)}\right\} \ .$$
+\ENDFOR
+\STATE \textbf{Output}: $\boldu^{(N)}$
+\end{algorithmic}
+\end{algorithm}
+
+Oja's algorithm. See 
+
+Oja, E. (1982). Simplified neuron model as a principal component analyzer. \textit{Journal of mathematical biology}, \textbf{15}(3), 267-273.
+
+\section{Line Search Methods}
+
+Line search methods in general
+
+\begin{equation}\label{Eq:LineSearch}
+x^{k+1}=x^k+\al_k d^k \ , \ k=0,1,2,...
+\end{equation}
+
+Here $\al_k>0$ is the stepsize and $d^k\in \R^n$ is the descent direction.
+
+Preliminary conditions: 
+\begin{equation}\label{Condition:LineSearchMethodGeneral}
+\begin{array}{ll}
+(1) & -(d^k)^T\grad f(x^k)\geq \bar{\ve}\|\grad f(x^k)\|\cdot \|d^k\|;
+\\
+(2) & \gm_1\|\grad f(x^k)\|\leq \|d^k\|\leq \gm_2\|\grad f(x^k)\| \text{ where } \bar{\ve}, \gm_1, \gm_2>0.
+\end{array}
+\end{equation}
+
+Notice that if $d^k=-\grad f(x^k)$, then $\bar{\ve}=\gm_1=\gm_2=1$.
+
+In fact one can expand
+
+\begin{equation}\label{Eq:StandardExpansionOptimization:LineSearch}
+\begin{array}{ll}
+f(x^{k+1})& =f(x^k+\al d^k)
+\\
+&=f(x^k)+\al \grad f(x^k)^T d^k+\al \play{\int_0^1 [\grad f(x^k+\gm\al d^k)-\grad f(x^k)]d^kd\gm}
+\\
+&\leq f(x^k)-\al \left(\bar{\ve}-\al\dfrac{L}{2}\gm_2\right)\|\grad f(x^k)\|\cdot \|d^k\| \ .
+\end{array}
+\end{equation}
+
+So if $\al\in \left(0, \dfrac{2\bar{\ve}}{L\gm_2}\right)$, then $f(x^{k+1})<f(x^k)$.
+
+Schemes of descent type produce iterates that satisfy a bound of the form
+
+\begin{equation}\label{Eq:StandardExpansionOptimization:GeneralEstimate}
+f(x^{k+1})\leq f(x^k)-C\|\grad f(x^k)\|^2 \text{ for some } C>0 \ .
+\end{equation}
+
+Various Line Search Methods: (1) $d^k=-S^k \grad f(x^k)$, $S^k$ symmetric positively definite, $\lb(S^k)\in [\gm_1, \gm_2]$; (2) Gauss-Southwell; (3) Stochastic coordinate descent; (4) Stochastic Gradient Methods; (5) Exact line search $\min\li_{\al>0}f(x^k+\al d^k)$; (6) Approximate Line Search, ``weak Wolfe conditions"; (7) Backtracking Line Search. 
+
+\section{Convergence to Approximate Second Order Necessary Points}
+
+Second--order necessary point: $\grad f(x^*)=0$ and $\grad^2 f(x^*)$ is positive semidefinite.
+
+\begin{definition}\label{Def:ApproximateSecondOrderStationary}
+We call point $x\in \R^n$ an $(\ve_g, \ve_H)$--approximate second order stationary point if
+\begin{equation}
+\|\grad f(x)\|\leq \ve_g \text{ and } \lb_{\text{min}}(\grad^2 f(x))\geq -\ve_H
+\end{equation}
+for some choices of small constants $\ve_g>0$ and $\ve_H>0$.
+\end{definition}
+
+How to search for such a second--order stationary point?
+
+Set $M>0$ to be the Lipschitz bound for the Hessian $\grad^2 f(x)$, so that 
+
+\begin{equation}\label{Eq:Hessianf-M-Lipschitz}
+\|\grad^2 f(x)-\grad^2 f(y)\|\leq M\|x-y\| \text{ for all } x, y\in \text{dom}(f) \ .
+\end{equation}
+
+\begin{algorithm}
+\caption{Search for second--order approximate stationary point based on Gradient Descent}
+\label{Alg:GDSecondOrder}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $x^0$, $k=0,1,2,...$
+\WHILE {$\|\grad f(x^k)\|>\ve_g$ \OR $\lb_k<-\ve_H$}
+    \IF {$\|\grad f(x^k)\|>\ve_g$} 
+        \STATE $x^{k+1}=x^k-\dfrac{1}{L}\grad f(x^k)$
+    \ELSE
+        \STATE $\lb^k:=\lb_{\text{min}}(\grad^2 f(x^k))$
+        \STATE Choose $p^k$ to be the eigenvector corresponding to the most negative eigenvalue of $\grad^2 f(x^k)$
+        \STATE Choose the size and sign of $p^k$ such that $\|p^k\|=1$ and $(p^k)^T\grad f(x^k)\leq 0$
+        \STATE $x^{k+1}=x^k+\al_kp^k$, $\al_k=\dfrac{2\lb_k}{M}$
+    \ENDIF
+    \STATE $k\leftarrow k+1$
+\ENDWHILE
+\STATE \textbf{Output}: An estimate of an $(\ve_g, \ve_H)$--approximate second order stationary point $x^k$
+\end{algorithmic}
+\end{algorithm}
+
+Cubic upper bound
+
+\begin{equation}\label{Eq:TaylorCubicUpperBound}
+f(x+p)\leq f(x)+\grad f(x)^T p+\dfrac{1}{2}p^T \grad^2 f(x)p+\dfrac{1}{6}M\|p\|^3 \ .
+\end{equation}
+
+For steepest descent step we have from \eqref{Eq:StandardExpansionOptimization:GD} that
+$$f(x^{k+1})\leq f(x^k)-\dfrac{1}{2L}\|\grad f(x^k)\|^2\leq f(x^k)-\dfrac{\ve_g^2}{2L} \ .$$
+Otherwise, the negative direction Hessian eigenvector search will output, by using third--order Taylor expansion and 
+\eqref{Eq:Hessianf-M-Lipschitz}, that 
+
+$$\begin{array}{ll}
+f(x^{k+1})&\leq f(x^k)+\al_k\grad f(x^k)^T p^k+\dfrac{1}{2}\al_k^2(p^k)^T\grad^2 f(x^k)p^k+\dfrac{1}{6}M\al_k^3\|p^k\|^3
+\\
+&\leq f(x^k)-\dfrac{1}{2}\left(\dfrac{2|\lb_k|}{M}\right)^2|\lb_k|+\dfrac{1}{6}M\left(\dfrac{2|\lb_k|}{M}\right)^3
+\\
+&=f(x^k)-\dfrac{2}{3}\dfrac{|\lb_k|^3}{M^2}
+\\
+&=f(x^k)-\dfrac{2}{3}\dfrac{\ve_H^3}{M^2} \ .
+\end{array}$$
+
+Number of iterations
+
+$$K\leq \max\left(2L\ve_g^{-2}, \dfrac{3}{2}M^2\ve_H^{-3}\right)(f(x^0)-f(x^*)) \ .$$
+
