@@ -63,13 +63,37 @@ has linear convergence rate.
 \end{theorem}
 
 \begin{proof}
-Use fixed point iteration. Let $\Phi(x)=x-\al \grad f(x)$, $\al>0$. Then $x^{k+1}=\Phi(x^k)$.
-Calculate $\|\Phi(x)-\Phi(z)\|\leq \bt\|x-z\|$.
+Consider the optimization problem $\min_{x \in \mathbb{R}^n} f(x)$. We assume $f$ is twice continuously differentiable and satisfy $mI \preceq \nabla^2 f(x) \preceq LI$ for all $x \in \mathbb{R}^n$. 
 
-In order $\|x^T-x^*\|\leq \ve$ we want $T\geq \dfrac{\ln\left(\dfrac{\|x^0-x^*\|}{\ve}\right)}{|\ln \bt|}$.
+The Gradient Descent (GD) update rule is given by $x^{k+1} = x^k - \alpha \nabla f(x^k)$. Let $\Phi(x) = x - \alpha \nabla f(x)$ be the iteration operator, so that $x^{k+1} = \Phi(x^k)$. 
+Since $x^*$ is a local minimizer, $\nabla f(x^*) = 0$, which implies $x^*$ is a fixed point:
+$$ x^* = \Phi(x^*) \ . $$
 
-Want $-\bt\leq 1-\al L\leq 1-\al m\leq \bt$, and when $1-\al L =1-\al m$, we have $\bt=\dfrac{L-m}{L+m}$ and
-$\al=\dfrac{2}{L+m}$.
+By the Mean Value Theorem for vector-valued functions, for any $x, z \in \mathbb{R}^n$, there exists a point $c$ on the line segment $[x, z]$ such that:
+\begin{align*}
+\Phi(x) - \Phi(z) &= \nabla \Phi(c)(x - z) \\
+&= (I - \alpha \nabla^2 f(c))(x - z) \ .
+\end{align*}
+Taking the spectral norm on both sides:
+$$ \|\Phi(x) - \Phi(z)\| \leq \|I - \alpha \nabla^2 f(c)\|_2 \cdot \|x - z\|  \ .$$
+To ensure linear convergence, we require $\Phi$ to be a contraction mapping with factor $\beta < 1$, i.e., $\|I - \alpha \nabla^2 f(c)\|_2 \leq \beta$.
+
+Given $mI \preceq \nabla^2 f(x) \preceq LI$, the eigenvalues of the matrix $I - \alpha \nabla^2 f(c)$ lie in the interval $[1 - \alpha L, 1 - \alpha m]$. To find the optimal $\alpha$ that minimizes the maximum absolute eigenvalue $\beta$, we set:
+$$ -\beta = 1 - \alpha L \quad \text{and} \quad \beta = 1 - \alpha m $$
+Solving this system yields:
+\begin{enumerate}
+    \item \textbf{Optimal Stepsize:} $\alpha = \frac{2}{L + m}$
+    \item \textbf{Contraction Factor:} $\beta = \frac{L - m}{L + m}$
+\end{enumerate}
+Since $L \geq m > 0$, it follows that $0 \leq \beta < 1$.
+
+Applying the contraction property iteratively:
+$$ \|x^T - x^*\| = \|\Phi(x^{T-1}) - \Phi(x^*)\| \leq \beta \|x^{T-1} - x^*\| \leq \dots \leq \beta^T \|x^0 - x^*\| \ .$$
+To achieve a precision $\|x^T - x^*\| \leq \epsilon$, we require:
+$$ \beta^T \|x^0 - x^*\| \leq \epsilon \implies T \ln \beta \leq \ln \left( \frac{\epsilon}{\|x^0 - x^*\|} \right) \ .$$
+Since $\ln \beta < 0$, we have:
+$$ T \geq \frac{\ln (\|x^0 - x^*\| / \epsilon)}{|\ln \beta|} \ .$$
+This confirms that the algorithm converges at a linear rate.
 \end{proof}
 
 Standard procedure in optimization theory: make use of Taylor's expansion.
