@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-
-import numpy as np
+import torch
 
 
 class ActivationBase(ABC):
@@ -8,8 +7,6 @@ class ActivationBase(ABC):
         super().__init__()
 
     def __call__(self, z):
-        if z.ndim == 1:
-            z = z.reshape(1, -1)
         return self.fn(z)
 
     @abstractmethod
@@ -17,73 +14,61 @@ class ActivationBase(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def grad(self, x, **kwargs):
+    def grad(self, z):
         raise NotImplementedError
 
 
-class Sigmoid(object):
-    def __init__(self):
-        super().__init__()
-
+class Sigmoid(ActivationBase):
     def fn(self, z):
-        return 1 / (1 + np.exp(-z))
+        return torch.sigmoid(z)
 
     def grad(self, x):
-        fn_x = self.fn(self, x)
-        return fn_x * (1 - fn_x)
+        s = self.fn(x)
+        return s * (1 - s)
 
     def grad2(self, x):
-        fn_x = self.fn(self, x)
-        return fn_x * (1 - fn_x) * (1 - 2 * fn_x)
+        s = self.fn(x)
+        return s * (1 - s) * (1 - 2 * s)
 
 
-class ReLU(object):
-    def __init__(self):
-        super().__init__()
-
+class ReLU(ActivationBase):
     def __str__(self):
         return "ReLU"
 
     def fn(self, z):
-        return np.clip(z, 0, np.inf)
+        return torch.clamp(z, min=0)
 
     def grad(self, x):
-        return (x > 0).astype(int)
+        return (x > 0).to(x.dtype)
 
     def grad2(self, x):
-        return np.zeros_like(x)
+        return torch.zeros_like(x)
 
 
-class Tanh(object):
-    def __init__(self):
-        super().__init__()
-
+class Tanh(ActivationBase):
     def __str__(self):
         return "Tanh"
 
     def fn(self, z):
-        return np.tanh(z)
+        return torch.tanh(z)
 
     def grad(self, x):
-        return 1 - np.tanh(x) ** 2
+        return 1 - torch.tanh(x) ** 2
 
     def grad2(self, x):
-        tanh_x = np.tanh(x)
-        return -2 * tanh_x * (1 - tanh_x**2)
+        t = torch.tanh(x)
+        return -2 * t * (1 - t**2)
 
 
-class Exponential(object):
-    def __init__(self):
-        super().__init__()
-
+class Exponential(ActivationBase):
     def __str__(self):
         return "Exponential"
 
     def fn(self, z):
-        return np.exp(z)
+        return torch.exp(z)
 
     def grad(self, x):
-        return np.exp(x)
+        return torch.exp(x)
 
     def grad2(self, x):
-        return np.exp(x)
+        return torch.exp(x)

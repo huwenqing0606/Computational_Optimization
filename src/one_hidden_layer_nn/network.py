@@ -2,23 +2,29 @@
 one_hidden_layer_nn.network
 """
 
+import torch
 
-class one_hidden_layer_network(object):
-    def __init__(
-        self, weight_a, weight_b, weight_c, layer_neuron_number, activation_name
-    ):
-        self.weight_a = weight_a
-        self.weight_b = weight_b
-        self.weight_c = weight_c
-        self.layer_neuron_number = layer_neuron_number
-        self.activation_name = activation_name
+
+class OneHiddenLayerNetwork:
+    def __init__(self, weight_a, weight_b, weight_c, activation):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.weight_a = torch.tensor(
+            weight_a, dtype=torch.float32, device=self.device
+        ).reshape(-1, 1)
+        self.weight_b = torch.tensor(
+            weight_b, dtype=torch.float32, device=self.device
+        ).reshape(-1, 1)
+        self.weight_c = torch.tensor(
+            weight_c, dtype=torch.float32, device=self.device
+        ).reshape(1, -1)
+        self.activation = activation
 
     def output(self, x):
-        y = 0
-        for j in range(self.layer_neuron_number):
-            y = y + self.weight_c[j] * (
-                self.activation_name.fn(
-                    self.activation_name, self.weight_a[j] * x - self.weight_b[j]
-                )
-            )
-        return y
+        if not torch.is_tensor(x):
+            x = torch.tensor(x, dtype=torch.float32)
+        x = x.to(self.device).reshape(1, -1)
+        with torch.no_grad():  # inference mode
+            z = torch.matmul(self.weight_a, x) - self.weight_b
+            a = self.activation(z)
+            y = torch.matmul(self.weight_c, a)
+        return y.cpu().numpy().flatten()
