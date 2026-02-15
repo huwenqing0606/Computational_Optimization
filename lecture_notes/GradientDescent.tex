@@ -39,9 +39,17 @@ The inf is achieved when $d=-\dfrac{\grad f(x)}{\|\grad f(x)\|}$. This gives the
 \begin{definition}
 [Convergence of optimization algorithms]
 We consider any of the following estimates as characterizing the convergence of optimization algorithms:
-$$\|x_T-x^*\|\leq \ve(T)$$ 
-or $$\E \|x_T-x^*\|^2\leq \ve(T)$$ 
-or $$\E f(x_T)-f(x^*)\leq \ve(T) \ .$$
+\begin{equation}\label{Eq:OptimizationConvergence:Type1:x}
+\|x_T-x^*\|\leq \ve(T)
+\end{equation} 
+or 
+\begin{equation}\label{Eq:OptimizationConvergence:Type2:Ex}
+\E \|x_T-x^*\|^2\leq \ve(T)
+\end{equation} 
+or 
+\begin{equation}\label{Eq:OptimizationConvergence:Type3:Efx}
+\E f(x_T)-f(x^*)\leq \ve(T) \ .
+\end{equation}
 Here $\ve(T)\ra 0$ as $T\ra \infty$. The \emph{convergence rates} are measured by $\ln \ve(T)$. We have the following cases:
 
 \begin{itemize}
@@ -96,11 +104,16 @@ $$ T \geq \frac{\ln (\|x^0 - x^*\| / \epsilon)}{|\ln \beta|} \ .$$
 This confirms that the algorithm converges at a linear rate.
 \end{proof}
 
-Standard procedure in optimization theory: make use of Taylor's expansion.
+Taylor's expansion can give us a standard scheme for obtaining the convergence of optimization algorithms. To this end we consider
 
-Consider
+\begin{lemma}[Descent Lemma]\label{Lm:DescentLemma}
+We have
+\begin{equation}\label{Eq:StandardExpansionOptimization:GD}
+f(x^{k+1})\leq f(x^k)-\dfrac{1}{2L}\|\grad f(x^k)\|^2 \ .
+\end{equation}
+\end{lemma}
 
-\begin{equation}\label{Eq:StandardExpansionOptimization}
+\begin{proof} We apply Taylor's theorem to get \begin{equation}\label{Eq:StandardExpansionOptimization}
 \begin{array}{ll}
 f(x+\al d)& =f(x)+\al \grad f(x)^T d+\al \play{\int_0^1 [\grad f(x+\gm \al d)-\grad f(x)]^Td \ d\gm}
 \\
@@ -111,34 +124,70 @@ f(x+\al d)& =f(x)+\al \grad f(x)^T d+\al \play{\int_0^1 [\grad f(x+\gm \al d)-\g
 \end{equation}
 
 From \eqref{Eq:StandardExpansionOptimization} and the line search $d=-\grad f(x^k)$, $x=x^k$ on RHS of \eqref{Eq:StandardExpansionOptimization}, then
-the $\al=\dfrac{1}{L}$ minimizes RHS of \eqref{Eq:StandardExpansionOptimization}, and thus for GD in particular
-
-\begin{equation}\label{Eq:StandardExpansionOptimization:GD}
+the $\al=\dfrac{1}{L}$ minimizes RHS of \eqref{Eq:StandardExpansionOptimization}, and thus for GD in particular, we have
+$$
 f(x^{k+1})\leq f(x^k)+\left(-\al +\al^2\dfrac{L}{2}\right)\|\grad f(x^k)\|^2=f(x^k)-\dfrac{1}{2L}\|\grad f(x^k)\|^2 \ .
-\end{equation}
+$$
+\end{proof}
 
 Estimates of type \eqref{Eq:StandardExpansionOptimization:GD} is a standard procedure that leads to
 convergence analysis of iterative optimization algorithms. Using it, for GD Algorithm \ref{Alg:GD} with $\al=\dfrac{1}{L}$ we have
 
+\begin{theorem}\label{Thm:ConvergenceOfGDViaTaylorAnalysis}
+Assume $\grad f$ is $L$-Lipschitz. The convergence rates of GD algorithm has the following cases:
 \begin{itemize}
-
-\item General nonconvex case: $\min\li_{0\leq k\leq T-1}\|\grad f(x^k)\|\leq \sqrt{\dfrac{2L(f(x^0)-f(x^*))}{T}}$.
-
-Number of iterations $0\leq k\leq T$ until
-$\|\grad f(x^k)\|\leq \ve$ is $T\geq \dfrac{2L(f(x^0)-f(x^*))}{\ve^2}$, sublinear;
-
-\item Convex case: $f(x^k)-f(x^*)\leq \dfrac{L}{2k}\|x^0-x^*\|^2$.
+\item[\emph{(a)}] If $f$ is general nonconvex, then $$\min\li_{0\leq k\leq T-1}\|\grad f(x^k)\|\leq \sqrt{\dfrac{2L(f(x^0)-f(x^*))}{T}} \ .$$
 
 Number of iterations $0\leq k\leq T$ until
-$f(x^k)-f(x^*)\leq \ve$ is $T\geq \dfrac{f(x^0)-f(x^*)}{\ve}$, sublinear;
+$\|\grad f(x^k)\|\leq \ve$ is $T\geq \dfrac{2L(f(x^0)-f(x^*))}{\ve^2}$. This is \emph{sublinear} convergence;
 
-\item Strongly convex case: $f(x^k)-f(x^*)\leq \left(1-\dfrac{m}{L}\right)^k(f(x^0)-f(x^*))$.
+\item[(b)] If $f$ is convex, then $$f(x^k)-f(x^*)\leq \dfrac{L}{2k}\|x^0-x^*\|^2 \ .$$
+Number of iterations $0\leq k\leq T$ until
+$f(x^k)-f(x^*)\leq \ve$ is $T\geq \dfrac{f(x^0)-f(x^*)}{\ve}$. This is \emph{sublinear} convergence;
+
+\item[\emph{(c)}] If $f$ is strongly convex with convexity constant $m>0$, then 
+$$f(x^k)-f(x^*)\leq \left(1-\dfrac{m}{L}\right)^k(f(x^0)-f(x^*)) \ .$$
 
 Number of iterations $0\leq k\leq T$ until
-$f(x^k)-f(x^*)\leq \ve$ is $T\geq \dfrac{L}{m}\ln\left(\dfrac{f(x^0)-f(x^*)}{\ve}\right)$, linear.
+$f(x^k)-f(x^*)\leq \ve$ is $T\geq \dfrac{L}{m}\ln\left(\dfrac{f(x^0)-f(x^*)}{\ve}\right)$. This is \emph{linear} convergence.
 
 \end{itemize}
+\end{theorem}
 
+\begin{proof}
+(a) Summing the Descent Lemma from $k=0$ to $T-1$:
+$$
+    \sum_{k=0}^{T-1} (f(x^k) - f(x^{k+1})) \ge \sum_{k=0}^{T-1} \frac{1}{2L} \|\nabla f(x^k)\|^2  \ .$$
+The left side telescopes to $f(x^0) - f(x^T)$. Since $f(x^T) \ge f^*$:
+$$
+    f(x^0) - f^* \ge \frac{1}{2L} \sum_{k=0}^{T-1} \|\nabla f(x^k)\|^2 \ge \frac{T}{2L} \min_{0 \le k \le T-1} \|\nabla f(x^k)\|^2 $$
+Rearranging gives the sublinear rate $O(1/\sqrt{T})$ for the gradient norm:
+$$
+    \min_{0 \le k \le T-1} \|\nabla f(x^k)\| \le \sqrt{\frac{2L(f(x^0) - f^*)}{T}}  \ .$$
+
+(b) By the first-order condition for convex functions $f(x^*) \ge f(x^k) + \nabla f(x^k)^T(x^* - x^k)$, and using the Descent Lemma:
+\begin{align*}
+    f(x^{k+1}) &\le f(x^*) + \nabla f(x^k)^T(x^k - x^*) - \frac{1}{2L} \|\nabla f(x^k)\|^2 \\
+    &= f(x^*) + \frac{L}{2} \left[ \frac{2}{L} \nabla f(x^k)^T(x^k - x^*) - \frac{1}{L^2} \|\nabla f(x^k)\|^2 \right] \ .
+\end{align*}
+Using the identity $\|a-b\|^2 = \|a\|^2 - 2a^Tb + \|b\|^2$ and the update $x^{k+1} = x^k - \dfrac{1}{L}\nabla f(x^k)$:
+$$
+    f(x^{k+1}) \le f(x^*) + \frac{L}{2} (\|x^k - x^*\|^2 - \|x^{k+1} - x^*\|^2) \ .$$
+Summing from $k=0$ to $T-1$ and noting that $f(x^k)$ is non-increasing:
+$$
+    T(f(x^T) - f^*) \le \sum_{k=0}^{T-1} (f(x^{k+1}) - f^*) \le \frac{L}{2} \|x^0 - x^*\|^2  \ .$$
+This yields the sublinear rate $O(1/T)$ in function value.
+
+(c) For $m$-strongly convex functions, we have the bound $\|\nabla f(x)\|^2 \ge 2m(f(x) - f^*)$.
+Substituting this into the Descent Lemma:
+\begin{align*}
+    f(x^{k+1}) &\le f(x^k) - \frac{1}{2L} (2m(f(x^k) - f^*)) \ , \\
+    f(x^{k+1}) - f^* &\le (1 - \frac{m}{L}) (f(x^k) - f^*) \ .
+\end{align*}
+Applying this recursively $T$ times gives the linear convergence rate:
+$$
+    f(x^T) - f^* \le \left(1 - \frac{m}{L}\right)^T (f(x^0) - f^*) \ . $$
+\end{proof}
 
 \section{Back Propagation and GD on Neural Networks}
 
