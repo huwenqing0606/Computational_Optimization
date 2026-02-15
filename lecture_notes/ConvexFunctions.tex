@@ -434,9 +434,39 @@ A typical non-convex loss landscape looks as follows:
 
 \begin{figure}[H]
 \centering
-\includegraphics[height=5.8cm, width=9cm]{figures/Fig_OneHiddenLayerNN-Loss_Sigmoid_layersize=20, training size=10}
+\includegraphics[height=5.8cm, width=9cm]{figures/OneHiddenLayerNN-Loss_Sigmoid_layersize=20, trainingsize=10}
 \caption{Loss Landscape of a neural network.}
 \label{Fig:NN-Loss}
+\end{figure}
+
+In the branch \verb#support_gpu#, we supported GPU computations, with some optimizations made in the computing flow. This is especially useful when the hidden layer size is huge, where we expect to see the NTK regime (see \cite{NTKpaper}), and the loss landscape tends to be convex.
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/OneHiddenLayerNN-Loss_Sigmoid_layersize=10000, trainingsize=10}
+\caption{Loss Landscape of a neural network, 10000 neurons in the hidden layer.}
+\label{Fig:NN-Loss:NTK10000}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/OneHiddenLayerNN-Loss_Sigmoid_layersize=100000, trainingsize=10}
+\caption{Loss Landscape of a neural network, 100000 neurons in the hidden layer.}
+\label{Fig:NN-Loss:NTK100000}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/OneHiddenLayerNN-Loss_Sigmoid_layersize=1000000, trainingsize=10}
+\caption{Loss Landscape of a neural network, 1000000 neurons in the hidden layer.}
+\label{Fig:NN-Loss:NTK1000000}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/OneHiddenLayerNN-Loss_Sigmoid_layersize=10000000, trainingsize=10}
+\caption{Loss Landscape of a neural network, 10000000 neurons in the hidden layer.}
+\label{Fig:NN-Loss:NTK10000000}
 \end{figure}
 
 
