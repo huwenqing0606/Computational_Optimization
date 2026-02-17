@@ -191,9 +191,8 @@ $$
 
 \section{Back Propagation and GD on Neural Networks}
 
-Classical algorithm of training multi--layer neural networks: Back--propagation.
+Classical algorithm of training multi--layer neural networks: Back--propagation. We refer to \cite{HighamDeepLearningAppliedMath}. 
 
-Reference: Catherine F. Higham, Desmond J. Higham, Deep Learning: An Introduction for Applied Mathematicians, arXiv:1801.05894[math.HO]
 
 Back--propagation method goes as follows. Let us set
 
@@ -206,6 +205,7 @@ We can view the neural network function as a chain with $a^{[1]}=x$ and $a^{[L]}
 Let the training data be one point $(x,y)$. Then the loss function is given by
 
 $$C=C(\om, b)=\dfrac{1}{2}\|y-a^{[L]}\|^2 \ .$$
+
 
 To perform the GD algorithm as in Algorithm \ref{Alg:GD}, we shall need the derivatives of the loss function $C$ with respect
 to the neural--network parameters $\om$ and $b$, that is $\dfrac{\pt C}{\pt w^{[l]}_{jk}}$ and $\dfrac{\pt C}{\pt b_j^{[l]}}$.
@@ -230,7 +230,91 @@ defined by $(x\circ y)_i=x_iy_i$. We can directly calculate
 \end{equation}
 \end{lemma}
 
-\begin{algorithm}
+\begin{proof}
+We prove each identity using the chain rule.
+
+\noindent{Proof of (\ref{Lm:BackPropagation:Eq:deltaL})}.
+Write the loss function componentwise as
+\[
+C = \frac{1}{2}\sum_{j=1}^{n_L} (a^{[L]}_j - y_j)^2.
+\]
+Then
+\[
+\frac{\partial C}{\partial a^{[L]}_j} = a^{[L]}_j - y_j.
+\]
+Since $a^{[L]}_j = \sigma(z^{[L]}_j)$, the chain rule gives
+\[
+\delta^{[L]}_j = \frac{\partial C}{\partial z^{[L]}_j}
+= \frac{\partial C}{\partial a^{[L]}_j}
+\frac{\partial a^{[L]}_j}{\partial z^{[L]}_j}
+= (a^{[L]}_j - y_j)\sigma'(z^{[L]}_j).
+\]
+Writing this in vector form yields
+\[
+\delta^{[L]} = \sigma'(z^{[L]}) \circ (a^{[L]} - y).
+\]
+
+\noindent{Proof of (\ref{Lm:BackPropagation:Eq:deltal})}.
+Fix $l \in \{2,\dots,L-1\}$. Using the chain rule,
+\[
+\delta^{[l]}_j
+= \frac{\partial C}{\partial z^{[l]}_j}
+= \sum_{m=1}^{n_{l+1}}
+\frac{\partial C}{\partial z^{[l+1]}_m}
+\frac{\partial z^{[l+1]}_m}{\partial z^{[l]}_j}.
+\]
+Since $\dfrac{\partial C}{\partial z^{[l+1]}_m} = \delta^{[l+1]}_m$, it remains to compute
+\[
+z^{[l+1]}_m = \sum_{k=1}^{n_l} w^{[l+1]}_{mk} a^{[l]}_k + b^{[l+1]}_m,
+\quad a^{[l]}_k = \sigma(z^{[l]}_k).
+\]
+Therefore,
+\[
+\frac{\partial z^{[l+1]}_m}{\partial z^{[l]}_j}
+= w^{[l+1]}_{mj} \sigma'(z^{[l]}_j).
+\]
+Substituting back gives
+\[
+\delta^{[l]}_j
+= \sigma'(z^{[l]}_j)
+\sum_{m=1}^{n_{l+1}} w^{[l+1]}_{mj}\,\delta^{[l+1]}_m,
+\]
+which is precisely
+\[
+\delta^{[l]} = \sigma'(z^{[l]}) \circ (W^{[l+1]})^T \delta^{[l+1]}.
+\]
+
+\noindent{Proof of (\ref{Lm:BackPropagation:Eq:CPartialb})}.
+Since
+\[
+z^{[l]}_j = \sum_k w^{[l]}_{jk} a^{[l-1]}_k + b^{[l]}_j,
+\]
+we have $\dfrac{\partial z^{[l]}_j}{\partial b^{[l]}_j} = 1$ and zero otherwise.
+Hence,
+\[
+\frac{\partial C}{\partial b^{[l]}_j}
+= \sum_{m=1}^{n_l}
+\frac{\partial C}{\partial z^{[l]}_m}
+\frac{\partial z^{[l]}_m}{\partial b^{[l]}_j}
+= \delta^{[l]}_j.
+\]
+
+\noindent{Proof of (\ref{Lm:BackPropagation:Eq:CPartialomega})}.
+Similarly,
+\[
+\frac{\partial z^{[l]}_j}{\partial w^{[l]}_{jk}} = a^{[l-1]}_k,
+\]
+so
+\[
+\frac{\partial C}{\partial w^{[l]}_{jk}}
+= \sum_{m=1}^{n_l}
+\frac{\partial C}{\partial z^{[l]}_m}
+\frac{\partial z^{[l]}_m}{\partial w^{[l]}_{jk}}
+= \delta^{[l]}_j\, a^{[l-1]}_k.
+\]
+\end{proof}
+
+\begin{algorithm}[H]
 \caption{Gradient Descent on Neural Networks: Backpropagation}
 \label{Alg:BackPropagation}
 \begin{algorithmic}[1]
@@ -242,31 +326,9 @@ defined by $(x\circ y)_i=x_iy_i$. We can directly calculate
 \end{algorithmic}
 \end{algorithm}
 
+
 Training GD on Over--parametrized Neural Networks has been understood only recently.
-See the following references:
-
-Zhang, X., Yu, Y., Wang, L., Gu, Q., Learning One--hidden--layer ReLU networks via Gradient Descent,
-arXiv:1806.07808v1[stat.ML]
-
-Du, S.S., Zhai, X., P\'{o}czos, B., Singh, A., Gradient Descent Provably Optimizes Over--parameterized Neural Networks,
-arXiv:1810.02054v1[cs.LG]
-
-Allen--Zhu, Z., Li, Y., Song, Z., A Convergence Theory for Deep Learning via Over--Parametrization,
-arXiv:1811.03962v3[cs.LG]
-
-Du, S.S., Lee, J.D., Li, H., Wang, L., Zhai, X., Gradient Descent Finds Global Minima of Deep Neural Networks,
-arXiv:1811.03804v1[cs.LG]
-
-\
-
-Neural Tangent Kernel. See the following paper:
-
-Jacot, A., Gabriel, F., Hongler, C., Neural tangent kernel: Convergence and generalization in neural networks, NIPS, 2018.
-
-\
-
-Computational Graph and General Backpropagation for taking derivatives: basic idea in tensorflow. 
-\url{https://www.tensorflow.org/tutorials/customization/autodiff}
+See \cite{Zhang2018ReLU, Du2018OverparamGD, AllenZhu2018Convergence, Du2018GlobalMin}. Computational Graph and General Backpropagation for taking derivatives: basic idea in tensorflow (see \cite{TensorflowAutodiff}). 
 
 
 \section{Online Principle Component Analysis (PCA)}
