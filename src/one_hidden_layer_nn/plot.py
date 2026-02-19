@@ -13,19 +13,23 @@ NAMELIST = ["Sigmoid", "ReLU", "Tanh", "Exponential"]
 os.makedirs("output/one_hidden_layer_nn", exist_ok=True)
 
 
-def plot_network_loss(layer_neuron_number=10000000, training_size=10, N=100):
+def plot_network_loss(
+    layer_neuron_number=10000000, training_size=10, N=100, dtype=torch.float32
+):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     # fix weights
-    weight_a_secondpart = torch.randn(layer_neuron_number - 2, device=device)
-    weight_b = torch.randn(layer_neuron_number, 1, device=device)
-    weight_c = torch.randn(1, layer_neuron_number, device=device)
+    weight_a_secondpart = torch.randn(
+        layer_neuron_number - 2, device=device, dtype=dtype
+    )
+    weight_b = torch.randn(layer_neuron_number, 1, device=device, dtype=dtype)
+    weight_c = torch.randn(1, layer_neuron_number, device=device, dtype=dtype)
     # set (x,y)
-    X = torch.randn(1, training_size, device=device)
-    Y = torch.randn(1, training_size, device=device)
+    X = torch.randn(1, training_size, device=device, dtype=dtype)
+    Y = torch.randn(1, training_size, device=device, dtype=dtype)
     # a = (a_1, a_2, rest)
-    a_1_tensor = torch.linspace(-10, 10, N, device=device)
-    a_2_tensor = torch.linspace(-10, 10, N, device=device)
+    a_1_tensor = torch.linspace(-10, 10, N, device=device, dtype=dtype)
+    a_2_tensor = torch.linspace(-10, 10, N, device=device, dtype=dtype)
     # --- pre-compute fixed part ---
     # T = training_size
     # m = layer_neuron_number
@@ -34,7 +38,9 @@ def plot_network_loss(layer_neuron_number=10000000, training_size=10, N=100):
     # fixed_part: (m-2, T)
     fixed_part = weight_a_secondpart.view(-1, 1) @ X  # (m-2,1) @ (1,T) -> (m-2,T)
     # --- z buffer ---
-    z = torch.empty((layer_neuron_number, training_size), device=device)  # (m,T)
+    z = torch.empty(
+        (layer_neuron_number, training_size), device=device, dtype=dtype
+    )  # (m,T)
     # fix z[2:] = fixed_part - weight_b[2:]
     z[2:, :] = fixed_part - weight_b[2:, :]  # broadcast (m-2,1) -> (m-2,T)
     # extract b0 and b1
@@ -46,7 +52,7 @@ def plot_network_loss(layer_neuron_number=10000000, training_size=10, N=100):
             f"Calculating {name} landscape with"
             f" layer neuron number {layer_neuron_number}"
         )
-        L_matrix = torch.empty((N, N), device=device)
+        L_matrix = torch.empty((N, N), device=device, dtype=dtype)
         # instatiate activations
         act = ACTS[name]()
         # loop with a1 in outer loop and a2 inner loop
