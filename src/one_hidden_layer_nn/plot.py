@@ -32,11 +32,11 @@ def plot_network_loss(layer_neuron_number=10000000, training_size=10, N=100):
     # X: (1,T)
     # weight_a_secondpart: (m-2,)
     # fixed_part: (m-2, T)
-    fixed_part = weight_a_secondpart.view(-1, 1) @ X  # (m-2,T)
+    fixed_part = weight_a_secondpart.view(-1, 1) @ X  # (m-2,1) @ (1,T) -> (m-2,T)
     # --- z buffer ---
     z = torch.empty((layer_neuron_number, training_size), device=device)  # (m,T)
     # fix z[2:] = fixed_part - weight_b[2:]
-    z[2:, :] = fixed_part - weight_b[2:, :]  # broadcast (m-2,1)->(m-2,T)
+    z[2:, :] = fixed_part - weight_b[2:, :]  # broadcast (m-2,1) -> (m-2,T)
     # extract b0 and b1
     b0 = weight_b[0:1, :]  # (1,1)
     b1 = weight_b[1:2, :]  # (1,1)

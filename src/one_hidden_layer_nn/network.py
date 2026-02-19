@@ -23,7 +23,7 @@ class OneHiddenLayerNetwork:
         if not torch.is_tensor(x):
             x = torch.tensor(x, dtype=torch.float32)
         x = x.to(self.device).reshape(1, -1)
-        with torch.no_grad():  # inference mode
+        with torch.no_grad():  # inference mode, do not need to save computational graph
             z = torch.matmul(self.weight_a, x) - self.weight_b
             a = self.activation(z)
             y = torch.matmul(self.weight_c, a)
