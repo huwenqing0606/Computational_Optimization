@@ -333,9 +333,6 @@ See \cite{Zhang2018ReLU, Du2018OverparamGD, AllenZhu2018Convergence, Du2018Globa
 
 \section{Online Principle Component Analysis (PCA)}
 
-Reference: Li, C.J., Wang, M., Liu, H. and Zhang, T., Near-optimal stochastic approximation for online
-principal component estimation, \textit{Mathematical Programming, Ser. B} (2018) 167:75-97.
-
 Let $\boldX$ be a random vector in $\R^d$ with mean $0$ and unknown covariance matrix
 
 $$\Sm=\E\left[\boldX\boldX^T\right]\in \R^{d\times d} \ .$$
@@ -374,9 +371,10 @@ Online PCA: $\Pi \boldu=\dfrac{\boldu}{\|\boldu\|}$ retraction.
 \end{algorithmic}
 \end{algorithm}
 
-Oja's algorithm. See 
+The convergece of online PCA has been proved only recently in \cite{OnlinePCAMathProgramming}.
 
-Oja, E. (1982). Simplified neuron model as a principal component analyzer. \textit{Journal of mathematical biology}, \textbf{15}(3), 267-273.
+Oja's algorithm. See \cite{[Oja1982]}.
+
 
 \section{Line Search Methods}
 
