@@ -141,7 +141,7 @@ Assume $\grad f$ is $L$-Lipschitz. The convergence rates of GD algorithm has the
 Number of iterations $0\leq k\leq T$ until
 $\|\grad f(x^k)\|\leq \ve$ is $T\geq \dfrac{2L(f(x^0)-f(x^*))}{\ve^2}$. This is \emph{sublinear} convergence;
 
-\item[(b)] If $f$ is convex, then $$f(x^k)-f(x^*)\leq \dfrac{L}{2k}\|x^0-x^*\|^2 \ .$$
+\item[(b)] If $f$ is convex, then when the stepsize is $\al=\dfrac{1}{L}$ we have $$f(x^k)-f(x^*)\leq \dfrac{L}{2k}\|x^0-x^*\|^2 \ .$$
 Number of iterations $0\leq k\leq T$ until
 $f(x^k)-f(x^*)\leq \ve$ is $T\geq \dfrac{f(x^0)-f(x^*)}{\ve}$. This is \emph{sublinear} convergence;
 
@@ -208,14 +208,23 @@ $$C=C(\om, b)=\dfrac{1}{2}\|y-a^{[L]}\|^2 \ .$$
 
 
 To perform the GD algorithm as in Algorithm \ref{Alg:GD}, we shall need the derivatives of the loss function $C$ with respect
-to the neural--network parameters $\om$ and $b$, that is $\dfrac{\pt C}{\pt w^{[l]}_{jk}}$ and $\dfrac{\pt C}{\pt b_j^{[l]}}$.
-Set the \textit{error} in the $j$--th neuron at layer $l$ to be $\dt^{[l]}=(\dt_j^{[l]})_j$
+to the neural--network parameters $\om$ and $b$, that is $\dfrac{\pt C}{\pt w^{[l]}_{jk}}$ and $\dfrac{\pt C}{\pt b_j^{[l]}}$. We first have
+
+\begin{definition}[Error in Backpropagation]\label{Def:ErrorNNBackPropagation} 
+We say the \emph{error} in the $j$--th neuron at layer $l$ to be $$\dt^{[l]}=(\dt_j^{[l]})_j$$
 (viewed as a column vector) with
-$\dt_j^{[l]}=\dfrac{\pt C}{\pt z_j^{[l]}}$. Then one can calculate directly to obtain the following lemma
+$$\dt_j^{[l]}=\dfrac{\pt C}{\pt z_j^{[l]}} \ .$$
+\end{definition}
+
+\begin{definition}[Hadamad Product]\label{Def:HadamadProduct}
+If $x,y\in \R^n$, let $x\circ y\in \R^n$ to be the \emph{Hadamard product}
+defined by $$(x\circ y)_i=x_iy_i \ .$$ 
+\end{definition}
+
+Then one can calculate directly to obtain the following lemma
 
 \begin{lemma}\label{Lm:BackPropagation}
-If $x,y\in \R^n$, let $x\circ y\in \R^n$ to be the Hadamard product
-defined by $(x\circ y)_i=x_iy_i$. We can directly calculate
+We have
 \begin{equation}\label{Lm:BackPropagation:Eq:deltaL}
 \dt^{[L]}=\sm'(z^{[L]})\circ (a^{[L]}-y) \ ,
 \end{equation}
