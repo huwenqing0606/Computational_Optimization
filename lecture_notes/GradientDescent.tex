@@ -337,7 +337,74 @@ so
 
 
 Training GD on Over--parametrized Neural Networks has been understood only recently.
-See \cite{Zhang2018ReLU, Du2018OverparamGD, AllenZhu2018Convergence, Du2018GlobalMin}. Computational Graph and General Backpropagation for taking derivatives: basic idea in tensorflow (see \cite{TensorflowAutodiff}). 
+See \cite{Zhang2018ReLU, Du2018OverparamGD, AllenZhu2018Convergence, Du2018GlobalMin}.
+
+Computational Graph and General Backpropagation for taking derivatives: basic idea in tensorflow (see \cite{TensorflowAutodiff}). 
+
+\noindent{\textbf{Example.}} Consider
+\[
+ f(x)=\ln\bigl(\sin^2(x^2)\bigr),
+\]
+defined for $\sin(x^2)\neq 0$. Introduce intermediate variables
+\begin{equation}
+ u=x^2,\qquad v=\sin(u),\qquad w=v^2,\qquad f=\ln(w).
+ \label{eq:forward-defs}
+\end{equation}
+
+Computational graph:
+
+\begin{center}
+\begin{tikzpicture}[
+  node distance=14mm,
+  every node/.style={draw, rounded corners, inner sep=3pt, font=\small},
+  arrow/.style={-{Latex[length=2.2mm]}, line width=0.6pt}
+]
+
+\node (x) {$x$};
+\node (u) [right=of x] {$u=x^2$};
+\node (v) [right=of u] {$v=\sin(u)$};
+\node (w) [right=of v] {$w=v^2$};
+\node (f) [right=of w] {$f=\ln(w)$};
+
+\draw[arrow] (x) -- (u);
+\draw[arrow] (u) -- (v);
+\draw[arrow] (v) -- (w);
+\draw[arrow] (w) -- (f);
+
+% local derivatives
+\node (du) [below=8mm of u, draw=none] {$\dfrac{\partial u}{\partial x}=2x$};
+\node (dv) [below=8mm of v, draw=none] {$\dfrac{\partial v}{\partial u}=\cos(u)$};
+\node (dw) [below=8mm of w, draw=none] {$\dfrac{\partial w}{\partial v}=2v$};
+\node (df) [below=8mm of f, draw=none] {$\dfrac{\partial f}{\partial w}=\dfrac{1}{w}$};
+
+\end{tikzpicture}
+\end{center}
+
+Reverse-mode (backprop) computation:
+
+Define adjoints $\bar{u}=\partial f/\partial u$, $\bar{v}=\partial f/\partial v$,
+$\bar{w}=\partial f/\partial w$, and $\bar{x}=\partial f/\partial x$.
+Start from the output:
+\[
+\bar{f}=1,\qquad \bar{w}=\bar{f}\,\frac{\partial f}{\partial w}=\frac{1}{w}.
+\]
+Propagate backward along the edges using the chain rule:
+\begin{align*}
+\bar{v} &= \bar{w}\,\frac{\partial w}{\partial v}=\frac{1}{w}(2v)=\frac{2}{v},\\
+\bar{u} &= \bar{v}\,\frac{\partial v}{\partial u}=\frac{2}{v}\cos(u)
+        =2\frac{\cos(u)}{\sin(u)}=2\cot(u),\\
+\bar{x} &= \bar{u}\,\frac{\partial u}{\partial x}=\bigl(2\cot(u)\bigr)(2x)=4x\cot(u).
+\end{align*}
+Substituting $u=x^2$ gives
+\begin{equation}
+ f'(x)=\frac{\mathrm d f}{\mathrm d x}=4x\cot(x^2), \qquad \sin(x^2)\neq 0.
+\end{equation}
+
+This illustrates the key idea of automatic differentiation: evaluate the forward pass
+\eqref{eq:forward-defs} once, then compute derivatives by a single backward pass using
+local Jacobians at each node.
+
+In PyTorch, all computational flows are stored during calculation, so that any gradient can be calculated using back-propagation. This takes memory. So \verb#torch.no_grad()# (inference mode) can be used to accelerate the inference process if no gradient computation is needed.
 
 
 \section{Online Principle Component Analysis (PCA)}
@@ -387,20 +454,19 @@ Oja's algorithm. See \cite{[Oja1982]}.
 
 \section{Line Search Methods}
 
-Line search methods in general
+Line search methods in general takes the following form
 
 \begin{equation}\label{Eq:LineSearch}
 x^{k+1}=x^k+\al_k d^k \ , \ k=0,1,2,...
 \end{equation}
-
 Here $\al_k>0$ is the stepsize and $d^k\in \R^n$ is the descent direction.
 
-Preliminary conditions: 
+Preliminary conditions: for $\bar{\ve}, \gm_1, \gm_2>0$ we assume 
 \begin{equation}\label{Condition:LineSearchMethodGeneral}
 \begin{array}{ll}
 (1) & -(d^k)^T\grad f(x^k)\geq \bar{\ve}\|\grad f(x^k)\|\cdot \|d^k\|;
 \\
-(2) & \gm_1\|\grad f(x^k)\|\leq \|d^k\|\leq \gm_2\|\grad f(x^k)\| \text{ where } \bar{\ve}, \gm_1, \gm_2>0.
+(2) & \gm_1\|\grad f(x^k)\|\leq \|d^k\|\leq \gm_2\|\grad f(x^k)\| \ .
 \end{array}
 \end{equation}
 
@@ -418,7 +484,7 @@ f(x^{k+1})& =f(x^k+\al d^k)
 \end{array}
 \end{equation}
 
-So if $\al\in \left(0, \dfrac{2\bar{\ve}}{L\gm_2}\right)$, then $f(x^{k+1})<f(x^k)$.
+So if $\al\in \left(0, \dfrac{2\bar{\ve}}{L\gm_2}\right)$, then $f(x^{k+1})<f(x^k)$, leading to a descent in objective value.
 
 Schemes of descent type produce iterates that satisfy a bound of the form
 
@@ -426,7 +492,23 @@ Schemes of descent type produce iterates that satisfy a bound of the form
 f(x^{k+1})\leq f(x^k)-C\|\grad f(x^k)\|^2 \text{ for some } C>0 \ .
 \end{equation}
 
-Various Line Search Methods: (1) $d^k=-S^k \grad f(x^k)$, $S^k$ symmetric positively definite, $\lb(S^k)\in [\gm_1, \gm_2]$; (2) Gauss-Southwell; (3) Stochastic coordinate descent; (4) Stochastic Gradient Methods; (5) Exact line search $\min\li_{\al>0}f(x^k+\al d^k)$; (6) Approximate Line Search, ``weak Wolfe conditions"; (7) Backtracking Line Search. 
+Various Line Search Methods: 
+
+\begin{itemize}
+\item[(1)] $d^k=-S^k \grad f(x^k)$, $S^k$ symmetric positively definite, $\lb(S^k)\in [\gm_1, \gm_2]$; 
+
+\item[(2)] Gauss-Southwell; 
+
+\item[(3)] Stochastic coordinate descent; 
+
+\item[(4)] Stochastic Gradient Methods; 
+
+\item[(5)] Exact line search $\min\li_{\al>0}f(x^k+\al d^k)$; 
+
+\item[(6)] Approximate Line Search, ``weak Wolfe conditions"; 
+
+\item[(7)] Backtracking Line Search. 
+\end{itemize}
 
 \section{Convergence to Approximate Second Order Necessary Points}
 
