@@ -191,7 +191,7 @@ $$
 
 \section{Back Propagation and GD on Neural Networks}
 
-Classical algorithm of training multi--layer neural networks: Back--propagation. We refer to \cite{HighamDeepLearningAppliedMath}. 
+Classical algorithm of training multi--layer neural networks: Back--propagation. This algorithm was proposed in \cite{HintonEtAlBackPropagation}. For a modern approach with the flavor of applier mathematics, we refer to \cite{HighamDeepLearningAppliedMath}. 
 
 
 Back--propagation method goes as follows. Let us set
@@ -200,6 +200,87 @@ $$z^{[l]}=W^{[l]}a^{[l-1]}+b^{[l]} \text{ for } l=2,3,...,L \ ,$$
 in which $l$ stands for the number of layers in the neural network. The neural network iteration can be viewed as
 
 $$a^{[l]}=\sm(z^{[l]}) \text{ for } l=2,3,...,L \ .$$
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  >=Latex,
+  dot/.style={circle, fill=black, inner sep=1.2pt},
+  conn/.style={-Latex, line width=0.45pt},
+  font=\small
+]
+
+% x positions
+\def\xin{0.0}
+\def\xone{2.0}
+\def\xtwo{4.5}
+\def\xmid{6.5}
+\def\xlast{8.5}
+\def\xout{11.0}
+
+% y positions for 4 nodes
+\def\yA{1.2}
+\def\yB{0.4}
+\def\yC{-0.4}
+\def\yD{-1.2}
+
+% Input node
+\node[dot] (a1) at (\xin,0) {};
+\node[below=2pt] at (a1) {$a^{[1]}$};
+
+% Layer 2
+\node[dot] (L2a) at (\xone,\yA) {};
+\node[dot] (L2b) at (\xone,\yB) {};
+\node[dot] (L2c) at (\xone,\yC) {};
+\node[dot] (L2d) at (\xone,\yD) {};
+\node[below=6pt] at (\xone,-1.55) {$a^{[2]}$};
+
+% Layer 3
+\node[dot] (L3a) at (\xtwo,\yA) {};
+\node[dot] (L3b) at (\xtwo,\yB) {};
+\node[dot] (L3c) at (\xtwo,\yC) {};
+\node[dot] (L3d) at (\xtwo,\yD) {};
+\node[below=6pt] at (\xtwo,-1.55) {$a^{[3]}$};
+
+% Middle dots
+\node at (\xmid,0) {$\cdots$};
+
+% Layer L-1
+\node[dot] (LLa) at (\xlast,\yA) {};
+\node[dot] (LLb) at (\xlast,\yB) {};
+\node[dot] (LLc) at (\xlast,\yC) {};
+\node[dot] (LLd) at (\xlast,\yD) {};
+\node[below=6pt] at (\xlast,-1.55) {$a^{[L-1]}$};
+
+% Output node
+\node[dot] (aL) at (\xout,0) {};
+\node[below=2pt] at (aL) {$a^{[L]}$};
+
+% Fully-connected edges: a1 -> Layer2
+\foreach \t in {L2a,L2b,L2c,L2d} {
+  \draw[conn] (a1) -- (\t);
+}
+
+% Fully-connected edges: Layer2 -> Layer3
+\foreach \s in {L2a,L2b,L2c,L2d} {
+  \foreach \t in {L3a,L3b,L3c,L3d} {
+    \draw[conn] (\s) -- (\t);
+  }
+}
+
+% Fully-connected edges: Layer(L-1) -> aL
+\foreach \s in {LLa,LLb,LLc,LLd} {
+  \draw[conn] (\s) -- (aL);
+}
+
+% Labels above CONNECTIONS (midpoints)
+\node at ({(\xin+\xone)/2}, -1.5) {$W^{[2]},\, b^{[2]}$};
+\node at ({(\xone+\xtwo)/2}, -1.5) {$W^{[3]},\, b^{[3]}$};
+\node at ({(\xlast+\xout)/2}, -1.5) {$W^{[L]},\, b^{[L]}$};
+
+\end{tikzpicture}
+\caption{Feedforward fully-connected neural network (intermediate layers omitted).}
+\end{figure}
 
 We can view the neural network function as a chain with $a^{[1]}=x$ and $a^{[L]}=g(x;\om)$.
 Let the training data be one point $(x,y)$. Then the loss function is given by
@@ -431,9 +512,10 @@ Here $\widehat{\Sm}^{(n)}$ is the empirical covariance matrix based on $n$ sampl
 
 $$\widehat{\Sm}^{(n)}=\dfrac{1}{n}\sum\li_{i=1}^n \boldX^{(i)}(\boldX^{(i)})^T \ .$$
 
-Online PCA: $\Pi \boldu=\dfrac{\boldu}{\|\boldu\|}$ retraction.
+We can design an online version of the PCA algorithm as in Algorithm \ref{Alg:OnlinePCA}, where we must do at every iteration a normalization step using the retraction operation 
+$$\Pi \boldu=\dfrac{\boldu}{\|\boldu\|} \ .$$
 
-\begin{algorithm}
+\begin{algorithm}[H]
 \caption{Online PCA Algorithm}
 \label{Alg:OnlinePCA}
 \begin{algorithmic}[1]
@@ -447,9 +529,11 @@ Online PCA: $\Pi \boldu=\dfrac{\boldu}{\|\boldu\|}$ retraction.
 \end{algorithmic}
 \end{algorithm}
 
-The convergece of online PCA has been proved only recently in \cite{OnlinePCAMathProgramming}.
+The convergece of online PCA has been proved only recently in \cite{OnlinePCAMathProgramming}. The difficulty here is that this online PCA is non-convex optimization.
 
-Oja's algorithm. See \cite{[Oja1982]}.
+Oja's algorithm: Step 4 in Algorithm \ref{Alg:OnlinePCA} will be modified to
+$$\boldu^{(n)}=\boldu^{(n-1)}+\bt\left( \boldX^{(n)}(\boldX^{(n)})^T\boldu^{(n-1)}-\left((\boldu^{(n-1)})^TX^{(n)}\right)^2\boldu^{(n-1)}\right) \ ,$$
+which is expected to control the norm growth. See \cite{Oja1982}.
 
 
 \section{Line Search Methods}
@@ -575,3 +659,23 @@ Number of iterations
 
 $$K\leq \max\left(2L\ve_g^{-2}, \dfrac{3}{2}M^2\ve_H^{-3}\right)(f(x^0)-f(x^*)) \ .$$
 
+\section{Experiment: Learning a Neural Network via Gradient Descent and Backpropagation}
+
+Consider an $L$-hidden-layer fully connected neural network with hidden layer sizes $n_1, ..., n_L$, where the input layer has only one neuron $x\in \R$
+ and output layer has only one neuron $y\in \R$. Let the training data $(x_1, y_1), ..., (x_N, y_N)$ be an i.i.d sample of a bivariate unit normal distribution $(x,y)\in \cN(0, I_2)$. We use the backpropagation algorithm to calculate the gradient vector of the empirical loss function and the population loss function of the neural network for a quadratic loss.
+
+We experiment 
+
+\begin{itemize}
+\item[(1)] Different hidden layer sizes $(n_1, ..., n_L)$;
+
+\item[(2)] Different number of hidden layers ($L$);
+
+\item[(3)] Different sizes of the training data set ($n$);
+
+\item[(4)] Different activation functions (Sigmoid, ReLU, Tanh).
+\end{itemize}  
+
+Following the above, we plot the 3-d graph of the loss function and the trajectory of the gradient descent algorithm by picking two network weight parameters as variables (from a certain layer to its next layer) and randomly choosing other network parameters as i.i.d. samples of normal distributions that follow the LeCun initialization: $w_{ij}^{(l)}\sim \mathcal{N}(0, \frac{1}{n_l})$ and $b_i^{(l)}\sim \mathcal{N}(0, 1)$, where $n_l$ is the network width at level $l$.
+
+The code is written without using existing packages and functions from deep learning frameworks such as tensorflow, keras or pytorch.
