@@ -579,19 +579,23 @@ f(x^{k+1})\leq f(x^k)-C\|\grad f(x^k)\|^2 \text{ for some } C>0 \ .
 Various Line Search Methods: 
 
 \begin{itemize}
-\item[(1)] $d^k=-S^k \grad f(x^k)$, $S^k$ symmetric positively definite, $\lb(S^k)\in [\gm_1, \gm_2]$; 
+\item[(1)] $d^k=-S^k \grad f(x^k)$, $S^k$ symmetric positively definite, $\lb(S^k)\in [\gm_1, \gm_2]$;
 
-\item[(2)] Gauss-Southwell; 
+In this case we have $-(d^k)^T \grad f(x_k)=(\grad f(x_k))^T S^k (\grad f(x_k))\geq \gm_2 \|\grad f(x^k)\|^2\geq \gm_2\gm_2^{-1}\|\grad f(x^k)\|\cdot \|d^k\|=\|\grad f(x^k)\|\cdot \|d^k\|$.
 
-\item[(3)] Stochastic coordinate descent; 
+\item[(2)] Gauss-Southwell: $d^k=-[\grad f(x^k)]_{i_k}$ where $$i_k=\arg\min\li_{i=1,2,...,n}\left|[\grad f(x^k)]_i\right|$$ and $$\grad f(x) = ([\grad f(x)]_1, ..., [\grad f(x)]_n) \ ;$$
 
-\item[(4)] Stochastic Gradient Methods; 
+\item[(3)] Stochastic coordinate descent: $d^k=-[\grad f(x^k)]_{i_k}$ where $i_k$ is uniformly randomly drawn from $\{1,2,...,n\}$; 
+
+\item[(4)] Stochastic Gradient Methods: $d^k$ is random, we will specify it later in Chapter 5; 
 
 \item[(5)] Exact line search $\min\li_{\al>0}f(x^k+\al d^k)$; 
 
-\item[(6)] Approximate Line Search, ``weak Wolfe conditions"; 
+\item[(6)] Approximate Line Search: choose a certain $\al>0$, not necessarily the exact $\al$ in the above. This usually is accompanied with the ``weak Wolfe conditions", which consists of (a) Armijo (Sufficient Decrease) Condition: $f(x^k+\al p^k)\leq f(x^k)+c_1 \al_k (p^k)^T \grad f(x^k)$, where $c_1\in (0,1)$ and is often chosen to be of a small order of magnitude around $10^{-3}$. This condition ensures the computed step length can sufficiently decrease the objective function $f(x^k)$. Only using this condition, however, it cannot be guaranteed that $x^k$
+ will converge in a reasonable number of iterations, since Armijo condition is always satisfied with step length being small enough. Therefore, the second condition below needs to be paired with the sufficient decrease condition to keep $\al_k$
+ from being too short. (b) Curvature condition: $(\grad f(x^k+\al p^k))^T p^k \geq c_2 (\grad f(x^k))^T p^k$ where $c_2\in (c_1, 1)$ is much greater than $c_1$ and is typically on the order of $0.1$. The condition ensures a sufficient increase of the gradient; 
 
-\item[(7)] Backtracking Line Search. 
+\item[(7)] Backtracking Line Search: Starting from some $\bar{\al}>0$ then look for $\al \in \left\{\bar{\al}, \bt \bar{\al}, \bt^2\bar{\al}, ... \right\}$ where $0<\bt<1$.
 \end{itemize}
 
 \section{Convergence to Approximate Second Order Necessary Points}
@@ -667,15 +671,13 @@ Consider an $L$-hidden-layer fully connected neural network with hidden layer si
 We experiment 
 
 \begin{itemize}
-\item[(1)] Different hidden layer sizes $(n_1, ..., n_L)$;
+\item[(1)] Different hidden layer sizes: $(n_1, ..., n_L)$;
 
-\item[(2)] Different number of hidden layers ($L$);
+\item[(2)] Different number of hidden layers: $L$;
 
-\item[(3)] Different sizes of the training data set ($n$);
+\item[(3)] Different sizes of the training data set: $n$;
 
-\item[(4)] Different activation functions (Sigmoid, ReLU, Tanh).
+\item[(4)] Different activation functions: Sigmoid, ReLU, Tanh.
 \end{itemize}  
 
 Following the above, we plot the 3-d graph of the loss function and the trajectory of the gradient descent algorithm by picking two network weight parameters as variables (from a certain layer to its next layer) and randomly choosing other network parameters as i.i.d. samples of normal distributions that follow the LeCun initialization: $w_{ij}^{(l)}\sim \mathcal{N}(0, \frac{1}{n_l})$ and $b_i^{(l)}\sim \mathcal{N}(0, 1)$, where $n_l$ is the network width at level $l$.
-
-The code is written without using existing packages and functions from deep learning frameworks such as tensorflow, keras or pytorch.
