@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import torch
+import numpy as np
 
 
 class ActivationBase(ABC):
@@ -11,16 +12,25 @@ class ActivationBase(ABC):
 
     @abstractmethod
     def fn(self, z):
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def grad(self, z):
-        raise NotImplementedError
+        pass
+
+    @abstractmethod
+    def grad2(self, z):
+        pass
 
 
 class Sigmoid(ActivationBase):
     def fn(self, z):
-        return torch.sigmoid(z)
+        if isinstance(z, torch.Tensor):
+            return torch.sigmoid(z)
+        elif isinstance(z, (np.ndarray, np.generic)):
+            return 1 / (1 + np.exp(-z))
+        else:
+            raise TypeError(f"Unsupported type {type(z)}")
 
     def grad(self, x):
         s = self.fn(x)
@@ -36,13 +46,28 @@ class ReLU(ActivationBase):
         return "ReLU"
 
     def fn(self, z):
-        return torch.clamp(z, min=0)
+        if isinstance(z, torch.Tensor):
+            return torch.clamp(z, min=0)
+        elif isinstance(z, (np.ndarray, np.generic)):
+            return np.clip(z, 0, np.inf)
+        else:
+            raise TypeError(f"Unsupported type {type(z)}")
 
     def grad(self, x):
-        return (x > 0).to(x.dtype)
+        if isinstance(x, torch.Tensor):
+            return (x > 0).to(x.dtype)
+        elif isinstance(x, (np.ndarray, np.generic)):
+            return (x > 0).astype(x.dtype)
+        else:
+            raise TypeError(f"Unsupported type {type(x)}")
 
     def grad2(self, x):
-        return torch.zeros_like(x)
+        if isinstance(x, torch.Tensor):
+            return torch.zeros_like(x)
+        elif isinstance(x, (np.ndarray, np.generic)):
+            return np.zeros_like(x)
+        else:
+            raise TypeError(f"Unsupported type {type(x)}")
 
 
 class Tanh(ActivationBase):
@@ -50,14 +75,20 @@ class Tanh(ActivationBase):
         return "Tanh"
 
     def fn(self, z):
-        return torch.tanh(z)
+        if isinstance(z, torch.Tensor):
+            return torch.tanh(z)
+        elif isinstance(z, (np.ndarray, np.generic)):
+            return np.tanh(z)
+        else:
+            raise TypeError(f"Unsupported type {type(z)}")
 
     def grad(self, x):
-        return 1 - torch.tanh(x) ** 2
+        s = self.fn(x)
+        return 1 - s**2
 
     def grad2(self, x):
-        t = torch.tanh(x)
-        return -2 * t * (1 - t**2)
+        s = self.fn(x)
+        return -2 * s * (1 - s**2)
 
 
 class Exponential(ActivationBase):
@@ -65,10 +96,15 @@ class Exponential(ActivationBase):
         return "Exponential"
 
     def fn(self, z):
-        return torch.exp(z)
+        if isinstance(z, torch.Tensor):
+            return torch.exp(z)
+        elif isinstance(z, (np.ndarray, np.generic)):
+            return np.exp(z)
+        else:
+            raise TypeError(f"Unsupported type {type(z)}")
 
     def grad(self, x):
-        return torch.exp(x)
+        return self.fn(x)
 
     def grad2(self, x):
-        return torch.exp(x)
+        return self.fn(x)

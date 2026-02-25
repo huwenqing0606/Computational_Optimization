@@ -15,5 +15,7 @@ ignore =
     W291
     # Line break before logical
     W503
+    # ambiguous variable name
+    E741
 per-file-ignores =
     src/cli.py: E402
