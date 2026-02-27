@@ -112,7 +112,7 @@ def plot_gd_trajectory(w1_init, w2_init, learningrate):
     return w_1, w_2, Loss
 
 
-if __name__ == "__main__":
+def execute_plot_gd_trajectory():
     w1_init = np.random.normal(0, 1, 1)
     w2_init = np.random.normal(0, 1, 1)
     learningrate = 1
@@ -126,6 +126,7 @@ if __name__ == "__main__":
     line = ax.plot([], [], "b:")
     point = ax.plot([], [], "bo", markersize=10)
     images = []
+    _, _, _ = line, point, images
 
     def init():
         line = ax.plot([], [], "b:", markersize=8)
@@ -163,3 +164,7 @@ if __name__ == "__main__":
     )
 
     anim.save(animfilename, writer="pillow")
+
+
+if __name__ == "__main__":
+    execute_plot_gd_trajectory()

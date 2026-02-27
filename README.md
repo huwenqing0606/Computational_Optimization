@@ -30,6 +30,8 @@ in root dir, under venv:
 
 - one hidden layer NN: `python -m src.main one_hidden_layer_nn`
 
+- backpropgation: `python -m src.main backpropagation`
+
 ## (for students) how to contribute
 
 you must checkout your own branch from main, and then propose a PR to main.
