@@ -1,15 +1,20 @@
 import numpy as np
 from src.activations.activations import Sigmoid
 from src.backpropagation.fullnetwork import fullnetwork
+import os
+
+
+os.makedirs("output/backpropagation", exist_ok=True)
+outputfile = open("output/backpropagation/backpropagation.txt", "w")
 
 
 class backpropagation(object):
     def __init__(
         self,
-        L=1,  # number of hidden layers
-        n=np.random.randint(
-            1, 6, size=1
-        ),  # network size for each hidden layer n[0]=n_1, ..., m[L-1]=n_L
+        # number of hidden layers
+        L=1,
+        # network size for each hidden layer n[0]=n_1, ..., n[L-1]=n_L
+        n=np.random.randint(1, 6, size=1),
         activation=Sigmoid(),
         weight=[],
         bias=[],
@@ -30,6 +35,7 @@ class backpropagation(object):
         # initialize delta as zero column vectors with prescribed sizes
         for i in range(self.L):
             delta.append(np.zeros(shape=[self.n[i], 1]))
+        # output layer has only one neuron
         delta.append(np.zeros(shape=[1, 1]))
         # the last (output) layer delta
         delta[self.L + 1 - 1] = np.dot(
@@ -132,9 +138,9 @@ if __name__ == "__main__":
     )
     delta = backprop.error(y)
     gradweight, gradbias = backprop.grad(x, delta)
-    print("weight=", weight)
-    print("bias=", bias)
-    print("n=", n)
-    print("delta=", delta)
-    print("gradweight=", gradweight)
-    print("gradbias=", gradbias)
+    print("weight=", weight, file=outputfile)
+    print("bias=", bias, file=outputfile)
+    print("n=", n, file=outputfile)
+    print("delta=", delta, file=outputfile)
+    print("gradweight=", gradweight, file=outputfile)
+    print("gradbias=", gradbias, file=outputfile)

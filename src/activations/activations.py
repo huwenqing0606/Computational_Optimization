@@ -24,6 +24,9 @@ class ActivationBase(ABC):
 
 
 class Sigmoid(ActivationBase):
+    def __str__(self):
+        return "Sigmoid"
+
     def fn(self, z):
         if isinstance(z, torch.Tensor):
             return torch.sigmoid(z)

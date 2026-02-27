@@ -2,6 +2,8 @@
 Construct the output function of a fully connnected neural network 
 with L layers and network size n_1, ..., n_L
 parameters L, n_1, ..., n_L are given
+last layer is a number y
+Network structure: 
 """
 
 import numpy as np
@@ -12,24 +14,27 @@ import os
 os.makedirs("output/backpropagation", exist_ok=True)
 outputfile = open("output/backpropagation/fullnetworkoutput.txt", "w")
 
-"""
-one layer of the neural network, input vector x^{in}, 
-    output sigma(W x^{in} + b)
-W is weight vector, b is the bias
-"""
-
 
 class onelayer(object):
+    """
+    one layer of the neural network,
+        input vector x^{in},
+        output sigma(W x^{in} + b)
+    W is weight vector, b is the bias
+    """
+
     def __init__(
         self,
-        inputvector=[],  # input vector， has to be array type
-        activation=Sigmoid(),  # activation function, will be
-        #    applied termwise
-        weight=[],  # weights from input to output layer,
-        #   should be an array of size
-        #   outputsize x inputsize
-        bias=[],  # bias vectors in the particular layer,
-        #     a vector array of length = outputsize
+        # input vector， has to be array type
+        inputvector=[],
+        # activation function, will be applied termwise
+        activation=Sigmoid(),
+        # weights from input to output layer
+        # should be an array of size outputsize * inputsize
+        weight=[],
+        # bias vectors in the particular layer,
+        #  a vector array of length = outputsize
+        bias=[],
     ):
         self.inputvector = inputvector
         self.activation = activation
@@ -52,23 +57,22 @@ class onelayer(object):
         return np.array(output)
 
 
-"""
-a fully connected neural network with L hidden layers, 
-    input is a number x, output is a number y
-L hidden layers with layer sizes n_1, ..., n_L
-activation are given the same for all layers
-all weights and biases are initialized under the 
-    LeCun initilization: W_{ij} as N(0,1/n_l) where 
-    l is the label of hidden layer and b_k as N(0,1)
-"""
-
-
 class fullnetwork(object):
+    """
+    a fully connected neural network with L hidden layers,
+        input is a number x, output is a number y
+    L hidden layers with layer sizes n_1, ..., n_L
+    activation are given the same for all layers
+    all weights and biases are initialized under the
+        LeCun initilization: W_{ij} as N(0,1/n_l) where
+        l is the label of hidden layer and b_k as N(0,1)
+    """
+
     def __init__(
         self,
         L=1,  # number of hidden layers
         n=np.random.randint(1, 6, size=1),  # network size for each hidden layer
-        #   n[0]=n_1, ..., m[L-1]=n_L
+        #   n[0]=n_1, ..., n[L-1]=n_L
         activation=Sigmoid(),
     ):
         self.L = L
@@ -143,8 +147,9 @@ class fullnetwork(object):
         return weight, bias
 
     def output(self, x, weight, bias):
-        layervector = np.array(x)  # layervector corresponds to the outputs of
+        # layervector corresponds to the outputs of
         #   all neurons at the current layer
+        layervector = np.array(x)
         outputsequence = []
         preoutputsequence = []
         for l in range(self.L + 1):
@@ -171,9 +176,6 @@ class fullnetwork(object):
         return layervector, outputsequence, preoutputsequence
 
 
-"""
-test the output
-"""
 if __name__ == "__main__":
     L = 3  # number of hidden layers
     n = np.random.randint(

@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 from src.activations.activations import Sigmoid
 from src.backpropagation.fullnetwork import fullnetwork
 from src.backpropagation.backpropagation import backpropagation
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import animation
 import os
 
 
 os.makedirs("output/backpropagation", exist_ok=True)
+outputfile = open("output/backpropagation/plotGD.txt", "w")
 
 # number of hidden layers
 L = 3
@@ -117,12 +117,12 @@ if __name__ == "__main__":
     w2_init = np.random.normal(0, 1, 1)
     learningrate = 1
     w_1, w_2, Loss = plot_gd_trajectory(w1_init, w2_init, learningrate)
-    print("w1=", w_1)
-    print("w2=", w_2)
-    print("Loss=", Loss)
+    print("w1=", w_1, file=outputfile)
+    print("w2=", w_2, file=outputfile)
+    print("Loss=", Loss, file=outputfile)
 
     fig = plt.figure()
-    ax = Axes3D(fig)
+    ax = fig.add_subplot(111, projection="3d")
     line = ax.plot([], [], "b:")
     point = ax.plot([], [], "bo", markersize=10)
     images = []
@@ -144,12 +144,13 @@ if __name__ == "__main__":
         fig, anmi, init_func=init, frames=N, interval=100, blit=False, repeat=False
     )
 
-    anim.save(
-        "GDtrajectory"
+    animfilename = (
+        "output/backpropagation/"
+        + "GDtrajectory"
         + "_n="
         + str(n)
         + "_activation="
-        + str(sigma.name)
+        + str(sigma)
         + "_layer"
         + str(weightindex_startlayer)
         + "_neuron"
@@ -158,6 +159,7 @@ if __name__ == "__main__":
         + "_neuron"
         + str(weightindex_neuron_startlayer[1])
         + str(weightindex_neuron_nextlayer[1])
-        + ".gif",
-        writer="imagemagick",
+        + ".gif"
     )
+
+    anim.save(animfilename, writer="pillow")

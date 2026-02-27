@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from src.activations.activations import Tanh
 from src.backpropagation.fullnetwork import fullnetwork
-from mpl_toolkits.mplot3d import Axes3D
 import os
 
 
@@ -15,10 +14,9 @@ n = np.random.randint(1, 10, size=L)
 # training set size
 training_size = 1
 # (N, N) meshgrid
-N = 3
+N = 100
 # activation function
 sigma = Tanh()
-sigma_name = "Tanh"
 
 # set the network
 network = fullnetwork(L=L, n=n, activation=sigma)
@@ -44,11 +42,11 @@ weightindex_neuron_nextlayer = np.random.randint(
 # set training data
 X = []
 for m in range(training_size):
-    X.append(np.random.normal(0, 1, 1))
+    X.append(float(np.random.normal(0, 1)))
 
 Y = []
 for m in range(training_size):
-    Y.append(np.random.normal(0, 1, 1))
+    Y.append(float(np.random.normal(0, 1)))
 
 
 # plot the loss
@@ -80,14 +78,14 @@ def plot_network_loss():
 if __name__ == "__main__":
     a_1, a_2, Loss = plot_network_loss()
     fig = plt.figure()
-    ax = Axes3D(fig)
+    ax = fig.add_subplot(111, projection="3d")
     u = np.array(a_1)
     v = np.array(a_2)
     w = np.array(Loss)
     u, v = np.meshgrid(u, v)
     ax.plot_surface(u, v, w, rstride=1, cstride=1, cmap="rainbow")
     ax.set_title(
-        str(sigma_name)
+        str(sigma)
         + " empirical loss landscape with "
         + str(L)
         + " layers\n"
@@ -113,13 +111,12 @@ if __name__ == "__main__":
         + str(weightindex_neuron_nextlayer[1])
         + "]"
     )
-    plt.legend()
     plt.savefig(
         "output/backpropagation/"
         + str(L)
         + "_HiddenLayerNN-Loss_"
-        + str(sigma_name)
+        + str(sigma)
         + ".jpg",
         bbox_inches="tight",
     )
-    plt.show()
+    plt.close()
