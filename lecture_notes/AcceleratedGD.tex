@@ -1,0 +1,319 @@
+\chapter{Accelerated Gradient Methods}
+\label{Ch:AcceleratedGD}
+
+\section{Polyak's heavy ball method}
+
+Why acceleration in GD?
+
+The GD method is ``greedy" in the sense that it steps in the direction that is most productive at current iterate
+-- no explicit use of knowledge of the objective function $f$ at earlier iterations.
+
+Adding ``momentum" = search direction tends to be similar to that one used in the previous step.
+
+Say the objective function $f(x)=\dfrac{1}{2}x^TQx-b^Tx+c$ is a quadratic function. It may well happen in deep neural network models, near equilibrium, the loss function is approximated by such a function $f$ with a matrix $Q$ that has a large condition number $\kp=\dfrac{L}{m}$
+, see \cite{SGDVariationalICLR2018}.
+Slow convergence for $\kp$ large: for the strongly convex case we showed that in GD case the convergence rate is  $\bt=1-\dfrac{1}{\kp}$ which $\ra 1$ when $\kp\ra\infty$. Fig \ref{Fig:GD-AGDOscillationTrajectory} demonstrates oscillations of GD near local min when the Hessian has a large condition number.
+
+\begin{figure}[ht]\label{Fig:GD-AGDOscillationTrajectory}
+\centering
+\begin{tikzpicture}[scale=1.0, line cap=round, line join=round]
+
+% --- Contour-like ellipses (a "valley") ---
+\draw[black, line width=0.6pt] (0,0) ellipse [x radius=4.8, y radius=1.55];
+\draw[black, line width=0.6pt] (0,0) ellipse [x radius=3.9, y radius=1.25];
+\draw[black, line width=0.6pt] (0,0) ellipse [x radius=3.0, y radius=0.95];
+\draw[black, line width=0.6pt] (0,0) ellipse [x radius=2.15, y radius=0.68];
+
+% --- GD (black): zig-zagging trajectory ---
+% --- Start point (filled dot)
+\fill[black] (3.95,1.10) circle (2.1pt);
+
+% --- Minimum point at the center
+\fill[black] (0,0) circle (2.2pt);
+
+% --- GD (black): zig-zagging but converging to (0,0)
+\draw[black, line width=1.2pt, -{Latex[length=2.2mm]}]
+  (3.95,1.10)
+  -- (3.15,-0.85)
+  -- (2.55,0.70)
+  -- (2.05,-0.60)
+  -- (1.60,0.48)
+  -- (1.20,-0.38)
+  -- (0.90,0.28)
+  -- (0.65,-0.20)
+  -- (0.45,0.14)
+  -- (0.28,-0.10)
+  -- (0.14,0.06)
+  -- (0.06,-0.03)
+  -- (0,0);
+
+% --- End marker for GD (optional; min point already marked)
+% \fill[black] (0,0) circle (2.1pt);
+
+% --- AGD (red): smoother, more direct convergence to (0,0)
+\draw[red!80!black, line width=1.4pt, -{Latex[length=2.2mm]}]
+  (3.95,1.10)
+  .. controls (3.30,0.55) and (2.55,0.10) ..
+  (2.05,0.02)
+  .. controls (1.65,-0.02) and (1.25,-0.03) ..
+  (0.95,0.00)
+  .. controls (0.65,0.02) and (0.35,0.02) ..
+  (0.18,0.01)
+  .. controls (0.08,0.005) and (0.03,0.002) ..
+  (0,0);
+
+% --- Legend on the right ---
+\begin{scope}[shift={(6.3,0.55)}]
+  \draw[black, line width=1.2pt] (0,0.35) -- (1.2,0.35);
+  \node[anchor=west] at (1.35,0.35) {\large GD};
+
+  \draw[red!80!black, line width=1.4pt] (0,-0.35) -- (1.2,-0.35);
+  \node[anchor=west, text=red!80!black] at (1.35,-0.35) {\large AGD};
+\end{scope}
+
+\end{tikzpicture}
+\caption{Schematic comparison of GD (zig-zag) and Accelerated GD (smoother) on an ill-conditioned valley.}
+\end{figure}
+
+Motivated from classical mechanics, GD is approximated by a first order ODE of the form
+
+$$\text{GD: } \qquad \dfrac{dx}{dt}=-\grad f(x) \ .$$
+
+It is natural to modify the above equation to a second order Newton's equation that models a nonlinear oscillator:
+
+$$\text{AGD: } \qquad  \mu\dfrac{d^2 x}{dt^2}=-\grad f(x)-\mu b\dfrac{dx}{dt} \ .$$
+
+``Small mass limit" $\mu\ra 0$. Term $\mu \dfrac{d^2 x}{dt^2}$ serves as ``regularization".
+
+Finite difference approximation:
+$$\mu\dfrac{x(t+\Dt t)-2x(t)+x(t-\Dt t)}{(\Dt t)^2}\approx -\grad f(x(t))-\dfrac{\mu b (x(t+\Dt t)-x(t))}{\Dt t} \ .$$
+i.e.
+$$x(t+\Dt t)=x(t)-\al \grad f(x(t))+\bt(x(t)-x(t-\Dt t)) \ .$$
+
+This gives the ``Polyak's heavy ball method" (see \cite{PolyakHeavyBall1964}).
+
+$$x^{k+1}=x^k-\al \grad f(x^k)+\bt (x^k-x^{k-1}) \ , \ x^{-1}=x^0 \ .$$
+
+\begin{algorithm}[H]
+\caption{Polyak's heavy ball method (GD with momentum)}
+\label{Alg:PolyakHeavyBall}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $x^{-1}=x^0$, $p^{-1}=0$, stepsizes $\al, \bt>0$, $k=0,1,2,...$
+\FOR {$k=0,1,2,...,K-1$}
+    \STATE $p^k=-\al \grad f(x^k)+\bt p^{k-1}$
+    \STATE $x^{k+1}=x^k+p^k$
+\ENDFOR
+\STATE \textbf{Output}: Output $x^K$
+\end{algorithmic}
+\end{algorithm}
+
+``Momentum": $p_k=x^{k+1}-x^{k}$. The momentum iteration $$p^k=\beta p^{k-1}-\al\grad f(x^k)$$ can be understood as doing an exponential moving average over the gradients. This is where the ``memory" of ``inertia" comes in, that inspires the adaptive methods.
+
+\section{Nesterov's Accelerated Gradient Descent (AGD)}
+
+``first order optimal method": Instead of evaluating $\grad f(x^k)$, we evaluate $\grad f(x^k+\bt(x^k-x^{k-1}))$.
+
+Nesterov's accelerated gradient descent:
+$$x^{k+1}=x^k-\al \grad f(x^k+\bt (x^k-x^{k-1}))+\bt(x^k-x^{k-1}) \ , \ x^{-1}=x^0 \ .$$
+
+See \cite{Nesterov1983}.
+
+\begin{algorithm}[H]
+\caption{Nesterov's accelerated gradient descent}
+\label{Alg:AGD}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $x^{-1}=x^0$, stepsizes $\al_k, \bt_k>0$, $k=0,1,2,...$
+\FOR {$k=0,1,2,...,K-1$}
+    \STATE $y^k=x^k+\bt_k(x^k-x^{k-1})$
+    \STATE $x^{k+1}=y^k-\al_k \grad f(y^k)$
+\ENDFOR
+\STATE \textbf{Output}: Output $x^K$
+\end{algorithmic}
+\end{algorithm}
+
+By introducing the momentum variable $p^k=x^{k+1}-x^k$ we can also rewrite the Nesterov's acclerated gradient descent in terms of momentum, this is the Netsterov's momentum algorithm:
+
+\begin{algorithm}[H]
+\caption{Nesterov's momentum (equivalent to Nesterov's accelerated gradient descent)}
+\label{Alg:NesterovMomentm}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $x^{-1}=x^0$, $p^{-1}=0$, stepsizes $\al_k, \bt_k>0$, $k=0,1,2,...$
+\FOR {$k=0,1,2,...,K-1$}
+    \STATE $p^k=\beta_k p^{k-1}-\al_k \grad f(x^k+\beta_k p^{k-1})$
+    \STATE $x^{k+1}=x^k+p^k$
+\ENDFOR
+\STATE \textbf{Output}: Output $x^K$
+\end{algorithmic}
+\end{algorithm}
+
+
+Convergence proof of Nesterov's method:
+
+(1) Convex quadratic objective function: Spectral method.
+
+$$f(x)=\dfrac{1}{2}x^TQx-b^Tx+c \ , \  Q\succ 0 \ , \ 0<m=\lb_n\leq \lb_{n-1}\leq...\leq \lb_2\leq \lb_1=L \ .$$
+
+Condition number $\kp=\dfrac{L}{m}$.
+
+Minimizer of $f$ is $x^*=Q^{-1}b$ and $\grad f(x)=Qx-b=Q(x-x^*)$.
+
+``Spectral method" 
+$$x^{k+1}-x^*=(x^k-x^*)-\al Q\left(x^k+\bt(x^k-x^{k-1})-x^*\right)+\bt\left((x^k-x^*)-(x^{k-1}-x^*)\right) \ .$$
+So we have
+
+$$\begin{bmatrix}x^{k+1}-x^*\\x^k-x^*\end{bmatrix}=
+\begin{bmatrix}(1+\bt)(I-\al Q)& -\bt(I-\al Q)\\I&0\end{bmatrix}
+\begin{bmatrix}x^k-x^*\\ x^{k-1}-x^*\end{bmatrix} \ , \ k=1,2,...$$
+
+Set $\om^k=\begin{pmatrix}x^{k+1}-x^*\\x^k-x^*\end{pmatrix}$ with $x^{-1}=x^0$, and set
+$T=\begin{bmatrix}(1+\bt)(I-\al Q)& -\bt(I-\al Q)\\I&0\end{bmatrix}$, then 
+$\om^k=T\om^{k-1}$. So $\om^k=T^k\om^0$.
+
+\begin{theorem}\label{Thm:NesterovConvergenceQuadraticSpectrum}
+Pick $\al=\dfrac{1}{L}$, $\bt=\dfrac{\sqrt{L}-\sqrt{m}}{\sqrt{L}+\sqrt{m}}=\dfrac{\sqrt{\kp}-1}{\sqrt{\kp}+1}$, then
+the eigenvalues of $T$ are 
+$$\nu_{i,1}=\dfrac{1}{2}\left[(1+\bt)(1-\al \lb_i)+i\sqrt{4\bt(1-\al \lb_i)-(1+\bt)^2(1-\al \lb_i)^2}\right] \ ,$$
+$$\nu_{i,2}=\dfrac{1}{2}\left[(1+\bt)(1-\al \lb_i)-i\sqrt{4\bt(1-\al \lb_i)-(1+\bt)^2(1-\al \lb_i)^2}\right] \ .$$
+In particular, the spectral radius $\rho(T)\equiv \lim\li_{k\ra \infty}\left(\|T^k\|\right)^{1/k}\leq 1-\dfrac{1}{\sqrt{\kp}}$.
+\end{theorem}
+
+By Theorem \ref{Thm:NesterovConvergenceQuadraticSpectrum}, we conclude for any $\ve>0$ that
+
+$$\|\om^k\|\leq C\|\om^0\|(\rho(T)+\ve)^k \ .$$
+
+Comparison of the rates with GD: when $\al=\dfrac{1}{L}$, GD needs $O\left(\dfrac{L}{m}|\ln \ve|\right)$
+to reach $f(x^k)-f^*\leq \ve$ while Nesterov needs $O\left(\sqrt{\dfrac{L}{m}}|\ln \ve|\right)$
+to reach a factor $\ve$ in $\|\om^k\|$. Key parameter is $\kp=\dfrac{L}{m}$.
+
+(2) Strongly convex objective functions: Lyapunov's method.
+
+Lyapunov function $V: \R^d\ra \R$, $V(\om)>0$ for all $\om\neq \om^*\in \R^d$, $V(\om^*)=0$, $V(\om^{k+1})<\rho^2 V(\om^k)$
+for $0<\rho<1$.
+
+Indeed, $f(x)-f^*$ is a Lyapunov function for GD.
+
+What is the Lyapunov function for Nesterov?
+
+$\widetilde{x}^k=x^k-x^*$, $\widetilde{y}^k=y^k-y^*$, set
+$$V_k=f(x^k)-f(x^*)+\dfrac{L}{2}\|\widetilde{x}^k-\rho^2 \widetilde{x}^{k-1}\|^2 \ .$$
+
+Calculations... Possible to show $\al_k=\dfrac{1}{L}$, $\bt_k=\dfrac{\sqrt{\kp}-1}{\sqrt{\kp}+1}$, 
+$\rho^2=1-\dfrac{1}{\sqrt{\kp}}$ such that $V_{k+1}\leq \rho^2 V_k$.
+
+This is to say we have
+
+$$f(x^k)-f^*\leq \left(1-\dfrac{1}{\sqrt{\kp}}\right)^k\left\{f(x_0)-f^*+\dfrac{m}{2}\|x_0-x^*\|^2\right\} \ ,$$
+where one can verify that $V_0=f(x_0)-f^*+\dfrac{m}{2}\|x_0-x^*\|^2$.
+
+(3) Convex objective functions: Lyapunov's method.
+
+Set $\al_k=\dfrac{1}{L}$ but $\bt_k$ is variable, and thus $\rho_k$ is variable.
+
+$$V_k=f(x^k)-f^*+\dfrac{L}{2}\|\widetilde{x}^k-\rho_{k-1}^2\widetilde{x}^{k-1}\|^2 \ .$$
+
+(Weakly) Convex objective: $m=0$.
+
+Obtain 
+$$V_{k+1}\leq \rho_k^2 V_k+R_k^{\text{(weak)}} \ ,$$
+where 
+$$R_k^{\text{(weak)}}=\dfrac{L}{2}\|\widetilde{y}^k-\rho_k^2\widetilde{x}^k\|^2
+-\dfrac{\rho_k^2 L}{2}\|\widetilde{x}^k-\rho_{k-1}^2\widetilde{x}^{k-1}\|^2 \ .$$
+
+Recursive relation: $\rho_k^2=\dfrac{(1-\rho_k^2)^2}{(1-\rho_{k-1}^2)^2}$, $k=1,2,...$. We have 
+$1+\bt_k-\rho_k^2=\rho_k$, $\bt_k=\rho_k\rho^2_{k-1}$. This makes
+$R_k^{\text{(weak)}}=0$.
+
+So $V_k\leq \rho_{k-1}^2V_{k-1}$ and thus 
+$$V_k\leq \rho_{k-1}^2\rho_{k-2}^2...\rho_1^2V_1=\dfrac{(1-\rho_{k-1}^2)^2}{(1-\rho_0^2)^2}V_1 \ .$$
+Bound $V_1\leq (1-\rho_{k-1}^2)^2\dfrac{L}{2}\|x^0-x^*\|^2$ and inductive shows that 
+$1-\rho_k^2\leq \dfrac{2}{k+2}$.
+
+Finally we obtain the rate 
+
+$$f(x^k)-f^*\leq V_k\leq \dfrac{2L}{(k+1)^2}\|x^0-x^*\|^2 \ .$$
+
+See 
+
+\begin{algorithm}[H]
+\caption{Nesterov's optimal algorithm for general convex function $f$}
+\label{Alg:NesterovOptimalConvex}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $x^{-1}=x^0$, $\bt_0=\rho_0=0$ and Lipschitz constant $L$ for $f$
+\FOR {$k=0,1,2,...,K-1$}
+    \STATE $y^k=x^k+\bt_k(x^k-x^{k-1})$
+    \STATE $x^{k+1}=y^k-\dfrac{1}{L} \grad f(y^k)$
+    \STATE Define $\rho_{k+1}\in [0,1]$ to be the root of the quadratic equation $$1+\rho_{k+1}(\rho_k^2-1)-\rho_{k+1}^2=0$$
+    \STATE Set $\bt_{k+1}=\rho_{k+1}\rho_k^2$
+\ENDFOR
+\STATE \textbf{Output}: Output $x^K$
+\end{algorithmic}
+\end{algorithm}
+
+Connection with differential equations: Su, W., Boyd, S., Cand\'{e}s, E.J.,
+A differential equation for modeling Nesterov's accelerated gradient method: theory and insights.
+\textit{Journal of Machine Learning Research}, \textbf{17}:1–43, 2016.
+Suggest choosing $\bt_k=\dfrac{k-1}{k+2}$?
+
+Su-Boyd-Cand\'{e}s differential equation: $$\ddot{X}_t+\dfrac{3}{t}\dot{X}_t+\grad f(X_t)=0 \ .$$
+
+Nesterov's method achieves first order optimal convergence rate: Example. 
+See Nesterov, Y., \textit{Introductory Lectures on Convex Optimization}, Springer, 2004, \S 2.1.2.
+
+Indeed, one can construct a carefully designed function for which \textit{no} method that makes use of all gradient observed up to and including iteration $k$ (namely $\grad f(x^i)$, $i=0,1,2,...,k$) can produce a sequence $\{x^k\}$ that achieves a rate better than the order $O(1/k^2)$.
+
+Set $f(x)=\dfrac{1}{2}x^TAx-e_1^Tx$, where
+$$A=\begin{pmatrix}
+2&-1&0&0&...&...&0
+\\
+-1&2&-1&0&...&...&0
+\\
+...&...&...&...&...&...&...
+\\
+0&0&0&0&-1&2&-1
+\\
+0&0&0&0&0&-1&2
+\end{pmatrix} \ , \
+e_1=\begin{pmatrix}1\\0\\0\\...\\0\end{pmatrix} \ .$$
+
+Optimization $\min\li_{x\in \R^n}f(x)$ has a solution $x^*$ such that $Ax^*=e_1$, and its components are $x_i^*=1-\dfrac{i}{n+1}$ for $i=1,2,...,n$. Let the starting point $x^0=0$, and the iterate
+$$x^{k+1}=x^k+\sum\li_{j=0}^k \gm_j \grad f(x^j)$$
+for some coefficients $\gm_j$, $j=0,1,...,k$. Then each iterate $x^k$ can have nonzero entries only in its first $k$ components. Thus
+$$\|x^k-x^*\|^2\geq \sum\li_{j=k+1}^n (x_j^*)^2=\sum\li_{j=k+1}^n \left(1-\dfrac{j}{n+1}\right)^2 \ .$$
+One can show that for $k=1,2,...,\dfrac{n}{2}-1$ we have
+$$\|x^k-x^*\|^2\geq \dfrac{1}{8}\|x^0-x^*\|^2 \ .$$
+This will lead to the bound that 
+$$f(x^k)-f(x^*)\geq \dfrac{3L}{32(k+1)^2}\|x^0-x^*\|^2 \
+ , \ k=1,2,...,\dfrac{n}{2}-1$$
+where $L=\|A\|_2$. 
+
+\section{Conjugate gradient method}
+
+Conjugate gradient method is a more classical method in computational mathematics.
+Unlike the Nesterov's accelerated gradient method, the conjugate gradient method does not require
+knowledge of the convexity parameters $L$ and $m$ to compute the appropriate step--sizes.
+Unfortunately, it does not admit particularly rigorous analysis when the objective function $f$ is not quadratic.
+
+Originally this method comes from numerical linear algebra: goal is to solve $Qx=p$. But this can be formulated as
+optimization problem $\min\li_{x} f(x)$ with $f(x)=\dfrac{1}{2}x^TQx-p^Tx+c$.
+
+\begin{algorithm}[H]
+\caption{Conjugate Gradient Method}
+\label{Alg:ConjugateGradient}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $x^0$, $y^0=-\grad f(x^0)$, $f(x)=\dfrac{1}{2}x^TQx-p^Tx+c$, $k=0,1,2,...$
+\FOR {$k=0,1,2,...,K-1$}
+    \STATE $r^k=Qx^k-p$
+    \STATE $\al_k=\dfrac{\langle y^k, r^k\rangle }{\langle y^k, Q y^k\rangle}$
+    \STATE $x^{k+1}=x^k-\al_k y^k$
+    \STATE $y^{k+1}=-\grad f(x^{k+1})+ \bt_{k} y^{k}$
+    \STATE $\bt_{k+1}=\dfrac{\langle r^{k}, Qy^{k}\rangle}{\langle y^{k}, Qy^{k}\rangle}$
+\ENDFOR
+\STATE \textbf{Output}: Output $x^K$
+\end{algorithmic}
+\end{algorithm}
+
+Exact line search in the direction $y^k$: $\al_k=\arg\min\li_{\al>0}f(x^k+\al y^k)$.
+
+Conjugate gradient direction: $\bt_{k+1}$ is so chosen that $\langle y^{k+1}, Qy^k \rangle=0$.
+
+\section{Experiment: GD vs Accelerated GD}
