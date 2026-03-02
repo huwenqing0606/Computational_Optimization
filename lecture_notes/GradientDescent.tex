@@ -562,7 +562,7 @@ In fact one can expand
 \begin{array}{ll}
 f(x^{k+1})& =f(x^k+\al d^k)
 \\
-&=f(x^k)+\al \grad f(x^k)^T d^k+\al \play{\int_0^1 [\grad f(x^k+\gm\al d^k)-\grad f(x^k)]d^kd\gm}
+&=f(x^k)+\al \grad f(x^k)^T d^k+\al \play{\int_0^1 [\grad f(x^k+\gm\al d^k)-\grad f(x^k)]^Td^kd\gm}
 \\
 &\leq f(x^k)-\al \left(\bar{\ve}-\al\dfrac{L}{2}\gm_2\right)\|\grad f(x^k)\|\cdot \|d^k\| \ .
 \end{array}
@@ -583,7 +583,7 @@ Various Line Search Methods:
 
 In this case we have $-(d^k)^T \grad f(x_k)=(\grad f(x_k))^T S^k (\grad f(x_k))\geq \gm_2 \|\grad f(x^k)\|^2\geq \gm_2\gm_2^{-1}\|\grad f(x^k)\|\cdot \|d^k\|=\|\grad f(x^k)\|\cdot \|d^k\|$.
 
-\item[(2)] Gauss-Southwell: $d^k=-[\grad f(x^k)]_{i_k}$ where $$i_k=\arg\min\li_{i=1,2,...,n}\left|[\grad f(x^k)]_i\right|$$ and $$\grad f(x) = ([\grad f(x)]_1, ..., [\grad f(x)]_n) \ ;$$
+\item[(2)] Gauss-Southwell: $d^k=-[\grad f(x^k)]_{i_k}$ where $$i_k=\arg\max\li_{i=1,2,...,n}\left|[\grad f(x^k)]_i\right|$$ and $$\grad f(x) = ([\grad f(x)]_1, ..., [\grad f(x)]_n) \ ;$$
 
 \item[(3)] Stochastic coordinate descent: $d^k=-[\grad f(x^k)]_{i_k}$ where $i_k$ is uniformly randomly drawn from $\{1,2,...,n\}$; 
 

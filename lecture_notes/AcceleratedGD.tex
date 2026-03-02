@@ -114,7 +114,9 @@ $$x^{k+1}=x^k-\al \grad f(x^k)+\bt (x^k-x^{k-1}) \ , \ x^{-1}=x^0 \ .$$
 ``first order optimal method": Instead of evaluating $\grad f(x^k)$, we evaluate $\grad f(x^k+\bt(x^k-x^{k-1}))$.
 
 Nesterov's accelerated gradient descent:
-$$x^{k+1}=x^k-\al \grad f(x^k+\bt (x^k-x^{k-1}))+\bt(x^k-x^{k-1}) \ , \ x^{-1}=x^0 \ .$$
+\begin{equation}\label{Eq:NesterovIterationScheme}
+x^{k+1}=x^k-\al \grad f(x^k+\bt (x^k-x^{k-1}))+\bt(x^k-x^{k-1}) \ , \ x^{-1}=x^0 \ .
+\end{equation}
 
 See \cite{Nesterov1983}.
 
@@ -146,46 +148,197 @@ By introducing the momentum variable $p^k=x^{k+1}-x^k$ we can also rewrite the N
 \end{algorithmic}
 \end{algorithm}
 
+\subsection{Convergence Proof of Nesterov's method: Quadratic Case.}
 
-Convergence proof of Nesterov's method:
-
-(1) Convex quadratic objective function: Spectral method.
-
-$$f(x)=\dfrac{1}{2}x^TQx-b^Tx+c \ , \  Q\succ 0 \ , \ 0<m=\lb_n\leq \lb_{n-1}\leq...\leq \lb_2\leq \lb_1=L \ .$$
-
-Condition number $\kp=\dfrac{L}{m}$.
-
-Minimizer of $f$ is $x^*=Q^{-1}b$ and $\grad f(x)=Qx-b=Q(x-x^*)$.
-
-``Spectral method" 
-$$x^{k+1}-x^*=(x^k-x^*)-\al Q\left(x^k+\bt(x^k-x^{k-1})-x^*\right)+\bt\left((x^k-x^*)-(x^{k-1}-x^*)\right) \ .$$
-So we have
-
-$$\begin{bmatrix}x^{k+1}-x^*\\x^k-x^*\end{bmatrix}=
-\begin{bmatrix}(1+\bt)(I-\al Q)& -\bt(I-\al Q)\\I&0\end{bmatrix}
-\begin{bmatrix}x^k-x^*\\ x^{k-1}-x^*\end{bmatrix} \ , \ k=1,2,...$$
-
-Set $\om^k=\begin{pmatrix}x^{k+1}-x^*\\x^k-x^*\end{pmatrix}$ with $x^{-1}=x^0$, and set
-$T=\begin{bmatrix}(1+\bt)(I-\al Q)& -\bt(I-\al Q)\\I&0\end{bmatrix}$, then 
-$\om^k=T\om^{k-1}$. So $\om^k=T^k\om^0$.
-
-\begin{theorem}\label{Thm:NesterovConvergenceQuadraticSpectrum}
-Pick $\al=\dfrac{1}{L}$, $\bt=\dfrac{\sqrt{L}-\sqrt{m}}{\sqrt{L}+\sqrt{m}}=\dfrac{\sqrt{\kp}-1}{\sqrt{\kp}+1}$, then
-the eigenvalues of $T$ are 
-$$\nu_{i,1}=\dfrac{1}{2}\left[(1+\bt)(1-\al \lb_i)+i\sqrt{4\bt(1-\al \lb_i)-(1+\bt)^2(1-\al \lb_i)^2}\right] \ ,$$
-$$\nu_{i,2}=\dfrac{1}{2}\left[(1+\bt)(1-\al \lb_i)-i\sqrt{4\bt(1-\al \lb_i)-(1+\bt)^2(1-\al \lb_i)^2}\right] \ .$$
-In particular, the spectral radius $\rho(T)\equiv \lim\li_{k\ra \infty}\left(\|T^k\|\right)^{1/k}\leq 1-\dfrac{1}{\sqrt{\kp}}$.
+\begin{theorem}\label{Thm:NesterovConvergence:Quadratic}
+Consider the quadratic function
+\[
+f(x) = \frac12 x^T Q x - b^T x + c,
+\]
+where $Q \in \mathbb{R}^{n\times n}$ is symmetric positive definite and $0 < m = \lambda_n \le \cdots \le \lambda_1 = L$.
+Let the condition number $\kp = \dfrac{L}{m}$ and the unique minimizer be $x^*$. Then the Nesterov's method with iteration scheme \emph{(\ref{Eq:NesterovIterationScheme})} and parameter choice $\al=\dfrac{1}{L}$, $\bt=\dfrac{\sqrt{L}-\sqrt{m}}{\sqrt{L}+\sqrt{m}}=\dfrac{\sqrt{\kp}-1}{\sqrt{\kp}+1}$ gives a convergence rate 
+\begin{equation}\label{Thm:NesterovConvergence:Quadratic:Eq:Convergencex}
+\|x^k-x^*\|
+\le
+\left(1-\sqrt{\frac{m}{L}}\right)^k
+\|x^0-x^*\|.
+\end{equation}
+Consequently,
+\begin{equation}\label{Thm:NesterovConvergence:Quadratic:Eq:Convergencef}
+f(x^k)-f(x^*)
+=
+\mathcal O
+\Big(
+\left(1-\sqrt{\frac{m}{L}}\right)^k
+\Big).
+\end{equation}
 \end{theorem}
 
-By Theorem \ref{Thm:NesterovConvergenceQuadraticSpectrum}, we conclude for any $\ve>0$ that
+\begin{proof}
+Since $\nabla f(x) = Qx - b$, the unique minimizer satisfies $Qx^* = b$. Substituting $\nabla f(x)=Qx-b$ into (\ref{Eq:NesterovIterationScheme}) gives
+\[
+x^{k+1}
+=
+x^k
+-
+\alpha \Big(
+Q(x^k + \beta(x^k - x^{k-1})) - b
+\Big)
++
+\beta(x^k - x^{k-1}).
+\]
 
-$$\|\om^k\|\leq C\|\om^0\|(\rho(T)+\ve)^k \ .$$
+Define the error
+\[
+e^k = x^k - x^*.
+\]
 
-Comparison of the rates with GD: when $\al=\dfrac{1}{L}$, GD needs $O\left(\dfrac{L}{m}|\ln \ve|\right)$
+Since $Qx^*=b$, we obtain
+\[
+Q(x^k + \beta(x^k - x^{k-1})) - b
+=
+Q\big(
+e^k + \beta(e^k - e^{k-1})
+\big).
+\]
+
+Therefore
+\[
+e^{k+1}
+=
+e^k
+-
+\alpha Q(e^k + \beta(e^k - e^{k-1}))
++
+\beta(e^k - e^{k-1}).
+\]
+
+Rearranging yields
+\begin{equation}\label{Thm:NesterovConvergence:Quadratic:Eq:Error}
+e^{k+1}
+=
+(1+\beta)(I-\alpha Q)e^k
+-
+\beta(I-\alpha Q)e^{k-1}.
+\end{equation}
+
+Define the extended state vector
+\[
+w^k
+=
+\begin{pmatrix}
+e^k \\
+e^{k-1}
+\end{pmatrix}.
+\]
+
+Then the system (\ref{Thm:NesterovConvergence:Quadratic:Eq:Error}) can be written as
+\[
+w^{k+1} = T w^k,
+\]
+where
+\[
+T
+=
+\begin{pmatrix}
+(1+\beta)(I-\alpha Q) & -\beta(I-\alpha Q) \\
+I & 0
+\end{pmatrix}.
+\]
+
+Let $\rho(T)$ be the spectral radius of the matrix $T$, i.e., $\rho(T)\equiv \lim\li_{k\ra \infty}\left(\|T^k\|\right)^{1/k}$.
+Since $Q$ is symmetric positive definite,
+\[
+Q = U \operatorname{diag}(\lambda_1,\dots,\lambda_n) U^T.
+\]
+
+Under the change of variables
+\[
+\tilde w^k =
+\begin{pmatrix}
+U^T & 0 \\
+0 & U^T
+\end{pmatrix}
+w^k,
+\]
+the matrix $T$ becomes block diagonal with $2\times 2$ blocks
+\[
+T_i
+=
+\begin{pmatrix}
+(1+\beta)(1-\alpha\lambda_i)
+&
+-\beta(1-\alpha\lambda_i)
+\\
+1 & 0
+\end{pmatrix}.
+\]
+
+The characteristic polynomial of $T_i$ is
+\[
+\nu^2
+-
+(1+\beta)(1-\alpha\lambda_i)\nu
++
+\beta(1-\alpha\lambda_i)
+=
+0.
+\]
+
+Thus
+\[
+\nu_{1,2}
+=
+\frac{
+(1+\beta)(1-\alpha\lambda_i)
+\pm
+\sqrt{
+(1+\beta)^2(1-\alpha\lambda_i)^2
+-
+4\beta(1-\alpha\lambda_i)
+}
+}{2}.
+\]
+
+Choose
+\[
+\alpha=\frac1L,
+\qquad
+\beta
+=
+\frac{\sqrt L-\sqrt m}{\sqrt L+\sqrt m}.
+\]
+
+Then the discriminant is non-positive and
+\[
+|\nu_i|
+=
+\sqrt{\beta}
+\sqrt{1-\frac{\lambda_i}{L}}.
+\]
+
+Hence
+\[
+\rho(T)
+=
+\max_i |\nu_i|
+=
+1-\sqrt{\frac{m}{L}}.
+\]
+This gives the asserted convergence results in (\ref{Thm:NesterovConvergence:Quadratic:Eq:Convergencex}) and (\ref{Thm:NesterovConvergence:Quadratic:Eq:Convergencef}).
+\end{proof}
+
+Comparison with Gradient Descent.
+
+Gradient Descent:
+$$(1-\frac{m}{L})^k \ ,$$
+Accelerated Gradient: $$(1-\sqrt{\frac{m}{L}})^k \ .$$
+
+GD needs $O\left(\dfrac{L}{m}|\ln \ve|\right)$
 to reach $f(x^k)-f^*\leq \ve$ while Nesterov needs $O\left(\sqrt{\dfrac{L}{m}}|\ln \ve|\right)$
 to reach a factor $\ve$ in $\|\om^k\|$. Key parameter is $\kp=\dfrac{L}{m}$.
 
-(2) Strongly convex objective functions: Lyapunov's method.
+\subsection{Convergence Proof of Nesterov's method: Strongly Convex Case.}
 
 Lyapunov function $V: \R^d\ra \R$, $V(\om)>0$ for all $\om\neq \om^*\in \R^d$, $V(\om^*)=0$, $V(\om^{k+1})<\rho^2 V(\om^k)$
 for $0<\rho<1$.
@@ -232,7 +385,7 @@ Finally we obtain the rate
 
 $$f(x^k)-f^*\leq V_k\leq \dfrac{2L}{(k+1)^2}\|x^0-x^*\|^2 \ .$$
 
-See 
+See \cite{Nesterov1983}.
 
 \begin{algorithm}[H]
 \caption{Nesterov's optimal algorithm for general convex function $f$}
@@ -255,6 +408,8 @@ A differential equation for modeling Nesterov's accelerated gradient method: the
 Suggest choosing $\bt_k=\dfrac{k-1}{k+2}$?
 
 Su-Boyd-Cand\'{e}s differential equation: $$\ddot{X}_t+\dfrac{3}{t}\dot{X}_t+\grad f(X_t)=0 \ .$$
+
+\subsection{Nesterov's method reaches first-order optimality}
 
 Nesterov's method achieves first order optimal convergence rate: Example. 
 See Nesterov, Y., \textit{Introductory Lectures on Convex Optimization}, Springer, 2004, \S 2.1.2.
