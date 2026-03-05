@@ -338,6 +338,8 @@ GD needs $O\left(\dfrac{L}{m}|\ln \ve|\right)$
 to reach $f(x^k)-f^*\leq \ve$ while Nesterov needs $O\left(\sqrt{\dfrac{L}{m}}|\ln \ve|\right)$
 to reach a factor $\ve$ in $\|\om^k\|$. Key parameter is $\kp=\dfrac{L}{m}$.
 
+Example: $\kp = 10000$, then GD converges with iteration $O(10000|\ln\ve|)$ but Nesterov needs only $O(100|\ln \ve|)$ iterations.
+
 \subsection{Convergence Proof of Nesterov's method: Strongly Convex Case.}
 
 Lyapunov function $V: \R^d\ra \R$, $V(\om)>0$ for all $\om\neq \om^*\in \R^d$, $V(\om^*)=0$, $V(\om^{k+1})<\rho^2 V(\om^k)$
