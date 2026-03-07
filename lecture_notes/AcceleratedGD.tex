@@ -150,7 +150,7 @@ By introducing the momentum variable $p^k=x^{k+1}-x^k$ we can also rewrite the N
 
 \subsection{Convergence Proof of Nesterov's method: Quadratic Case.}
 
-\begin{theorem}\label{Thm:NesterovConvergence:Quadratic}
+\begin{theorem}[Convergence of Nesterov's AGD in the quadratic case]\label{Thm:NesterovConvergence:Quadratic}
 Consider the quadratic function
 \[
 f(x) = \frac12 x^T Q x - b^T x + c,
@@ -342,23 +342,468 @@ Example: $\kp = 10000$, then GD converges with iteration $O(10000|\ln\ve|)$ but 
 
 \subsection{Convergence Proof of Nesterov's method: Strongly Convex Case.}
 
-Lyapunov function $V: \R^d\ra \R$, $V(\om)>0$ for all $\om\neq \om^*\in \R^d$, $V(\om^*)=0$, $V(\om^{k+1})<\rho^2 V(\om^k)$
-for $0<\rho<1$.
+\begin{definition}[Lyapunov function]\label{Def:Lyapunov}
+For a sequence $\{\om^k\}$ we define its corresponding \emph{Lyapunov function} $V: \R^d\ra \R$, $V(\om)>0$ to be that for all $\om\neq \om^*\in \R^d$, we have 
+$$V(\om^*)=0 \ , \  V(\om^{k+1})<\rho^2 V(\om^k) $$
+for some $0<\rho<1$.
+\end{definition}
 
-Indeed, $f(x)-f^*$ is a Lyapunov function for GD.
+Indeed, $V(x)=f(x)-f^*$ is a Lyapunov function for GD.
 
 What is the Lyapunov function for Nesterov?
 
-$\widetilde{x}^k=x^k-x^*$, $\widetilde{y}^k=y^k-y^*$, set
-$$V_k=f(x^k)-f(x^*)+\dfrac{L}{2}\|\widetilde{x}^k-\rho^2 \widetilde{x}^{k-1}\|^2 \ .$$
 
-Calculations... Possible to show $\al_k=\dfrac{1}{L}$, $\bt_k=\dfrac{\sqrt{\kp}-1}{\sqrt{\kp}+1}$, 
-$\rho^2=1-\dfrac{1}{\sqrt{\kp}}$ such that $V_{k+1}\leq \rho^2 V_k$.
+\begin{theorem}[Convergence of Nesterov's AGD in the strongly convex case]\label{Thm:NesterovConvergence:StronglyConvex} 
+Assume $f(x)$ is strongly $m$-convex with $\grad f$ being $L$-Lipschitz, and assume $x^*$ is the unique minimizer of $f(x)$. Let $\widetilde{x}^k=x^k-x^*$, where $x^k$ is the $k$-th iteration of Nesterov's AGD. Set
+$$V_k=f(x^k)-f(x^*)+\dfrac{L}{2}\|\widetilde{x}^k-\rho^2 \widetilde{x}^{k-1}\|^2 \ .$$ Set $\al_k=\dfrac{1}{L}$, $\bt_k=\dfrac{\sqrt{\kp}-1}{\sqrt{\kp}+1}$, 
+$\rho^2=1-\dfrac{1}{\sqrt{\kp}}$. Then we have \begin{equation}\label{Thm:NesterovConvergence:StronglyConvex:Eq:LyapunovIterativeEstimate}
+V_{k+1}\leq \rho^2 V_k \ .
+\end{equation}
+\end{theorem}
+
+\begin{proof} The Nesterov's iteration gives
+$$x^{k+1} = x^k -
+\alpha_k \nabla f
+\left(x^k + \beta (x^k-x^{k-1})
+\right)
++
+\beta_k(x^k-x^{k-1}) \ , \ x^0=x^{-1} \ .
+$$
+We rewrite it as the following iteration
+$$
+\left\{\begin{array}{l}
+y^k = x^k + \beta_k (x^k-x^{k-1}) \ , \\
+x^{k+1} = y^k - \alpha_k \nabla f(y^k) \ .
+\end{array}\right.
+$$
+We recall that we have $
+m \le \lb(\grad^2 f) \le L$ and $\kappa = \dfrac{L}{m}$, $\alpha_k = \dfrac{1}{L}$, $\beta_k = \dfrac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}
+$. Let $y^*=x^*$ and $\widetilde{y}^k= y^k-y^*$. Then $\widetilde{x}^k-\widetilde{y}^k=x^k-y^k$. We apply the argument used in Descent Lemma \ref{Lm:DescentLemma} with $x^k$ replaced by $y^k$ in (\ref{Eq:NesterovIterationScheme}) to get
+\begin{equation}\label{Thm:NesterovConvergence:StronglyConvex:Eq:DescentLemmaInTermsOfxy}
+f(x^{k+1}) = f\!\left(y^k - \frac{1}{L} \grad f(y^k)\right)
+\le f(y^k) - \frac{1}{2L}\|\grad f(y^k)\|^2 \ .
+\end{equation}
+Set $
+u^k = \dfrac{1}{L} \grad f(y^k)$ and $
+u^* = \dfrac{1}{L} \grad f(y^*) = 0$. Define $\widetilde{u}^k=u^k-u^*$. Then 
+$$V_{k+1}
+=
+f(x^{k+1}) - f^*
++
+\frac{L}{2}
+\left\|
+\tilde{x}^{k+1} - \rho^2 \tilde{x}^k
+\right\|^2
+\ge
+f(x^{k+1}) - f^* \ ,
+$$
+and by (\ref{Thm:NesterovConvergence:StronglyConvex:Eq:DescentLemmaInTermsOfxy}) we have
+\begin{equation}\label{Thm:NesterovConvergence:StronglyConvex:Eq:BoundForVkplusOneSplitUsingrho}
+\begin{array}{ll}
+V_{k+1} & \le
+f(y^k)
+-
+\dfrac{1}{2L}
+\|\grad f(y^k)\|^2
+-
+f^*
++
+\dfrac{L}{2}
+\left\|
+\tilde{x}^{k+1} - \rho^2 \tilde{x}^k
+\right\|^2
+\\
+& =
+f(y^k)
+-
+\dfrac{L}{2}
+\|u^k\|^2
+-
+f^*
++
+\dfrac{L}{2}
+\left\|
+\tilde{x}^{k+1} - \rho^2 \tilde{x}^k
+\right\|^2
+\\
+& =
+\rho^2
+\Big[
+f(y^k)-f^*
++
+L(u^k)^T(\tilde{x}^k-\tilde{y}^k)
+\Big]
+\\
+& \ \ -\rho^2 L (u^k)^T(\tilde{x}^k-\tilde{y}^k)
+\\
+& \ \ +(1-\rho^2)
+\Big[
+f(y^k)-f^*
+-
+L(u^k)^T\tilde{y}^k
+\Big]
+\\
+& \ \  +(1-\rho^2)L(u^k)^T \tilde{y}^k
+-\dfrac{L}{2}\|u^k\|^2
++
+\dfrac{L}{2}
+\left\|
+\tilde{x}^{k+1}-\rho^2\tilde{x}^k
+\right\|^2 \ .
+\end{array}
+\end{equation}
+
+Since $f(x)$ is $m$-strongly convex, we have, by (\ref{Thm:ConvexFunctionMainTheorem:Eq:SecondOrderLowerBound})
+$$
+f(x^k)
+\ge
+f(y^k)
++
+(\nabla f(y^k))^T(x^k-y^k)
++
+\frac{m}{2}\|x^k-y^k\|^2 \ ,
+$$
+which gives 
+\begin{equation}\label{Thm:NesterovConvergence:StronglyConvex:Eq:mStronglyConvexEstimate1}
+f(y^k)
+\le
+f(x^k)
+-
+L (\widetilde{u}_k)^T(x^k-y^k)
+-
+\frac{m}{2}\|x^k-y^k\|^2 \ .
+\end{equation}
+Similarly, we have
+$$f(x^*)\geq f(y^k) + (\grad f(y^k))^T (x^*-y^k) + \dfrac{m}{2}\|x^*-y^k\|^2 \ ,
+$$
+which gives
+\begin{equation}\label{Thm:NesterovConvergence:StronglyConvex:Eq:mStronglyConvexEstimate2}
+f(x^*)\geq f(y^k) - L(\widetilde{u}^k)^T \widetilde{y}^k + \dfrac{m}{2}\|\widetilde{y}^k\|^2 \ .
+\end{equation}
+Combining (\ref{Thm:NesterovConvergence:StronglyConvex:Eq:BoundForVkplusOneSplitUsingrho}), (\ref{Thm:NesterovConvergence:StronglyConvex:Eq:mStronglyConvexEstimate1}) and (\ref{Thm:NesterovConvergence:StronglyConvex:Eq:mStronglyConvexEstimate2}) we have
+$$
+\begin{array}{ll}
+V_{k+1}
+&\le
+\rho^2\Big[f(x^k)-f^*-\dfrac{m}{2}\|\tilde x^k-\tilde y^k\|^2\Big]
+-\rho^2L(\tilde u^k)^T(\tilde x^k-\tilde y^k) \\
+&\qquad
++(1-\rho^2)\Big[f(y^k)-f^*-L(\tilde u^k)^T\tilde y^k\Big]
++(1-\rho^2)L(\tilde u^k)^T \tilde y^k
+-\dfrac{L}{2}\|\tilde u^k\|^2
++\dfrac{L}{2}\|\tilde x^{k+1}-\rho^2\tilde x^k\|^2 \\[6pt]
+&=
+\rho^2\Big[f(x^k)-f^*-\dfrac{m}{2}\|\tilde x^k-\tilde y^k\|^2\Big]
+-\dfrac{m(1-\rho^2)}{2}\|\tilde y^k\|^2  \\
+&\qquad
+-\rho^2L(\tilde u^k)^T(\tilde x^k-\tilde y^k)
++(1-\rho^2)L(\tilde u^k)^T\tilde y^k
+-\dfrac{L}{2}\|\tilde u^k\|^2
++\dfrac{L}{2}\|\tilde x^{k+1}-\rho^2\tilde x^k\|^2 \\[6pt]
+&=
+\rho^2\Big[f(x^k)-f^*
++\dfrac{L}{2}\|\tilde x^k-\rho^2\tilde x^{k-1}\|^2\Big]  \\
+&\qquad
+-\dfrac{m\rho^2}{2}\|\tilde x^k-\tilde y^k\|^2
+-\dfrac{m(1-\rho^2)}{2}\|\tilde y^k\|^2
+-\dfrac{\rho^2L}{2}\|\tilde x^k-\rho^2\tilde x^{k-1}\|^2 \\
+&\qquad
++L(\tilde u^k)^T(\tilde y^k-\rho^2\tilde x^k)
+-\dfrac{L}{2}\|\tilde u^k\|^2
++\dfrac{L}{2}\|\tilde x^{k+1}-\rho^2\tilde x^k\|^2 \ .
+\end{array}
+$$
+Let
+\begin{equation}\label{Thm:NesterovConvergence:StronglyConvex:Eq:Rk}
+\begin{array}{ll}
+R_k=& -\dfrac{m\rho^2}{2}\|\tilde x^k-\tilde y^k\|^2
+-\dfrac{m(1-\rho^2)}{2}\|\tilde y^k\|^2
+-\dfrac{\rho^2L}{2}\|\tilde x^k-\rho^2\tilde x^{k-1}\|^2 \\
+&\qquad
++L(\tilde u^k)^T(\tilde y^k-\rho^2\tilde x^k)
+-\dfrac{L}{2}\|\tilde u^k\|^2
++\dfrac{L}{2}\|\tilde x^{k+1}-\rho^2\tilde x^k\|^2 \ .
+\end{array}
+\end{equation}
+So we have
+$$V_{k+1}\leq \rho^2 V_k + R_k \ .$$
+Using Lemma \ref{Lm:Thm:NesterovConvergence:StronglyConvex:Rk}, the above gives (\ref{Thm:NesterovConvergence:StronglyConvex:Eq:LyapunovIterativeEstimate}). 
+\end{proof}
+
+\begin{lemma}\label{Lm:Thm:NesterovConvergence:StronglyConvex:Rk}
+Under the assumptions in \emph{Theorem \ref{Thm:NesterovConvergence:StronglyConvex}}, we have
+$$R_k
+=
+-\frac12 L\rho^2
+\left(
+\frac1{\kappa}+\frac1{\sqrt{\kappa}}
+\right)
+\|
+\tilde{x}^k-\tilde{y}^k
+\|^2
+\le 0 \ ,
+$$
+where $R_k$ is defined in \emph{(\ref{Thm:NesterovConvergence:StronglyConvex:Eq:Rk})}.
+\end{lemma}
+
+\begin{proof}
+We have
+\begin{align*}
+R_k
+&=
+-\frac{m\rho^2}{2}\|\tilde x^k-\tilde y^k\|^2
+-\frac{m(1-\rho^2)}{2}\|\tilde y^k\|^2 \\
+&\qquad
++L(\tilde u^k)^T(\tilde y^k-\rho^2\tilde x^k)
+-\frac{L}{2}\|\tilde u^k\|^2
++\frac{L}{2}\|\tilde x^{k+1}-\rho^2\tilde x^k\|^2
+-\frac{\rho^2L}{2}\|\tilde x^k-\rho^2\tilde x^{k-1}\|^2.
+\end{align*}
+
+Now complete the square in the middle terms:
+\begin{align*}
+&L(\tilde u^k)^T(\tilde y^k-\rho^2\tilde x^k)-\frac{L}{2}\|\tilde u^k\|^2 \\
+&\qquad
+=
+-\frac{L}{2}\Bigl[
+\|\tilde y^k-\rho^2\tilde x^k-\tilde u^k\|^2
+-\|\tilde y^k-\rho^2\tilde x^k\|^2
+\Bigr].
+\end{align*}
+Since
+\[
+\tilde y^k-\tilde u^k
+=
+y^k-u^k-y^*
+=
+x^{k+1}-x^*
+=
+\tilde x^{k+1},
+\]
+we obtain
+\begin{align*}
+R_k
+&=
+-\frac{m\rho^2}{2}\|\tilde x^k-\tilde y^k\|^2
+-\frac{m(1-\rho^2)}{2}\|\tilde y^k\|^2 \\
+&\qquad
+-\frac{L}{2}\Bigl[
+\|\tilde x^{k+1}-\rho^2\tilde x^k\|^2
+-\|\tilde y^k-\rho^2\tilde x^k\|^2
+\Bigr] \\
+&\qquad
++\frac{L}{2}\|\tilde x^{k+1}-\rho^2\tilde x^k\|^2
+-\frac{\rho^2L}{2}\|\tilde x^k-\rho^2\tilde x^{k-1}\|^2 \\
+&=
+-\frac{m\rho^2}{2}\|\tilde x^k-\tilde y^k\|^2
+-\frac{m(1-\rho^2)}{2}\|\tilde y^k\|^2 \\
+&\qquad
++\frac{L}{2}\|\tilde y^k-\rho^2\tilde x^k\|^2
+-\frac{\rho^2L}{2}\|\tilde x^k-\rho^2\tilde x^{k-1}\|^2.
+\end{align*}
+
+Divide by $L$ and use $\kappa=\dfrac{L}{m}$, we get
+\begin{align*}
+\frac{R_k}{L}
+&=
+-\frac{\rho^2}{2\kappa}\|\tilde x^k-\tilde y^k\|^2
+-\frac{1-\rho^2}{2\kappa}\|\tilde y^k\|^2
++\frac12\|\tilde y^k-\rho^2\tilde x^k\|^2
+-\frac{\rho^2}{2}\|\tilde x^k-\rho^2\tilde x^{k-1}\|^2.
+\end{align*}
+
+Next, from
+\[
+\tilde y^k=\tilde x^k+\beta(\tilde x^k-\tilde x^{k-1}),
+\]
+we have
+\[
+\tilde x^k-\tilde y^k=-\beta(\tilde x^k-\tilde x^{k-1}),
+\qquad
+\tilde x^{k-1}
+=
+\tilde x^k-\frac{1}{\beta}(\tilde y^k-\tilde x^k).
+\]
+Hence
+\begin{align*}
+\tilde x^k-\rho^2\tilde x^{k-1}
+&=
+\tilde x^k-\rho^2\left(\tilde x^k-\frac{1}{\beta}(\tilde y^k-\tilde x^k)\right) \\
+&=
+(1-\rho^2)\tilde x^k+\frac{\rho^2}{\beta}(\tilde y^k-\tilde x^k).
+\end{align*}
+
+Now choose
+\[
+\rho^2=1-\frac{1}{\sqrt\kappa},
+\qquad
+\beta=\frac{\sqrt\kappa-1}{\sqrt\kappa+1}.
+\]
+Then
+\[
+1-\rho^2=\frac{1}{\sqrt\kappa},
+\qquad
+\frac{\rho^2}{\beta}
+=
+\frac{1-\frac{1}{\sqrt\kappa}}{\frac{\sqrt\kappa-1}{\sqrt\kappa+1}}
+=
+1+\frac{1}{\sqrt\kappa}.
+\]
+Therefore
+\begin{align*}
+\tilde x^k-\rho^2\tilde x^{k-1}
+=
+\frac{1}{\sqrt\kappa}\tilde x^k
++\left(1+\frac{1}{\sqrt\kappa}\right)(\tilde y^k-\tilde x^k).
+\end{align*}
+Also,
+\begin{align*}
+\tilde y^k-\rho^2\tilde x^k
+=
+(\tilde y^k-\tilde x^k)+(1-\rho^2)\tilde x^k
+=
+(\tilde y^k-\tilde x^k)+\frac{1}{\sqrt\kappa}\tilde x^k.
+\end{align*}
+Substituting these into $\dfrac{R_k}{L}$ gives
+\begin{align*}
+\frac{R_k}{L}
+&=
+-\frac{\rho^2}{2\kappa}\|\tilde x^k-\tilde y^k\|^2
+-\frac{1}{2\kappa\sqrt\kappa}\|\tilde y^k\|^2 \\
+&\qquad
++\frac12\left\|(\tilde y^k-\tilde x^k)+\frac{1}{\sqrt\kappa}\tilde x^k\right\|^2 \\
+&\qquad
+-\frac{\rho^2}{2}
+\left\|
+\frac{1}{\sqrt\kappa}\tilde x^k
++\left(1+\frac{1}{\sqrt\kappa}\right)(\tilde y^k-\tilde x^k)
+\right\|^2.
+\end{align*}
+
+Write
+\[
+d^k:=\tilde y^k-\tilde x^k.
+\]
+Then $\tilde y^k=\tilde x^k+d^k$, and so
+\begin{align*}
+\frac{R_k}{L}
+&=
+-\frac{\rho^2}{2\kappa}\|d^k\|^2
+-\frac{1}{2\kappa\sqrt\kappa}\|\tilde x^k+d^k\|^2 \\
+&\qquad
++\frac12\left\|d^k+\frac{1}{\sqrt\kappa}\tilde x^k\right\|^2
+-\frac{\rho^2}{2}
+\left\|
+\frac{1}{\sqrt\kappa}\tilde x^k
++\left(1+\frac{1}{\sqrt\kappa}\right)d^k
+\right\|^2.
+\end{align*}
+Expanding the squares and collecting the coefficients of
+\[
+\|\tilde x^k\|^2,\qquad
+(\tilde x^k)^Td^k,\qquad
+\|d^k\|^2,
+\]
+one finds that the coefficients of $\|\tilde x^k\|^2$ and $(\tilde x^k)^Td^k$ cancel exactly, while the coefficient of $\|d^k\|^2$ is
+\begin{align*}
+-\frac{\rho^2}{2\kappa}
+-\frac{1}{2\kappa\sqrt\kappa}
++\frac12
+-\frac{\rho^2}{2}\left(1+\frac{1}{\sqrt\kappa}\right)^2
+&=
+-\frac12\,\rho^2\left(\frac1\kappa+\frac1{\sqrt\kappa}\right).
+\end{align*}
+Hence
+\begin{align*}
+\frac{R_k}{L}
+&=
+-\frac12\,\rho^2\left(\frac1\kappa+\frac1{\sqrt\kappa}\right)\|d^k\|^2 \\
+&=
+-\frac12\,\rho^2\left(\frac1\kappa+\frac1{\sqrt\kappa}\right)\|\tilde x^k-\tilde y^k\|^2.
+\end{align*}
+Therefore
+\begin{align*}
+R_k
+&=
+-\frac12\,L\rho^2\left(\frac1\kappa+\frac1{\sqrt\kappa}\right)\|\tilde x^k-\tilde y^k\|^2 \\
+&\le 0
+\end{align*}
+as desired.
+\end{proof}
+
+\begin{corollary}\label{Corollary:NesterovConvergence:StronglyConvex:ConvergenceInf}
+We have
+$$f(x^k)-f^*\leq \left(1-\dfrac{1}{\sqrt{\kp}}\right)^k\left\{f(x_0)-f^*+\dfrac{m}{2}\|x_0-x^*\|^2\right\} \ .$$
+\end{corollary}
+
+\begin{proof}
+By Theorem \ref{Thm:NesterovConvergence:StronglyConvex} we have
+\[
+V_{k+1} \le \rho^2 V_k \le \cdots \le (\rho^2)^k V_0 \ .
+\]
+Since $x^0=x^{-1}$ we have
+$$
+\begin{array}{ll}
+f(x^k)-f^* & \le
+\left(1-\dfrac1{\sqrt{\kappa}}\right)^k
+\left[
+f(x^0)-f^*
++
+\dfrac{L}{2}
+\|
+\tilde{x}^0 - \rho^2 \tilde{x}^{-1}
+\|^2
+\right]
+\\
+& =
+\left(1-\dfrac1{\sqrt{\kappa}}\right)^k
+\left[
+f(x^0)-f^*
++
+\dfrac{L}{2}
+(1-\rho^2)^2
+\|x^0-x^*\|^2
+\right]
+\\
+& =
+\left(1-\dfrac1{\sqrt{\kappa}}\right)^k
+\left[
+f(x^0)-f^*
++
+\dfrac{L}{2}
+\left(\sqrt{\dfrac{m}{L}}\right)^2
+\|x^0-x^*\|^2
+\right]
+\\
+& =
+\left(1-\dfrac1{\sqrt{\kappa}}\right)^k
+\left[
+f(x^0)-f^*
++
+\dfrac{m}{2}\|x^0-x^*\|^2
+\right] \ .
+\end{array}
+$$
+where we have used
+\[
+1-\rho^2 = \frac1{\sqrt{\kappa}} = \sqrt{\frac{m}{L}} \ .
+\]
 
 This is to say we have
 
 $$f(x^k)-f^*\leq \left(1-\dfrac{1}{\sqrt{\kp}}\right)^k\left\{f(x_0)-f^*+\dfrac{m}{2}\|x_0-x^*\|^2\right\} \ ,$$
 where one can verify that $V_0=f(x_0)-f^*+\dfrac{m}{2}\|x_0-x^*\|^2$.
+\end{proof}
+
+In summary, for Nesterov's AGD in strongly convex case, the convergence rate is $
+\sim
+\left(1-\dfrac1{\sqrt{\kappa}}\right)^k
+$, while for GD it is $
+\sim
+\left(1-\dfrac1{\kappa}\right)^k$.
+
+
+\subsection{Convergence Proof of Nesterov's method: Convex Case.}
 
 (3) Convex objective functions: Lyapunov's method.
 
