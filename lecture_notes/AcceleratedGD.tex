@@ -167,7 +167,7 @@ Consequently,
 \begin{equation}\label{Thm:NesterovConvergence:Quadratic:Eq:Convergencef}
 f(x^k)-f(x^*)
 =
-\mathcal O
+O
 \Big(
 \left(1-\sqrt{\frac{m}{L}}\right)^k
 \Big).
@@ -547,6 +547,7 @@ where $R_k$ is defined in \emph{(\ref{Thm:NesterovConvergence:StronglyConvex:Eq:
 \end{lemma}
 
 \begin{proof}
+Let $\al=\al_k=\dfrac{1}{L}$, $\bt=\bt_k=\dfrac{\sqrt{\kp}-1}{\sqrt{\kp}+1}$, $\rho^2=1-\dfrac{1}{\sqrt{\kp}}$. 
 We have
 \begin{align*}
 R_k
@@ -633,7 +634,7 @@ Hence
 (1-\rho^2)\tilde x^k+\frac{\rho^2}{\beta}(\tilde y^k-\tilde x^k).
 \end{align*}
 
-Now choose
+Now since
 \[
 \rho^2=1-\frac{1}{\sqrt\kappa},
 \qquad
@@ -797,11 +798,10 @@ where one can verify that $V_0=f(x_0)-f^*+\dfrac{m}{2}\|x_0-x^*\|^2$.
 
 In summary, for Nesterov's AGD in strongly convex case, the convergence rate is $
 \sim
-\left(1-\dfrac1{\sqrt{\kappa}}\right)^k
+O\left(1-\dfrac1{\sqrt{\kappa}}\right)^k
 $, while for GD it is $
 \sim
-\left(1-\dfrac1{\kappa}\right)^k$.
-
+O\left(1-\dfrac1{\kappa}\right)^k$. This is the same as in the quadratic case.
 
 \subsection{Convergence Proof of Nesterov's method: Convex Case.}
 
