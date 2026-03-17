@@ -1,0 +1,424 @@
+\chapter{Stochastic Gradient Methods}
+\label{Ch:SGD}
+
+\section{SGD}
+
+Stochastic Gradient Descent (SGD) is a stochastic analogue of the Gradient Descent algorithm, aiming at finding
+the local or global minimizers of the function expectation parameterized by some random variable.
+Schematically, the algorithm can be interpreted as targeting at finding a local minimum point of
+the expectation of function
+\begin{equation}\label{Eq:OptimizationObjective}
+f(x)=\mathbf{E} f(x;\zeta) \ ,
+\end{equation}
+where the index random variable $\zeta$ follows some
+prescribed distribution $\mathcal{D}$, and the weight vector $x\in \mathbb{R}^d$.
+SGD updates via the iteration
+
+\begin{equation}\label{Eq:StochasticGradientDescent}
+x_{k+1}=x_k-\al_k g(x_k; \zeta_k) \ ,
+\end{equation}
+where the noisy gradient $g(x; \zt)=\grad f(x; \zt)$, $\al_k>0$ is the learning rate, and $\zeta_k$ are i.i.d. random variables
+that have the same distribution as $\zeta\sim \cD$.
+
+In particular, in the case of training a deep neural network,
+the random variable $\zeta$ samples size $m$ ($m\leq n$) mini--batches $\mathcal{B}$ uniformly from an index set $\{1,2,...,n\}$:
+$\mathcal{B}\subset \{1,2,...,n\}$ and $|\mathcal{B}|=m$. In this case, given loss functions $f_1(x), ..., f_n(x)$ on
+training data, we have
+$$f(x; \zeta)=\dfrac{1}{m}\sum\limits_{i\in \mathcal{B}}f_i(x) \text{ and } f(x)=\dfrac{1}{n}\sum\limits_{i=1}^n f_i(x) \ .$$
+
+\begin{algorithm}[H]
+\caption{Stochastic Gradient Descent}
+\label{Alg:SGD}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $x^0$, index random variable $\zt\sim \cD$, noisy gradient $g(x;\zt)=\grad f(x;\zt)$ such that $\E g(x;\zt)=\grad f(x)$, learning rate $\al_k>0$, $k=0,1,2,...$
+\FOR {$k=0,1,2,...,K-1$}
+    \STATE Sample the i.i.d. random variable $\zt_k\sim \cD$
+    \STATE Calculate the noisy gradient $g(x_k; \zt_k)=\grad f(x_k; \zt_k)$
+    \STATE $x_{k+1}=x_k-\al_k g(x_k; \zeta_k)$
+\ENDFOR
+\STATE \textbf{Output}: Output $x_K$
+\end{algorithmic}
+\end{algorithm}
+
+Convergence analysis of SGD.
+
+$f$ is strongly convex: measure $\E\left[\|x_k-x^*\|^2\right]$; $f$ is convex but not necessarily strongly convex: measure
+$f(x_k)-f(x^*)$.
+
+\begin{assumption}\label{Assumption:SGDBasicAssumption}
+We assume that for some $L_g>0$ and $B>0$ we have
+\begin{equation}\label{Assumption:SGDBasicAssumption:Eq:Assumption}
+\E_{\zt}\left[\|g(x;\zt)\|_2^2\right]\leq L_g^2\|x-x^*\|^2+B^2
+\end{equation}
+for all $x$.
+\end{assumption}
+
+\begin{remark}\label{Remark:SGD-Assumption}
+In the mini-batch stochastic gradient case, $g(x;\zt)=\dfrac{1}{m}\sum\li_{i\in \cB}\grad f_i(x)$. Then we have
+$$\begin{array}{ll}
+&\E_\zt\|g(x;\zt)\|_2^2
+\\
+= & \E\left\|\dfrac{1}{m}\sum\li_{i\in \cB}\grad f_i(x)\right\|^2
+\\
+= & \E\left\|\dfrac{1}{m}\sum\li_{i\in \cB}(\grad f_i(x)-\grad f_i(x^*))+\dfrac{1}{m}\sum\li_{i\in \cB}\grad f_i(x^*)\right\|^2
+\\
+\leq & 2\E\left\|\dfrac{1}{m}\sum\li_{i\in \cB}(\grad f_i(x)-\grad f_i(x^*))\right\|^2+2\E\left\|\dfrac{1}{m}\sum\li_{i\in \cB}\grad f_i(x^*)\right\|^2
+\\
+\leq & 2\E\sum\li_{i\in \cB}\dfrac{1}{m^2}\sum\li_{i\in \cB}\|\grad f_i(x)-\grad f_i(x^*)\|^2+B^2
+\\
+\leq & 2\E\dfrac{1}{m}\sum\li_{i\in \cB}\|\grad f_i(x)-\grad f_i(x^*)\|^2+B^2
+\\
+\leq & 2\E\|\grad f_i(x)-\grad f_i(x^*)\|^2+B^2 \ .
+\end{array}$$
+So we can pick $L_g=\sqrt{2}L_{\grad f}$. If $L_g=0$ in \eqref{Assumption:SGDBasicAssumption:Eq:Assumption}, then $f$ cannot be $m$-strongly convex over an unbounded domain, since by Jensen's inequality 
+$\|\grad f(x)\|^2=\|\E g(x; \xi)\|^2\leq \E\left[\|g(x;\xi)\|^2\right]$ but $\langle x-x^*, \grad f(x)\rangle=\langle x-x^*, \grad f(x)-\grad f(x^*)\rangle=\langle x-x^*, \int_0^1 \grad^2 f(x^*+\gm(x-x^*))(x-x^*)d\gm\rangle \geq m\|x-x^*\|^2$ for all x.
+\end{remark}
+
+Square expansion for a stochastic iteration:
+
+\begin{equation}\label{SquareExpansion:SGD}
+\begin{array}{ll}
+\|x_{k+1}-x^*\|^2&=\|x_k-\al_k g(x_k; \zt_k)-x^*\|^2
+\\
+&=\|x_k-x^*\|^2-2\al_k\langle g(x_k; \zt_k), x_k-x^*\rangle+\al_k^2\|g(x_k; \zt_k)\|^2 \ .
+\end{array}
+\end{equation}
+
+Set $a_k=\E\left[\|x_k-x^*\|^2\right]$, then 
+
+\begin{equation}\label{SquareExpansionIteration:SGD}
+a_{k+1}\leq \left(1+\al_k^2L_g^2\right)a_k-2\al_k\E\left[\langle\grad f(x_k), x_k-x^*\rangle\right]+\al_k^2B^2 \ .
+\end{equation}
+
+Case 1: $L_g=0$.
+Average output: $\bar{x}_K=\dfrac{\sum\li_{j=0}^K \al_jx_j}{\sum\li_{j=0}^K \al_j}$. 
+
+Set $\al_k=\al>0$ and $\al_{\text{opt}}=\dfrac{D_0}{B\sqrt{T+1}}$, $\tht=\dfrac{\al}{\al_{\text{opt}}}$. Set $L_g=0$. Then
+$$\E\left[f(\bar{x}_T)-f(x^*)\right]\leq \left(\dfrac{1}{2}\tht+\dfrac{1}{2}\tht^{-1}\right)\dfrac{BD_0}{\sqrt{T+1}} \ .$$
+
+Case 2: $B=0$.
+Assume that $\langle\grad f(x), x-x^*\rangle\geq m\|x-x^*\|^2$ for some $m>0$. Then if $\al_k=\al\in \left(0, \dfrac{2m}{L_g^2}\right)$, 
+then we obtain a linear rate of convergence. Optimal $\al=\dfrac{2}{L_g^2}$.
+$$a_k\leq \left(1-\dfrac{m^2}{L_g^2}\right)^kD_0^2< \ve \Longleftrightarrow T\geq \left\lceil 
+\dfrac{L_g^2}{m^2}\ln\left(\dfrac{D_0^2}{\ve}\right)\right\rceil \ .$$
+
+Case 3: $B>0$ and $L_g>0$, and $f$ is strongly convex. Choose $\al\in \left(0, \dfrac{2m}{L_g^2}\right)$
+and $\al_k=\al$.
+$$a_k\leq \left(1-2m\al+\al^2L_g^2\right)^kD_0^2+\dfrac{\al B^2}{2m-\al L_g^2} \ .$$
+
+``threshold value" $\dfrac{\al B^2}{2m-\al L_g^2}$. ``epoch doubling", ``hyper--parameter tuning"
+
+\section{Variance--reduction methods: SVRG, SAG, SAGA, SARAH, SPIDER, STORM}
+
+Variance Reduction Methods: Goal is to reduce the variance produced by the stochastic terms in the iteration scheme.
+
+SVRG: Johnson, R., Zhang, T., Accelerating Stochastic Gradient using Predictive Variance Reduction,
+\textit{NIPS}, 2013.
+
+Goal is to minimize $\min P(\om)$ where $P(\om)=\dfrac{1}{n}\sum\li_{i=1}^n \psi_i(\om)$.
+
+SGD: draw $i_t$ randomly from $\{1,...,n\}$ and set
+$$\om^{(t)}=\om^{(t-1)}-\eta_t \grad \psi_{i_t}(\om^{(t-1)}) \ .$$
+
+How to reduce variance? We can keep a snapshot $\widetilde{\om}$ after every $m$ SGD iterations, and we
+maintain the average gradient
+$$\widetilde{\mu}=\grad P(\widetilde{\om})=\dfrac{1}{n}\sum\li_{i=1}^n \grad \psi_i(\widetilde{\om}) \ .$$
+
+Variance--reduction:
+$$\om^{(t)}=\om^{(t-1)}-\eta_t\left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right) \ .$$
+
+\begin{algorithm}[H]
+\caption{Stochastic Variance Reduced Gradient}
+\label{Alg:SVRG}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $\widetilde{\om}_0$, update frequency $m$ and learning rate $\eta$
+\FOR {$s=1,2,...$}
+    \STATE $\widetilde{\om}=\widetilde{\om}_{s-1}$
+    \STATE $\widetilde{\mu}=\dfrac{1}{n}\sum\li_{i=1}^n \grad \psi_i(\widetilde{\om})$
+    \STATE $\om_0=\widetilde{\om}$
+    \FOR {$t=1,2,...,m$}
+        \STATE Sample $i_t$ independently and uniformly from $\{1,...,n\}$
+        \STATE Update the weight $\om_t=\om_{t-1}-\eta \left(\grad \psi_{i_t}(\om_{t-1})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right)$
+    \ENDFOR
+    \STATE $\widetilde{\om}_s\leftarrow \om_t$ for randomly chosen $t\in \{0,...,m-1\}$
+\ENDFOR
+\STATE \textbf{Output}: $\widetilde{\om}_s$
+\end{algorithmic}
+\end{algorithm}
+
+Convergence analysis of SVRG. Follow the original SVRG paper.
+
+\begin{theorem}\label{Thm:ConvergenceSVRG}
+Consider the SVRG algorithm \ref{Alg:SVRG} and assume that each $\grad \psi_i$ is $L$--Lipschitz and convex, and the function
+$P(\om)=\dfrac{1}{n}\sum\li_{i=1}^n \psi_i(\om)$ is $\gm$--strongly convex. Set $\om_*=\arg\min\li_{\om}P(\om)$
+and assume that the epoch length $m$ is so large that
+$$\al=\dfrac{1}{\gm\eta(1-2L\eta)m}+\dfrac{2L\eta}{1-2L\eta}<1 \ ,$$
+then we have the linear convergence in expectation of SVRG algorithm \ref{Alg:SVRG}, i.e.
+$$\E [P(\widetilde{\om}_s)- P(\om_*)]\leq \al^s [P(\widetilde{\om}_0)-P(\om_*)] \ .$$
+\end{theorem}
+
+SAG: Roux, Nicolas L., Mark Schmidt, Francis R. Bach,
+A stochastic gradient method with an exponential convergence rate for finite training sets. \textit{NIPS}, 2012.
+
+Guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$.
+
+\begin{algorithm}[H]
+\caption{Stochastic Average Gradient: minimizing $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$}
+\label{Alg:SAG}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $x_0$, stepsize $\al>0$, $d=0$, $y_i=0$, $i=1,2,...,n$
+\FOR {$k=0,1,..., K-1$}
+    \STATE Sample $i$ uniformly randomly from $\{1,2,...,n\}$
+    \STATE $d \leftarrow d-y_i+\grad f_i(x)$
+    \STATE $y_i=\grad f_i(x)$
+    \STATE $x \leftarrow x-\dfrac{\al}{n}d$
+\ENDFOR
+\STATE \textbf{Output}: $x_K$
+\end{algorithmic}
+\end{algorithm}
+
+
+SAGA: Defazio, A., Bach, F., Lacoste-Julien, S.,
+SAGA: A Fast Incremental Gradient Method With Support for Non-Strongly Convex Composite Objectives, \textit{NIPS}, 2014.
+
+Guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$.
+
+\begin{algorithm}[H]
+\caption{SAGA: minimizing $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$}
+\label{Alg:SAGA}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initial vector $x^0\in \R^d$ and known gradients $\grad f_i(\phi_i^0)\in \R^d$ with $\phi_i^0=x^0$
+                        for each $i$. These derivatives are stored in an $n\times d$ matrix.
+\FOR {$k=0,1,..., K-1$}
+    \STATE Sample $j$ uniformly randomly from $\{1,2,...,n\}$
+    \STATE Take $\phi_j^{k+1}=x^k$ and store $\grad f_j(\phi_j^{k+1})$ in the table. 
+            All other entries in the table remain unchanged. The quantity $\phi_j^{k+1}$ is not explicitly stored.
+    \STATE Update $x$ using $\grad f_j(\phi_j^{k+1})$, $\grad f_j(\phi_j^k)$ and the table average:
+            $$w^{k+1}=x^k-\gm \left[\grad f_j(\phi_j^{k+1})-\grad f_j(\phi_j^k)
+                +\dfrac{1}{n}\sum\li_{i=1}^n \grad f_j(\phi_i^k)\right] \ ,$$
+                $$x^{k+1}=\text{prox}_\gm^h (w^{k+1})=\text{arg}\min\li_{x\in \R^d}\left\{h(x)+\dfrac{1}{2\gm}\|x-w^{k+1}\|^2\right\} \ .$$
+\ENDFOR
+\STATE \textbf{Output}: $x^K$
+\end{algorithmic}
+\end{algorithm}
+
+SARAH: Lam M. Nguyen, Jie Liu, Katya Scheinberg, Martin Tak\'{a}\v{c},
+SARAH: A Novel Method for Machine Learning Problems Using Stochastic Recursive Gradient,
+\textit{Proceedings of the 34th International Conference on Machine Learning, PMLR} \textbf{70}:2613-2621, 2017.
+
+Guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$.
+
+\begin{algorithm}[H]
+\caption{StochAstic Recursive grAdient algoritHm: minimizing $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$}
+\label{Alg:SARAH}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Initialization $\widetilde{w}_0$, the learning rate $\eta>0$ and the inner loop size $m$
+\FOR {$s=1,2,...$}
+    \STATE $w_0=\widetilde{w}_{s-1}$
+    \STATE $v_0=\dfrac{1}{n}\sum\li_{i=1}^n \grad f_i(w_0)$
+    \STATE $w_1=w_0-\eta v_0$
+    \FOR {$t=1,...,m-1$}
+        \STATE Sample $i_t$ uniformly randomly in $\{1,2,...,n\}$
+        \STATE $v_t=\grad f_{i_t}(w_t)-\grad f_{i_t}(w_{t-1})+v_{t-1}$
+        \STATE $w_{t+1}=w_t-\eta v_t$
+    \ENDFOR
+    \STATE Set $\widetilde{w}_s=w_t$ with $t$ chosen uniformly randomly from $\{0,1,...,m-1\}$
+\ENDFOR
+\STATE \textbf{Output}: $\widetilde{w}_s$
+\end{algorithmic}
+\end{algorithm}
+
+SPIDER: Cong Fang, Chris Junchi Li, Zhouchen Lin, Tong Zhang,
+SPIDER: Near-Optimal Non-Convex Optimization via Stochastic Path-Integrated Differential Estimator,
+\textit{NIPS}, 2018.
+
+No assumption on convexity. Optimal Rate $O\left(\min(n^{1/2}\ve^{-2}, \ve^{-3})\right)$ for 
+finding an $\ve$--approximate first order stationary point.
+
+\begin{algorithm}[H]
+\caption{Stochastic Path--Integrated Differential EstiamtoR: Searching First Order stationary point}
+\label{Alg:SPIDER}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input $\boldx^0$, $q$, $S_1$, $S_2$, $n_0$, $\ve$ and $\widetilde{\ve}$
+\FOR {$k=0,1,..., K-1$}
+    \IF {$\text{mod}(k,q)=0$} 
+        \STATE Draw $S_1$ samples (or compute the full gradient in the finite sum case), let $\boldv^k=\grad f_{\cS_1}(\boldx^k)$ 
+    \ELSE
+        \STATE Draw $S_2$ samples, and let $\boldv^k=\grad f_{\cS_2}(\boldx^k)-\grad f_{\cS_2}(\boldx^{k-1})+\boldv^{k-1}$
+    \ENDIF
+    \STATE \textbf{---Option I---}
+        \IF {$\|\boldv^k\|\leq 2\widetilde{\ve}$}
+            \STATE Return $\boldx^k$
+        \ELSE 
+            \STATE $\eta =\dfrac{\ve}{L n_0}$
+            \STATE $\boldx^{k+1}=\boldx^k-\eta \dfrac{\boldv^k}{\|\boldv^k\|}$
+        \ENDIF
+    \STATE \textbf{---Option II---}
+        \STATE $\eta^k =\min\left(\dfrac{\ve}{L n_0\|\boldv^k\|}, \dfrac{1}{2L n_0}\right)$
+        \STATE $\boldx^{k+1}=\boldx^k-\eta^k \boldv^k$
+\ENDFOR
+\STATE \textbf{Output}: Output $\widetilde{\boldx}$ uniformly at random from $\{\boldx^k\}_{k=0}^{K-1}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}\label{Remark:Minibatch}
+In the classical SGD algorithm, the minibatches $\cB$ are sampled uniformly randomly from the index set $\{1,2,...,n\}$ with fixed minibatch size $m\leq n$. This kind of minibatches can be regarded as \emph{``sample without replacement"} minibatches. This is the commonly understood minibatches in practice.
+
+In the SPIDER algorithm, the samples $\cS_1$ and $\cS_2$ are drawn with replacement, so that they form minibatches $\cS$ that are sampled uniformly randomly from the index set $\{1,2,...,n\}$ but with replacement, and the minibatch has a given size, say $m$ but counting multiplicities. This kind of minibacthes can be regarded as \emph{``sample with replacement"} minibacthes. This is less seen in the literature.
+
+The reason why ``sample with replacement" minibatches are used in the SPIDER algorithm is because of the following fact: consider estimating the variance of the stochastic estimator $\dfrac{1}{m}\sum\li_{i\in \cS}\grad f_i(x)$ where $\cS$ is the ``sample with replacement" minibatch with size $m$, then
+$$\E\left\|\dfrac{1}{m}\sum\li_{i\in \cS}\grad f_i(x)-\grad f(x)\right\|^2=
+\E\left\|\dfrac{1}{m}\sum\li_{i\in \cS}(\grad f_i(x)-\grad f(x))\right\|^2=\dfrac{1}{m}\E\|\grad f_i(x)-\grad f(x)\|^2 \ ,$$
+where in the last expectation the variable $i$ is taken uniformly randomly from $\{1,2,...,n\}$.
+
+On the contrary, if $\cB$ is the ``sample without replacement" minibatch with the same size $m$, then instead we have
+$$\begin{array}{ll}
+\E\left\|\dfrac{1}{m}\sum\li_{i\in \cB}\grad f_i(x)-\grad f(x)\right\|^2& =
+\E\left\|\dfrac{1}{m}\sum\li_{i\in \cB}(\grad f_i(x)-\grad f(x))\right\|^2 
+\\
+&\leq
+\E\sum\li_{i\in \cB}\dfrac{1}{m^2}\sum\li_{i\in \cB}\|\grad f_i(x)-\grad f(x)\|^2 
+=\E\|\grad f_i(x)- \grad f(x)\|^2 \ .
+\end{array}$$
+So we see a factor of $1/m$ is lost.
+\end{remark}
+
+Previous mentioned methods typically use \textit{non-adaptive
+learning rates} and \textit{reliance on giant batch sizes} to construct variance reduced gradients through the use
+of low-noise gradients calculated at a ``checkpoint".
+
+STOchastic Recursive Momentum (STORM, Cutkosky, A., Orabona, F., Momentum-Based Variance Reduction in Non-Convex SGD, arXiv:1905.10018v2, 2020.) is a recently proposed novel variance-reduction method that achieves variance reduction through the use of a variant of the momentum term. 
+
+This method never needs to compute a checkpoint gradient and achieves the optimal convergence rate of $O(1/T^{1/3})$. In fact, the key ideas in momentum-based methods 
+is to replace the gradient estimator with an exponential moving avearge of the gradient estimators in all previous iteration steps, i.e.
+
+$$
+\begin{array}{ll}
+\boldd_{t}&= (1-a)\boldd_{t-1}+a\grad f(\boldx_t, \xi_{t}) \ ,
+\\
+\boldx_t & =\boldx_{t-1}-\eta \boldd_t \ ,
+\end{array}
+$$
+where $\grad f(x, \xi)$ is the usual stochastic gradient estimator. The STORM estimator incorporates ideas in SARAH estimator to modify the momentum updates as
+
+$$
+\begin{array}{ll}
+\boldd_{t}&= (1-a)\boldd_{t-1}+a\grad f(\boldx_t, \xi_{t})+(1-a)(\grad f(\boldx_t, \xi_t)-\grad f(\boldx_{t-1}, \xi_t)) \ ,
+\\
+\boldx_t & =\boldx_{t-1}-\eta \boldd_t \ .
+\end{array}
+$$
+
+We can think of the momentum iteration as an ``exponential moving average" version of SARAH, that is
+$$\boldd_{t}= (1-a)\left[\boldd_{t-1}+(\grad f(\boldx_t, \xi_t)-\grad f(\boldx_{t-1}, \xi_t))\right]+a\grad f(\boldx_t, \xi_{t}) \ .
+$$
+Here the first part is like SARAH update, but it is weighted with the stochastic gradient update. Moreover, different from the SARAH update, the STORM update does not have to compute checkpoint gradients. Rather, variance-reduction is achieved by tuning the weight parameter $a$ appropriately. The exact algorithm goes as follows:
+
+\begin{algorithm}
+	\caption{STORM: STOchastic Recursive Momentum}
+	\label{Alg:STORM}
+	\begin{algorithmic}[1]
+		\STATE \textbf{Input}: Parameters $k, w, c$, initial point $\boldx_1$
+		\STATE Sample $\xi_1$
+		\STATE $G_1\leftarrow \|\grad f(\boldx_1,\xi_1)\|$
+		\STATE $\boldd_1\leftarrow \grad f(\boldx_1, \xi_1)$
+		\STATE $\eta_0 \leftarrow k/w^{1/3}$
+		\FOR {$t=1,2,...,T$}
+			\STATE $\eta_t \leftarrow \dfrac{k}{(w+\sum_{i=1}^t G_i^2)^{1/3}}$
+			\STATE $\boldx_{t+1}\leftarrow \boldx_t-\eta_t \boldd_t$
+			\STATE $a_{t+1}\leftarrow c\eta_t^2$
+			\STATE Sample $\xi_{t+1}$
+			\STATE $G_{t+1}\leftarrow \|\grad f(\boldx_{t+1}, \xi_{t+1})\|$
+			\STATE $\boldd_{t+1}\leftarrow(1-a_{t+1})\boldd_t+a_{t+1} \grad f(\boldx_{t+1}, \xi_{t+1})+(1-a_{t+1})[\grad f(\boldx_{t+1}, \xi_{t+1})-\grad f(\boldx_t, \xi_{t+1})]$
+		\ENDFOR
+		\STATE \textbf{Output}: $\widehat{\boldx}$ sampled uniformly randomly from $\boldx_1,..., \boldx_T$ (In practice, set $\widehat{\boldx}=\boldx_T$)
+	\end{algorithmic}
+\end{algorithm}
+
+
+\section{Escape from saddle points and nonconvex problems, SGLD, Perturbed GD}
+
+Continuous point of view: 
+
+Hu, W., Li, C.J., Li, L., Liu, J., On the diffusion approximation of nonconvex stochastic gradient descent. \textit{Annals of Mathematical Science and Applications}, Vol. \textbf{4}, No. 1 (2019), pp. 3-32.
+
+SGLD: Maxim Raginsky, Alexander Rakhlin, Matus Telgarsky,
+Non-convex learning via Stochastic Gradient Langevin Dynamics: a nonasymptotic analysis,
+\textit{Proceedings of the 2017 Conference on Learning Theory, PMLR} \textbf{65}:1674-1703, 2017.
+
+SGLD is a continuous version of SGD with additional moderate and isotropic noise.
+
+Convergence Guarantee: Xu, P., Chen, J., Zou, D., Gu, Q., Global convergence of Langevin Dynamics 
+Based Algorithms for Nonconvex Optimization, \textit{NIPS}, 2018. 
+
+\begin{algorithm}[H]
+\caption{Stochastic Gradient Langevin Dynamics: minimizing $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$}
+\label{Alg:SGLD}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input initialization $w_0\in \R^d$, stepsize $\al>0$, inverse temperature $\bt>0$
+\FOR {$k=0,1,..., K-1$}
+    \STATE Sample a random minibatch $B\subset \{1,2,...,n\}$
+    \STATE Calculate $\grad f_i(w_k)$ for $i\in B$
+    \STATE Sample i.i.d. $\ve_k\sim \cN(0, I_d)$
+    \STATE $w_{k+1}=w_k-\dfrac{\eta}{|B|} \sum\li_{i\in B}\grad f_i(w_k)+\sqrt{2\eta \bt^{-1}}\ve_k$
+\ENDFOR
+\STATE \textbf{Output}: $w_K$
+\end{algorithmic}
+\end{algorithm}
+
+
+Perturbed GD: Chi Jin, Rong Ge, Praneeth Netrapalli, Sham M. Kakade, Michael I. Jordan,
+How to Escape Saddle Points Efficiently, \textit{ICML} 2017.
+
+Perturbed GD has guaranteed escape rate from saddle points.
+
+
+\begin{algorithm}[H]
+\caption{Perturbed Gradient Descent: PGD$(\boldx_0, \ell, \rho, \ve, c, \dt, \Dt_f)$}
+\label{Alg:PGD}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input Initialization $\boldx_0$. 
+\STATE Parameters $\chi \leftarrow 3\max\left\{\ln\left(\frac{d\ell \Dt_f}{c\ve^2\dt}\right), 4\right\}$,
+$\eta \leftarrow \frac{c}{\ell}$, $r \leftarrow \frac{\sqrt{c}}{\chi^2}\cdot \frac{\ve}{\ell}$, 
+$g_{\text{thres}}\leftarrow \frac{\sqrt{c}}{\chi^2}\cdot \ve$, 
+$f_{\text{thres}}\leftarrow \frac{c}{\chi^3}\cdot \sqrt{\frac{c^3}{\rho}}$,
+$t_{\text{thres}}\leftarrow \frac{\chi}{c^2}\cdot \frac{\ell}{\sqrt{\rho\ve}}$,
+$t_{\text{noise}}\leftarrow -t_{\text{thres}}-1$. 
+\FOR {$t=0,1,..., K-1$}
+    \IF {$\|\grad f(\boldx_t)\|\leq g_{\text{thres}}$ and $t-t_{\text{noise}}>t_{\text{thres}}$}
+        \STATE $\widetilde{\boldx}_t\leftarrow \boldx_t$, $t_{\text{noise}}\leftarrow t$
+        \STATE $\boldx_t\leftarrow \widetilde{\boldx}_t+\xi_t$, $\xi_t$ uniformly $\sim \mathbb{B}_0(r)$
+    \ENDIF
+    \IF {$t-t_{\text{noise}}=t_{\text{thres}}$ and $f(\boldx_t)-f(\widetilde{\boldx}_{t_{\text{noise}}})>-f_{\text{thres}}$}
+        \STATE \textbf{RETURN} $\widetilde{\boldx}_{t_{\text{noise}}}$
+    \ENDIF
+    \STATE $\boldx_{t+1}\leftarrow \boldx_t-\eta \grad f(\boldx_t)$
+\ENDFOR
+\STATE \textbf{Output}: $\boldx_K$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Coordinate Descent and Stochastic Coordinate Descent}
+
+References:
+
+Wright, S.J., Coordinate Descent Algorithms, \textit{Mathematical Programming}, 2015, \textbf{151}(1): 3--34.
+
+Nesterov, Y., Efficiency of Coordinate Descent Methods on Huge--Scale Optimization Problems,
+\textit{SIAM Journal on Optimization}, 2012, \textbf{22}(2): 341. 
+
+The $k$--th iteration of Coordinate Descent applied to a function $f: \R^n\ra \R$ chooses some index $i_k\in \{1,2,...,n\}$
+and takes iteration
+$$x^{k+1}=x^k+\gm_k e_{i_k} \ ,$$
+where $e_{i_k}$ is the $i_k$--th unit vector and $\gm_k$ is the step. 
+
+Example 1. Gauss--Seidel method: 
+$$\gm_k=\arg\min\li_{\gm}f(x^k+\gm e_{i_k})  \ .$$
+
+Example 2. Coordinate Gradient Descent method:
+$$\gm_k=-\al_k \dfrac{\pt f}{\pt x_{i_k}}(x^k)e_{i_k}$$
+for some $\al_k>0$. 
+
+Example 3. If $i_k$ is chosen randomly the method is Stochastic Coordinate Descent.
+
+Descent methods need $f(x^{k+1})<f(x^k)$ for all $k$.

@@ -1,0 +1,214 @@
+\chapter{Second Order Methods}
+\label{Ch:SecondOrder}
+
+\section{Newton's method}
+
+Second order methods: Produce an optimization sequence $\{x^k\}$ using second--order Taylor expansions
+(quadratic surrogate)
+
+$$\min\li_{x\in \cU(x^k)}f(x)\approx \min\li_{x\in \cU(x^k)}\left[f(x^k)+\grad f(x^k)^T(x-x^k)+\dfrac{1}{2}(x-x^k)^T\grad^2 f(x^k)(x-x^k)\right] \ ,$$
+where $\cU(x^k)$ is a convex open neighborhood of $x^k$.
+
+If the Hessian $\grad^2 f(x^k)$ is invertible, the minimum is taken at $x^k-[\grad^2 f(x^k)]^{-1}\grad f(x^k)$.
+
+Newton's iteration:
+\begin{equation}\label{Eq:NewtonMethod}
+x^{k+1}=x^k-[\grad^2 f(x^k)]^{-1}\grad f(x^k) \ .
+\end{equation}
+
+\begin{algorithm}[H]
+\caption{Newton's method}
+\label{Alg:Newton}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input Initialization $x^0$.
+\FOR {$k=0,1,...,K-1$}
+    \STATE Calculate the gradient $\grad f(x^k)$
+    \STATE Calculate the Hessian $\grad^2 f(x^k)$ and the inverse $[\grad^2 f(x^k)]^{-1}$
+    \STATE Update $x^{k+1}=x^k-[\grad^2 f(x^k)]^{-1}\grad f(x^k)$
+\ENDFOR
+\STATE \textbf{Output}: $x^K$
+\end{algorithmic}
+\end{algorithm}
+
+Convergence of Newton's method.
+
+\begin{theorem}[Local superlinear convergence of the Newton's method]\label{Thm:LocalConvergenceNewton}
+Suppose that the function $f$ is twice differentiable and the Hessian $\grad^2 f(x)$ is
+Lipschitz--continuous with Lipschitz constant $M>0$, i.e.
+$$\|\grad^2 f(x)-\grad^2 f(y)\|\leq M\|x-y\| \ .$$
+Let $x^*$ be a second--order stationary point in the sense of
+Theorem \ref{Thm:NecessaryConditionsSmoothUnconstrainedOptimization} (b),
+then if the starting point $x_0$ is sufficiently close to $x^*$, then the sequence of iterates from Newton's
+method \eqref{Eq:NewtonMethod} converges to $x^*$ at a superlinear rate (in particular, this rate is quadratic).
+\end{theorem}
+
+\begin{proof}
+See the proof of Theorem 3.5 of the textbook: Nocedal, J., Wright, S.J., \textit{Numerical Optimization}, Second Edition, Springer, 2006.
+\end{proof}
+
+Drawbacks of Newton's method: (1) Inverse of Hessian $[\grad^2 f(x)]^{-1}$ hard to calculate for high--dimensional problems;
+(2) No positive definite guarantee of Hessian $\grad^2 f(x)$.
+
+\section{Quasi--Newton: BFGS}
+
+Reference:  J. E. Dennis, Jr., Jorge J. Mor\'{e},
+Quasi--Newton methods, motivation and theory,
+\textit{SIAM Review}, Vol. \textbf{19}, No. 1 (Jan. 1977), pp. 46--89.
+
+Quasi--Newton method: If the Hessian $\grad^2 f(x^k)$ is not positive definite or it is hard to calculate,
+we need to replace it with a positive definite matrix $B_k$
+that approximates $\grad^2 f(x^k)$: $B_k \approx \grad^2 f(x^k)$.
+Or we update the inverse of the Hessian matrix $H_k\approx [\grad^2 f(x^k)]^{-1}$ iteratively, so that we do not have to recalculate
+the approximation of the inverse of the
+Hessian matrix $[\grad^2 f(x^k)]^{-1}$ at each iteration.
+
+Set $B_k=\grad^2 f(x^k)$. Quasi--Newton condition uses quadratic surrogate around each two consecutive iterations
+$x^k$ and $x^{k+1}$, which produces an iteration that calculates $B_{k+1}$ from current iteration. In fact we have
+
+$$f(x^k)\approx f(x^{k+1})+\grad f(x^{k+1})^T(x^k-x^{k+1})+\dfrac{1}{2}(x^k-x^{k+1})^T\grad^2 f(x^{k+1})(x^k-x^{k+1})$$
+gives
+$$\grad f(x^k)\approx \grad f(x^{k+1})+B_{k+1}(x^k-x^{k+1}) \ .$$
+Set $y_k=\grad f(x^{k+1})-\grad f(x^k)$ and $s_k=x^{k+1}-x^k$. Then
+\begin{equation}\label{Eq:Quasi-NewtonSecantEquationB}
+B_{k+1}s_k=y_k \ .
+\end{equation}
+
+Equation \eqref{Eq:Quasi-NewtonSecantEquationB} is called the \textit{secant equation}. The secant equation will produce
+a next iteration $B_{k+1}$ from current iteration, and the update rule from $B_k$ to $B_{k+1}$ should always satisfy the following
+criteria: (1) it satisfies the secant equation; (2) it keeps symmetry and positive definiteness of $B_{k+1}$;
+(3) it is a low rank modification from $B_k$ to $B_{k+1}$.
+
+The positive definiteness can be directly obtained from the secant equation since we have from
+\eqref{Eq:Quasi-NewtonSecantEquationB} that $s_k^T B_{k+1} s_k=s_k^T y_k>0$. This give the \textit{curvature condition}:
+for any $x,y \in \text{Dom}(f)$ we have
+
+\begin{equation}\label{Eq:CurvatureCondition}
+(x-y)^T(\grad f(x)-\grad f(y))>0 \ .
+\end{equation}
+
+It can be shown that when $f$ is strongly convex then \eqref{Eq:CurvatureCondition} is satisfied. This is left as one problem in Homework 4.
+
+Secant equation is solved by doing minimization such as
+$$\min\li_{B}\|B-B_k\| \text{ subject to } B=B^T  \ , \ Bs_k=y_k \ .$$
+
+Choosing appropriate norm, solution is
+
+DFP (Davidson--Fletcher--Powell) update
+
+\begin{equation}\label{Eq:Quasi-NewtonDFPUpdateB}
+B_{k+1}=(I-\rho_ky_ks_k^T)B_k(I-\rho_ks_ky_k^T)+\rho_ky_ky_k^T \ , \ \rho_k=\dfrac{1}{y_k^Ts_k} \ .
+\end{equation}
+
+Sherman--Morrison--Woodbury formula
+$$(A+uv^T)^{-1}=A^{-1}-\dfrac{A^{-1}uv^TA^{-1}}{1+v^TA^{-1}u} \ , \text{ where } u, v \text{ are column vectors} \ .$$
+
+Thus we get (try it!) the DFP iteration for $H_k=B_k^{-1}$ as
+
+\begin{equation}\label{Eq:Quasi-NewtonDFPUpdateH}
+H_{k+1}=H_k-\dfrac{H_ky_ky_k^TH_k}{y_k^TH_ky_k}+\dfrac{s_ks_k^T}{y_k^Ts_k} \ .
+\end{equation}
+
+In a same way but conversely, we have the secant equation for $H$:
+
+\begin{equation}\label{Eq:Quasi-NewtonSecantEquationH}
+H_{k+1}y_k=s_k \ .
+\end{equation}
+
+Secant equation is solved by doing minimization such as
+$$\min\li_{H}\|H-H_k\| \text{ subject to } H=H^T  \ , \ Hy_k=s_k \ .$$
+
+
+BFGS (Broyden--Fletcher--Goldfarb--Shanno) update
+\begin{equation}\label{Eq:Quasi-NewtonBFGSUpdateH}
+H_{k+1}=(I-\rho_ks_ky_k^T)H_k(I-\rho_ky_ks_k^T)+\rho_ks_ks_k^T \ , \ \rho_k=\dfrac{1}{s_k^Ty_k} \ .
+\end{equation}
+
+Invert it we get
+\begin{equation}\label{Eq:Quasi-NewtonBFGSUpdateB}
+B_{k+1}=B_k-\dfrac{B_ks_ks_k^TB_k}{s_k^TB_ks_k}+\dfrac{y_ky_k^T}{y_k^Ts_k} \ .
+\end{equation}
+
+
+\begin{algorithm}[H]
+\caption{Quasi--Newton: BFGS method}
+\label{Alg:BFGS}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input Initialization $x^0$, $\grad f(x^0)$, $H_0=[\grad^2 f(x^0)]^{-1}$, $B_0=I$, learning rate $\eta>0$
+\FOR {$k=0,1,...,K-1$}
+    \STATE Calculate $x^{k+1}=x^k-\eta H_k \grad f(x^k)$
+    \STATE Calculate $y_k=\grad f(x^{k+1})-\grad f(x^k)$ and $s_k=x^{k+1}-x^k$
+    \STATE Update $H_{k+1}=(I-\rho_ks_ky_k^T)H_k(I-\rho_ky_ks_k^T)+\rho_ks_ks_k^T$
+    \STATE Update $B_{k+1}=B_k-\dfrac{B_ks_ks_k^TB_k}{s_k^TB_ks_k}+\dfrac{y_ky_k^T}{y_k^Ts_k}$
+\ENDFOR
+\STATE \textbf{Output}: $x^K$
+\end{algorithmic}
+\end{algorithm}
+
+Superlinear convergence of BFGS method (see Theorem 6.6 in
+Nocedal, J., Wright, S.J., \textit{Numerical Optimization}, Second Edition, Springer 2006.).
+
+\section{Stochastic Quasi--Newton}
+
+Reference: Byrd, R.H., Hansen, S.L., Nocedal, J. et al, A stochastic quasi--Newton method
+for large--scale optimization, \textit{SIAM Journal on Optimization}, 2016, 26(2): 1008--1031.
+
+Large--scale optimization
+$$F(w)=\dfrac{1}{N}\sum\li_{i=1}^N f_i(w) \ .$$
+
+Stochastic gradient estimate: $b=|\cS|<\!\!<N$, randomly $\cS\subset\{1,2,...,N\}$, take
+
+$$\hat{\grad} F(w)=\dfrac{1}{b}\sum\li_{i\in \cS}\grad f_i(w) \ .$$
+
+It is necessary to employ a limited memory variant that is scalable in the number of variables, but enjoys only a linear rate of convergence.
+
+Quasi--Newton updating is inherently an overwriting process rather than an averaging process, and therefore the vector
+$y=\grad F(w^{k+1})-\grad F(w^k)$ must reflect the action of the Hessian of the entire objective $F$, which is not
+achieved by differencing stochastic gradients based on small samples.
+
+To achieve stable Hessian approximation one needs to \textit{decouple} the stochastic gradient and curvature estimation calculations.
+
+\begin{algorithm}[H]
+\caption{Stochastic Quasi--Newton Method}
+\label{Alg:StochasticQuasiNewton}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Input Initialization $w^1$, positive integers $M, L$, and step--length sequence $\al^k>0$
+\STATE Set $t=-1$ \hfill $\triangleright$ Records number of correction pairs currently computed
+\STATE $\bar{w}_t=0$
+\FOR {$k=1,2,...,K-1$}
+    \STATE Choose a sample $\cS\subset \{1,2,...,N\}$
+    \STATE Calculate the stochastic gradient $\hat{\grad} F(w^k)=\dfrac{1}{|\cS|}\sum\li_{i\in \cS}\grad f_i(w)$
+    \STATE $\bar{w}_t=\bar{w}_t+w^k$
+    \IF {$k\leq 2L$}
+        \STATE $w^{k+1}=w^k-\al^k \hat{\grad} F(w^k)$ \hfill $\triangleright$ Stochastic gradient iteration
+    \ELSE
+        \STATE $w^{k+1}=w^k-\al^k H_t \hat{\grad} F(w^k)$, where $H_t$ is defined by Algorithm \ref{Alg:StochasticQuasiNewtonHUpdate}
+    \ENDIF
+    \IF {$\mod(k,L)=0$} 
+        \STATE $t=t+1$      
+        \STATE $\bar{w}_t=\bar{w_t}/L$
+        \IF {$t>0$}
+            \STATE Choose a sample $\cS_H\subset\{1,2,...,N\}$ to define $\hat{\grad}^2 F(\bar{w}_t)\equiv \dfrac{1}{|\cS_H|}\sum\li_{i\in \cS_H}\grad^2 f(w)$
+            \STATE Compute $s_t=\bar{w}_t-\bar{w}_{t-1}$, $y_t=\hat{\grad}^2F(\bar{w}_t)(\bar{w}_t-\bar{w}_{t-1})$
+                
+                 \hfill $\triangleright$ Compute correction pairs every $L$ iterations
+        \ENDIF
+        \STATE $\bar{w}_t=0$
+    \ENDIF
+\ENDFOR
+\STATE \textbf{Output}: $w^K$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Stochastic Quasi--Newton Method: Hessian Updating}
+\label{Alg:StochasticQuasiNewtonHUpdate}
+\begin{algorithmic}[1]
+\STATE \textbf{Input}: Updating counter $t$, memory parameter $M$, correction pairs $(s_j, y_j)$, $j=t-\widetilde{m}+1, ..., t$ where $\widetilde{m}=\min\{t, M\}$
+\STATE Set $H=\dfrac{s_t^Ty_t}{y_t^Ty_t}I$
+\FOR {$j=t-\widetilde{m}+1, ..., t$}
+    \STATE $\rho_j=\dfrac{1}{y_j^Ts_j}$
+    \STATE Apply BFGS formula $$H \leftarrow (I-\rho_js_jy_j^T)H(I-\rho_jy_js_j^T)+\rho_js_js_j^T$$
+\ENDFOR
+\STATE \textbf{Output}: new matrix $H_t=H$
+\end{algorithmic}
+\end{algorithm}
