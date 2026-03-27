@@ -1038,7 +1038,30 @@ We experiment the following
 
 \item[(4)] compare on different parmeters $A, B, \varepsilon>0$;
 
-\item[(5)] calculate the gradients directly using numpy and also calculate them using the automatic differentiation in tensorflow.
 \end{itemize}
 
 We perform the same experiments for the non-convex function $$h(x_1, x_2) = \dfrac{1}{2} A x_1^2 - \dfrac{1}{2} B x_2^2 \ .$$
+
+
+As an example, optimizing $f$ using $A=1, B=100$ has convergence shown as follows:
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/Distance_To_Zero_GD_A=1_B=100_alpha=0.01_beta=1_eps=0.1.jpg}
+\caption{Convergence of GD: $A=1, B=100, \alpha=0.01, \beta=1, \varepsilon=0.1$}
+\label{Fig:GD-AGD:GD}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/Distance_To_Zero_HeavyBall_A=1_B=100_alpha=0.01_beta=1_eps=0.1.jpg}
+\caption{Convergence of HeavyBall: $A=1, B=100, \alpha=0.01, \beta=1, \varepsilon=0.1$}
+\label{Fig:GD-AGD:HeavyBall}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/Distance_To_Zero_Nesterov_A=1_B=100_alpha=0.01_beta=1_eps=0.1.jpg}
+\caption{Convergence of Nesterov: $A=1, B=100, \alpha=0.01, \beta=1, \epsilon=0.1$}
+\label{Fig:GD-AGD:Nesterov}
+\end{figure}
