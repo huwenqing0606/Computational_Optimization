@@ -266,8 +266,199 @@ $\bullet$ Naive autoregressive streaming inference: generate the next token thro
 $\bullet$ Use of \verb#bfloat16# for GPU. 
 
 \subsection{AdamW}
+\label{subsec:adam_adamw}
+
+\paragraph{Motivation and setup.}
+Momentum methods maintain a first-moment (mean) estimate of gradients. Adam (Adaptive Moment Estimation) extends this idea by also maintaining a second-moment (uncentered variance) estimate, enabling per-parameter adaptive step sizes. Let $\hat{\mathbf{g}}_t$ denote the stochastic gradient at step $t$ (mini-batch gradient of the loss w.r.t.\ $\theta_t$).
+
+\paragraph{Adam: first and second moment estimates.}
+Adam maintains exponential moving averages of the gradient and its elementwise square:
+\begin{align}
+\mathbf{m}_t &= \beta_1 \mathbf{m}_{t-1} + (1-\beta_1)\hat{\mathbf{g}}_t, \label{eq:adam_m}\\
+\mathbf{v}_t &= \beta_2 \mathbf{v}_{t-1} + (1-\beta_2)\hat{\mathbf{g}}_t \odot \hat{\mathbf{g}}_t, \label{eq:adam_v}
+\end{align}
+with hyperparameters $\beta_1,\beta_2\in[0,1)$ and initialization $\mathbf{m}_0=\mathbf{0}$, $\mathbf{v}_0=\mathbf{0}$. Because these moving averages start at zero, they are biased toward zero at early iterations. Adam therefore uses \emph{bias-corrected} estimates
+\begin{equation}
+\hat{\mathbf{m}}_t \;=\; \frac{\mathbf{m}_t}{1-\beta_1^t},
+\qquad
+\hat{\mathbf{v}}_t \;=\; \frac{\mathbf{v}_t}{1-\beta_2^t}.
+\label{eq:adam_biascorr}
+\end{equation}
+The parameter update is then
+\begin{equation}
+\theta_{t+1}
+\;=\;
+\theta_t
+-
+\eta_t \frac{\hat{\mathbf{m}}_t}{\sqrt{\hat{\mathbf{v}}_t}+\varepsilon},
+\label{eq:adam_update}
+\end{equation}
+where $\sqrt{\cdot}$ and division are elementwise, and $\varepsilon>0$ ensures numerical stability. Intuitively, coordinates with consistently large gradient magnitudes obtain larger $\hat{\mathbf{v}}_t$ and thus smaller effective step sizes, while coordinates with smaller or sparser gradients obtain larger effective step sizes.
+
+\paragraph{Weight decay and the ``$L^2$ regularization'' distinction.}
+A common regularization strategy is \emph{weight decay}, which shrinks parameters toward zero during training. In classic (non-adaptive) SGD, adding an $L^2$ penalty $\dfrac{\lambda}{2}\|\theta\|_2^2$ to the loss leads to the update
+\[
+\theta_{t+1} \;=\; \theta_t - \eta_t\left(\hat{\mathbf{g}}_t + \lambda \theta_t\right),
+\]
+which is equivalent to multiplicative decay $\theta_{t+1}=(1-\eta_t\lambda)\theta_t-\eta_t\hat{\mathbf{g}}_t$.
+
+However, \emph{for Adam}, naively adding the $L^2$ gradient term $\lambda\theta_t$ to $\hat{\mathbf{g}}_t$ is \textbf{not} equivalent to true weight decay, because the adaptive preconditioning in \eqref{eq:adam_update} scales each coordinate differently. Concretely, with $L^2$ added inside Adam one obtains (schematically)
+\[
+\theta_{t+1} \approx \theta_t - \eta_t \frac{\hat{\mathbf{m}}_t(\hat{\mathbf{g}}_t+\lambda\theta_t)}{\sqrt{\hat{\mathbf{v}}_t(\hat{\mathbf{g}}_t+\lambda\theta_t)}+\varepsilon},
+\]
+so the effective shrinkage applied to $\theta_t$ is entangled with the moment estimates and varies across parameters and training time. This coupling can lead to suboptimal regularization behavior in practice.
+
+\paragraph{AdamW: decoupled weight decay.}
+AdamW resolves this issue by \emph{decoupling} the weight-decay shrinkage from the gradient-based update. In its standard form, AdamW performs Adam updates using the loss gradient \emph{without} $L^2$ added, and then applies weight decay directly to parameters:
+\begin{equation}
+\theta_{t+1}
+\;=\;
+\theta_t
+-
+\eta_t\left(
+\frac{\hat{\mathbf{m}}_t}{\sqrt{\hat{\mathbf{v}}_t}+\varepsilon}
+\;+\;
+\lambda\,\theta_t
+\right),
+\label{eq:adamw_update}
+\end{equation}
+where $\lambda\ge 0$ is the weight-decay coefficient. Equivalently, \eqref{eq:adamw_update} can be written as a multiplicative shrinkage followed by an Adam step:
+\[
+\theta_{t+1}
+\;=\;
+(1-\eta_t\lambda)\theta_t
+-
+\eta_t\frac{\hat{\mathbf{m}}_t}{\sqrt{\hat{\mathbf{v}}_t}+\varepsilon}.
+\]
+This separation restores the intended interpretation of weight decay as parameter shrinkage that is independent of the adaptive gradient preconditioner.
+
+\paragraph{Implementation note (parameter groups).}
+In deep networks and LLMs, weight decay is commonly applied to weight matrices (e.g., linear/MLP/attention projections) but \emph{not} to certain parameters such as biases and normalization parameters (e.g., LayerNorm scale and shift), because decaying these can degrade optimization and representation capacity. This is typically implemented by placing parameters into distinct optimizer groups with different $\lambda$ values.
+
+\paragraph{Default hyperparameters (for reference).}
+Unless otherwise stated, typical Adam/AdamW defaults are $\beta_1=0.9$, $\beta_2=0.999$, and $\varepsilon=10^{-8}$, with the learning rate $\eta_t$ and weight decay $\lambda$ tuned to the model scale, batch size, and schedule.
 
 \subsection{Muon}
+\label{subsec:muon}
+
+\paragraph*{Motivation} Empirically, the parameter updates produced by SGD-momentum and Adam for two-dimensional parameter tensors\footnote{Two-dimensional parameter tensors occur from linear transformations, such as in MLP and attention projections.} in transformer-based neural networks often show high condition numbers. This observation leads to the assumption that the updates are of low rank and are dominated by only a few directions. To encounter this phenomenon, the Muon (\emph{MomentUm Orthogonalized by Newton--Schulz}) optimizer applies an iterative approximation method to the momentum-based update matrix so that its singular values are driven towards unity. Consequently, the conditioning of the update matrix improves, and the scale of ``rare directions'' effectively increases \cite{jordan2024muon}.
+
+\paragraph*{Mathematical foundation for the Muon optimizer} Assume w.l.o.g. $m \ge n$ (otherwise consider the matrix transpose). Let $\mathbf{M} \in \mathbb{R}^{m \times n}$ be a real-valued matrix with reduced Singular Value Decomposition (SVD) $\mathbf{U} \mathbf{\Sigma} \mathbf{V}^\top$, where $\mathbf{U} \in \mathbb{R}^{m \times n}$ and $\mathbf{V}^\top \in \mathbb{R}^{n \times n}$ are \emph{orthogonal} matrices and $\mathbf{\Sigma} = \mathrm{diag}[(\sigma_1, \ldots ,\sigma_n)] \in \mathbb{R}^{n \times n}$ is a \emph{diagonal} matrix with monotonically decreasing singular values $\{\sigma_i\}_{i=1}^n$ of $\mathbf{M}$. \\
+Define the best \emph{semi-orthogonal} approximation to $\mathbf{M}$ as
+\[
+\mathrm{Ortho}(\mathbf{M}) := \arg\min_\mathbf{O}\{\| \mathbf{O} - \mathbf{M} \|_F\  :\, \text{either } \mathbf{O}\mathbf{O}^\top = \mathbf{I} \text{ or } \mathbf{O}^\top \mathbf{O} = \mathbf{I} \},
+\]
+where $\| \cdot\|_F$ denotes the Frobenius norm. The following part shows that $\mathbf{U} \mathbf{V}^\top = \mathrm{Ortho}(\mathbf{M})$. \\
+First, due to the assumption that $m \ge n$ and the orthogonality of $\mathbf{U}$ and $\mathbf{V}$, 
+\[
+    (\mathbf{UV}^\top)^\top (\mathbf{UV}^\top) = \mathbf{V} \mathbf{U}^\top \mathbf{U} \mathbf{V}^\top = \mathbf{I}_n
+\]
+is true. \\
+Second, take any matrix $\mathbf{O} \in \mathbb{R}^{m \times n}$ with orthonormal columns, then
+\begin{equation}\label{eq:frob_ex}
+    \| \mathbf{O} - \mathbf{M} \|_F^2  = \| \mathbf{O}\|_F^2 - 2 \,\mathrm{tr(\mathbf{O}^\top \mathbf{M})} + \|\mathbf{M} \|_F^2.
+\end{equation}
+Since $\| \mathbf{O} \|_F^2 = \mathrm{tr(\mathbf{O}^\top \mathbf{O}) = n}$, minimizing \eqref{eq:frob_ex} is equivalent to maximizing $\mathrm{tr(\mathbf{O}^\top \mathbf{M})}$. \\
+Use the SVD of $\mathbf{M}$ and the cyclicity of the $\mathrm{trace}$ operator to obtain 
+\[
+    \mathrm{tr}(\mathbf{O}^\top \mathbf{M}) = \mathrm{tr}(\mathbf{\Sigma} \mathbf{V}^\top \mathbf{O}^\top \mathbf{U}).
+\]
+Since $\mathbf{V}^\top \mathbf{O}^\top \mathbf{U}$ has singular values $\le 1$, von Neumann's trace inequality gives 
+\[
+    \mathrm{tr}(\mathbf{O}^\top \mathbf{M}) \le \mathrm{tr}(\mathbf{\Sigma}),
+\]
+with equality at $\mathbf{O} = \mathbf{UV}^\top$, which proves the statement. \\
+Muon replaces the momentum-based update matrix $\mathbf{M}$ by an approximation of $\mathbf{U} \mathbf{V}^\top$, which is achieved by odd polynomial iteration, also known as Newton--Schulz iteration \cite{jordan2024muon}. \\
+Define the odd matrix polynomial of degree $2n + 1$ as
+\[
+    p(\mathbf{X}) \;= \;  \sum_{i=1}^{n} \alpha_i (\mathbf{X}\mathbf{X}^\top)^i \,\mathbf{X} \;= \; \alpha_1 \mathbf{X} +\alpha_2 (\mathbf{X} \mathbf{X}^\top)\mathbf{X} + \alpha_3 (\mathbf{X} \mathbf{X}^\top)^2 \, \mathbf{X} + \ldots + \alpha_n (\mathbf{XX}^\top)^n\,\mathbf{X} 
+\]
+Then
+\[
+\begin{aligned}
+    p(\mathbf{M}) & = \sum_{i=1}^{n} \alpha_i (\mathbf{M} \mathbf{M}^\top)^i\, \mathbf{M}  \\
+    & = \sum_{i=1}^{n} \alpha_i (\mathbf{U} \mathbf{\Sigma} \mathbf{V}^\top (\mathbf{U} \mathbf{\Sigma} \mathbf{V}^\top)^\top)^i \,\mathbf{U} \mathbf{\Sigma} \mathbf{V}^\top \\
+    & = \mathbf{U} \left(\sum_{i=1}^n \alpha_i (\mathbf{\Sigma} \mathbf{\Sigma^\top})^i \, \mathbf{\Sigma} \right) \mathbf{V}^\top \\
+    & = \mathbf{U} p(\mathbf{\Sigma}) \mathbf{V}^\top
+\end{aligned}
+\]
+shows that applying an odd matrix polynomial to $\mathbf{M}$ is equivalent to applying it to $\mathbf{\Sigma}$ from its SVD. \\
+Another key observation is that normalizing the matrix $\mathbf{M}$ by $\frac{\mathbf{M}}{\|\mathbf{M}\|_F}$ does not affect its orthogonal approximation, because $\mathrm{Ortho}(c\mathbf{M}) = \mathrm{Ortho}(\mathbf{M})$. This normalization step will ensure $\sigma_i \in [0, 1]$ for $i=1,\ldots,n$ \cite{jordan2024muon}. \\
+Since $\mathbf{\Sigma}$ is a diagonal matrix, the objective after normalization reduces to finding the coefficients of an odd real polynomial $\hat{p}$ such that 
+\[
+    \hat{p}^N (x) = (\hat{p} \circ \ldots\circ \hat{p} )(x) \to 1 \; \text{as } N \to \infty \; \text{for all } x\in (0, 1].
+\]
+
+\paragraph*{Orthogonalization via Newton--Schulz iterations}
+The original implementation of the Muon optimizer chooses the quintic polynomial 
+\[
+    \hat{p}(x) = 3.4445 x - 4.7750x^3 + 2.0315 x^5,
+\]
+which makes a sacrifice of exact convergence towards 1 for $x \in (0,1]$, but maximizes the convergence rate of small singular values \cite{jordan2024muon}.
+The Newton--Schulz iteration defined in Algorithm \ref{Alg:NS} produces an approximate orthogonalized update with singular values close to $1$.
+
+\begin{algorithm}[H]
+\caption{Newton--Schulz}
+\label{Alg:NS}
+\begin{algorithmic}[1]
+\REQUIRE Momentum update matrix $\mathbf{M} \in \mathbb{R}^{m \times n}$, steps $N \in \mathbb{N}$
+\STATE $\varepsilon \leftarrow 1e-7$
+\STATE $(a,b,c) \leftarrow (3.4445,\, 4.7750, \, 2.0315)$
+\STATE Normalize $\mathbf{X} \leftarrow \mathbf{M} / (\|\mathbf{M}\|_F + \varepsilon)$
+\IF{$m > n$} 
+    \STATE Transpose $\mathbf{X} \leftarrow \mathbf{X}^\top$
+\ENDIF
+\FOR{$t = 1, \ldots,N$}
+    \STATE      $\mathbf{A} \leftarrow \mathbf{X} \mathbf{X}^\top$
+    \STATE      $\mathbf{B} \leftarrow b \mathbf{A} + c\mathbf{A} \mathbf{A}$
+    \STATE      $\mathbf{M} \leftarrow a\mathbf{X} + \mathbf{B} \mathbf{X}$
+\ENDFOR
+\IF{$m > n$} 
+    \STATE Transpose back $\mathbf{X} \leftarrow \mathbf{X}^\top$
+\ENDIF
+\RETURN $\mathbf{X}$
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph*{The Muon training loop}
+Denote by $\theta_t$ the two-dimensional parameters of the model, by $\mathbf{M}_t$ the momentum matrix, and by $\mathbf{G}_t$ the gradient matrix at step $t$. Muon begins from a momentum-style update direction:
+\begin{equation}
+\mathbf{M}_t \;=\; \mu\,\mathbf{M}_{t-1} + \mathbf{G}_t,
+\label{eq:muon_momentum}
+\end{equation}
+where $\mu\in[0,1)$ and $\mathbf{M}_0=\mathbf{0}$. Some implementations optionally use a Nesterov-style lookahead. \\
+Muon then post-processes the momentum direction $\mathbf{M}_t$ by approximately projecting it onto a spectrally normalized matrix. It does so by applying a small fixed number (e.g. 5 in the original implementation) of Newton--Schulz iterations (see Algorithm \ref{Alg:NS}), which are a GPU-friendly sequence of matrix multiplications. \\
+Finally, Muon applies the orthogonalized update to the matrix parameters by
+\begin{equation}
+ \theta_t = \theta_{t-1} - \eta \mathbf{O}_t,
+\label{eq:muon_update}
+\end{equation}
+where $\eta$ is the learning rate. Practical Muon variants for large-scale training emphasize that decoupled weight decay and careful update scaling are important for stability at scale. \\
+The training loop is summarized in Algorithm \ref{Alg:Muon} \cite{jordan2024muon}.
+\begin{algorithm}[H]
+\caption{Muon}
+\label{Alg:Muon}
+\begin{algorithmic}[1]
+\REQUIRE Initial parameters $\theta_0$, learning rate $\eta > 0$, momentum $\mu \in [0,1)$, steps $N$
+\STATE Initialize $\mathbf{M}_0 \leftarrow \mathbf{0}$
+\FOR{$t = 1, \ldots, N$}
+    \STATE Compute gradient $\mathbf{G}_t \leftarrow \nabla_\theta \mathcal{L}_t(\theta_{t-1})$
+    \STATE      $\mathbf{M}_t \leftarrow \mu \mathbf{M}_{t-1} + \mathbf{G}_t$
+    \STATE      $\mathbf{O}_t \leftarrow \texttt{Newton-Schulz}(\mathbf{M}_t,\, 5)$
+    \STATE Update parameters $\theta_t \leftarrow \theta_{t-1} - \eta \mathbf{O}_t$
+\ENDFOR
+\RETURN $\theta_N$
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph*{Hybrid pattern}
+Let $\theta$ be partitioned into (i) matrix parameters $\theta_{\mathrm{mat}}$ (all 2D weights in transformer blocks) and (ii) remaining parameters $\theta_{\mathrm{vec}}$ (biases, normalization parameters, embeddings, unembeddings, and other 1D/3D tensors). A common and effective configuration is:
+\[
+\theta_{\mathrm{mat}} \;\text{updated by Muon (}\eqref{eq:muon_update}\text{)}, 
+\qquad
+\theta_{\mathrm{vec}} \;\text{updated by AdamW (}\S\ref{subsec:adam_adamw}\text{)}.
+\]
+This split reflects Muon's matrix-specific design: the orthogonalization step is meaningful for linear transformations (2D), whereas for vectors and scalars it is either undefined or not beneficial. In implementation, the hybrid approach is realized through optimizer parameter groups and typically entails maintaining separate optimizer states and optionally separate learning-rate schedules for $\theta_{\mathrm{mat}}$ and $\theta_{\mathrm{vec}}$.
 
 \section{Dual Methods}
 \label{Sec:Dual}
