@@ -1025,7 +1025,7 @@ Conjugate gradient direction: $\bt_{k+1}$ is so chosen that $\langle y^{k+1}, Qy
 
 In this experiment, we compare the behavior of Gradient Descent v.s. Accelarated Gradient Descent on quadratic and perturbed quadratic functions.
 
-Consider a two-dimensional quadratic function $f(x_1, x_2) = \dfrac{1}{2} A x_1^2 + \dfrac{1}{2} B x_2^2$ for $A, B>0$ and a small perturbation of this function $g(x_1, x_2) = \dfrac{1}{2} A x_1^2 + \dfrac{1}{2} B x_2^2 + \varepsilon (x_1^2+x_2^2)^{3/2}$ for $\varepsilon>0$. Use Gradient Descent, Polyak's heavy ball method as well as Nesterov's Acclerated Gradient Descent to optimize $f$ and $g$. 
+Consider a two-dimensional quadratic function $$f(x_1, x_2) = \dfrac{1}{2} A x_1^2 + \dfrac{1}{2} B x_2^2$$ for $A, B>0$ and a small perturbation of this function $$g(x_1, x_2) = \dfrac{1}{2} A x_1^2 + \dfrac{1}{2} B x_2^2 + \varepsilon (x_1^2+x_2^2)^{3/2}$$ for $\varepsilon>0$. Use Gradient Descent, Polyak's heavy ball method as well as Nesterov's Acclerated Gradient Descent to optimize $f$ and $g$. 
 
 We experiment the following 
 
@@ -1041,4 +1041,4 @@ We experiment the following
 \item[(5)] calculate the gradients directly using numpy and also calculate them using the automatic differentiation in tensorflow.
 \end{itemize}
 
-We perform the same experiments for the non-convex function $h(x_1, x_2) = \dfrac{1}{2} A x_1^2 - \dfrac{1}{2} B x_2^2$.
+We perform the same experiments for the non-convex function $$h(x_1, x_2) = \dfrac{1}{2} A x_1^2 - \dfrac{1}{2} B x_2^2 \ .$$
