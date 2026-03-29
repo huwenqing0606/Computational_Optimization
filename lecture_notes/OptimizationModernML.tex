@@ -2,7 +2,7 @@
 \label{Ch:OptimizationModernML}
 
 \section{Adaptive Methods}
-\label{Sec:Ada}
+\label{Ch:OptimizationModernML:Ada}
 
 Adapted algorithms are those training algorithms that update the parameters 
 under training using not only the current gradient information but also all past gradient information, as well as 
@@ -11,8 +11,7 @@ adaptively change the learning rate. These algorithms are sometimes also called 
 
 \subsection{SGD with momentum}
 
-Reference: Sutskever, I., Martens, J., Dahl, G., Hinton, G.,
-On the importance and momentum in deep learning, \textit{ICML}, 2013.
+Reference: \cite{HintonEtAlImportanceMomentumDeepLearningICML2013}
 
 \begin{algorithm}[H]
 \caption{SGD with momentum ($=$ stochastic heavy ball method)}
@@ -31,12 +30,7 @@ On the importance and momentum in deep learning, \textit{ICML}, 2013.
 
 \subsection{AdaGrad, RMSProp, AdaDelta}
 
-Reference:
-
-Duchi, J., Hazan, E., Singer, Y., Adaptive Subgradient Methods for Online Learning and
-Stochastic Optimization, \textit{Journal of Machine Learning Research}, 2011, \textbf{12}(July), pp. 2121--2159.
-
-AdaGrad not just accumulate historical information (such as square gradient information) but also adjust the learning rate 
+AdaGrad (see \cite{duchi2011adaptive}) not just accumulate historical information (such as square gradient information) but also adjust the learning rate 
 (stepsize) according to the magnitude of historical gradient information at different dimensions, so that 
 those dimensions with relatively small magnitudes of the gradient have larger learning rates. 
 In this way, the algorithm favors some dimensions that have currently small magnitude of the gradient 
@@ -60,10 +54,7 @@ and this leads to early stopping.
 \end{algorithm}
 
 
-Tieleman, T., Hinton, G., Lecture 6. 5--RmsProp: Divide the Gradient by A Running Average of its Recent Magnitude,
-\textit{COURSERA, Neural Networks for Machine Learning}, 2012, \textbf{4}(2), pp. 26--31.
-
-RMSProp is similar to AdaGrad but also makes use of the idea of SGD with momentum, this gives an 
+RMSProp (see \cite{tieleman2012rmsprop}) is similar to AdaGrad but also makes use of the idea of SGD with momentum, this gives an 
 exponential weight--decay average of historical information. RMSProp does a weighted average of both $g_k$
 and $(\grad f(w_k))^2$, so that the weights in historical information will be small and thus it favors more on
 current gradient information. This avoids the monotonic decay of the learning rate (stepsize) along with the training process.
@@ -81,10 +72,7 @@ current gradient information. This avoids the monotonic decay of the learning ra
 \end{algorithmic}
 \end{algorithm}
 
-Zeiler, M.D., AdaDelta: An Adaptive Learning Rate Method,
-arXiv:1212.5701, 2012.
-
-AdaDelta, based on RMSProp, adjust the accumulated historical information according to the magnitude of gradients.
+AdaDelta (see \cite{zeiler2012adadelta}), based on RMSProp, adjust the accumulated historical information according to the magnitude of gradients.
 
 \begin{algorithm}[H]
 \caption{AdaDelta}
@@ -103,15 +91,7 @@ AdaDelta, based on RMSProp, adjust the accumulated historical information accord
 
 \subsection{Adam}
 
-Reference:
-
-Kingma, D.P., Ba, J.L., ADAM: A method for stochastic optimization,
-\textit{ICLR}, 2015.
-
-Reddi, S.J., Kale, S., Kumar, S., On the convergence of ADAM and Beyond,
-\textit{ICLR}, 2018.
-
-Adam combines all ingredients in SGD--momentum, AdaGrad, RMSProp, AdaDelta: 
+Adam (see \cite{kingma2015adam}, \cite{reddi2018convergence}) combines all ingredients in SGD--momentum, AdaGrad, RMSProp, AdaDelta: 
 (1) The update direction is determined by accumulated historical gradient information;
 (2) Correct the stepsize using accumulated square gradient information;
 (3) Exponential decay of accumulated information. Adam has been widely used in training neural networks.
@@ -139,11 +119,12 @@ Adam combines all ingredients in SGD--momentum, AdaGrad, RMSProp, AdaDelta:
 \end{algorithm}
 
 \section{Training a Transformer: AdamW and Muon}
-\label{Sec:Transformer}
+\label{Ch:OptimizationModernML:Transformer}
 
 \subsection{Transformer Neural Network}
 
-GPT uses transformer network so we take this example. 
+See \cite{vaswani2017attention} and \cite{nanochat}.
+GPT uses transformer network so we take this example (nanochat). 
 
 \noindent{\textbf{Computational Modules.}}
 
@@ -203,7 +184,7 @@ Mask construction in multi-query-attention: Discuss the following cases
 
 \begin{figure}[H]
 \centering
-\includegraphics[height=5.2cm, width=15cm]{figures/Fig_MQAmasks.png}
+\includegraphics[height=5.2cm, width=15cm]{figures/MQAmasks.png}
 \caption{MQA masks.}
 \label{Fig:MQAmasks}
 \end{figure}
@@ -266,12 +247,11 @@ $\bullet$ Naive autoregressive streaming inference: generate the next token thro
 $\bullet$ Use of \verb#bfloat16# for GPU. 
 
 \subsection{AdamW}
-\label{subsec:adam_adamw}
 
 \paragraph{Motivation and setup.}
 Momentum methods maintain a first-moment (mean) estimate of gradients. Adam (Adaptive Moment Estimation) extends this idea by also maintaining a second-moment (uncentered variance) estimate, enabling per-parameter adaptive step sizes. Let $\hat{\mathbf{g}}_t$ denote the stochastic gradient at step $t$ (mini-batch gradient of the loss w.r.t.\ $\theta_t$).
 
-\paragraph{Adam: first and second moment estimates.}
+\paragraph{Review of Adam: first and second moment estimates.}
 Adam maintains exponential moving averages of the gradient and its elementwise square:
 \begin{align}
 \mathbf{m}_t &= \beta_1 \mathbf{m}_{t-1} + (1-\beta_1)\hat{\mathbf{g}}_t, \label{eq:adam_m}\\
@@ -339,7 +319,6 @@ In deep networks and LLMs, weight decay is commonly applied to weight matrices (
 Unless otherwise stated, typical Adam/AdamW defaults are $\beta_1=0.9$, $\beta_2=0.999$, and $\varepsilon=10^{-8}$, with the learning rate $\eta_t$ and weight decay $\lambda$ tuned to the model scale, batch size, and schedule.
 
 \subsection{Muon}
-\label{subsec:muon}
 
 \paragraph*{Motivation} Empirically, the parameter updates produced by SGD-momentum and Adam for two-dimensional parameter tensors\footnote{Two-dimensional parameter tensors occur from linear transformations, such as in MLP and attention projections.} in transformer-based neural networks often show high condition numbers. This observation leads to the assumption that the updates are of low rank and are dominated by only a few directions. To encounter this phenomenon, the Muon (\emph{MomentUm Orthogonalized by Newton--Schulz}) optimizer applies an iterative approximation method to the momentum-based update matrix so that its singular values are driven towards unity. Consequently, the conditioning of the update matrix improves, and the scale of ``rare directions'' effectively increases \cite{jordan2024muon}.
 
@@ -461,7 +440,7 @@ Let $\theta$ be partitioned into (i) matrix parameters $\theta_{\mathrm{mat}}$ (
 This split reflects Muon's matrix-specific design: the orthogonalization step is meaningful for linear transformations (2D), whereas for vectors and scalars it is either undefined or not beneficial. In implementation, the hybrid approach is realized through optimizer parameter groups and typically entails maintaining separate optimizer states and optionally separate learning-rate schedules for $\theta_{\mathrm{mat}}$ and $\theta_{\mathrm{vec}}$.
 
 \section{Dual Methods}
-\label{Sec:Dual}
+\label{Ch:OptimizationModernML:Dual}
 
 \subsection{Dual Coordinate Descent/Ascent}
 
@@ -585,7 +564,7 @@ $$w(\al^*)=w^* \ , \ P(w^*)=D(\al^*) \ .$$
 \end{algorithm}
 
 \section{Optimization with Constraints and Discontinuous Objective Function}
-\label{Sec:ConstraintAndDiscontinuousOptimization}
+\label{Ch:OptimizationModernML:ConstraintAndDiscontinuousOptimization}
 
 \subsection{Subgradient Projection Method, Frank--Wolfe Method}
 
@@ -750,7 +729,7 @@ where $l(w)$ is a convex differentiable function and $R(w)$ is non--differentiab
 \end{algorithm}
 
 \section{Optimization and Generalization}
-\label{Sec:OptimizationAndGeneralization}
+\label{Ch:OptimizationModernML:OptimizationAndGeneralization}
 
 \subsection{Generalization Bounds in Statistical Machine Learning}
 
