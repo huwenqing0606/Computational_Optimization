@@ -13,16 +13,37 @@ f(x)=\mathbf{E} f(x;\zeta) \ ,
 where the index random variable $\zeta$ follows some
 prescribed distribution $\mathcal{D}$, and the weight vector $x\in \mathbb{R}^d$.
 SGD updates via the iteration
-
 \begin{equation}\label{Eq:StochasticGradientDescent}
 x_{k+1}=x_k-\al_k g(x_k; \zeta_k) \ ,
 \end{equation}
 where the noisy gradient $g(x; \zt)=\grad f(x; \zt)$, $\al_k>0$ is the learning rate, and $\zeta_k$ are i.i.d. random variables
 that have the same distribution as $\zeta\sim \cD$.
 
-In particular, in the case of training a deep neural network,
-the random variable $\zeta$ samples size $m$ ($m\leq n$) mini--batches $\mathcal{B}$ uniformly from an index set $\{1,2,...,n\}$:
-$\mathcal{B}\subset \{1,2,...,n\}$ and $|\mathcal{B}|=m$. In this case, given loss functions $f_1(x), ..., f_n(x)$ on
+In particular, in the case of supervised learning, assume the input training data is given by $\{(a_i, b_i)\}_{i=1}^n$ and the fitting function is $g(a)=b$. Then the loss function is $\ell_{(a,b)}(x)=L(g(a), b; x)$ where $x$ is the model weight. Let $f_i(x)=\ell_{(a_i, b_i)}(x)$. Then the optimization problem has the objective function
+$$
+f(x)=\frac{1}{n}\sum_{i=1}^n f_i(x) \ .
+$$
+In this case, if we run GD or AGD for $f$ directly, we have  
+$$\begin{array}{ll}
+\text{GD:}
+& \qquad
+x^{k+1} = x^{k} - \eta \nabla f\!\left(x^{k}\right) \ ,
+\\
+\text{Nesterov AGD:}
+& \qquad
+x^{k+1}
+=
+x^{k}
+-
+\alpha \nabla f\!\left(x^k+\beta\bigl(x^k-x^{k-1}\bigr)\right)
++
+\beta\bigl(x^k-x^{k-1}\bigr) \ .
+\end{array}$$
+
+This means at each iteration step we have to compute $\play{\nabla f(x)
+= \dfrac{1}{n}\sum_{i=1}^n \nabla f_i(x)}$. 
+Usually $n$ is large therefore gradient queries of $\nabla f_i$ is large for each iteration step: if we run $T$ the iterations, the total computational cost is $O(T\times n)$. Assume $T=1000$, $n=1000$, then $T\times n = 10^6 \gg 1$. To mitigate this, we use SGD where the random variable $\zeta$ samples size $m$ ($m\leq n$) mini--batches $\mathcal{B}$ uniformly from an index set $\{1,2,...,n\}$:
+$\mathcal{B}\subset \{1,2,...,n\}$ and $|\mathcal{B}|=m$ (batchsize). In this case, given loss functions $f_1(x), ..., f_n(x)$ on
 training data, we have
 $$f(x; \zeta)=\dfrac{1}{m}\sum\limits_{i\in \mathcal{B}}f_i(x) \text{ and } f(x)=\dfrac{1}{n}\sum\limits_{i=1}^n f_i(x) \ .$$
 
@@ -39,6 +60,64 @@ $$f(x; \zeta)=\dfrac{1}{m}\sum\limits_{i\in \mathcal{B}}f_i(x) \text{ and } f(x)
 \STATE \textbf{Output}: Output $x_K$
 \end{algorithmic}
 \end{algorithm}
+
+
+\begin{example}
+\emph{Assume $m=1$, then $\cB=\{i_k\}$ where $i_k$ is drawn uniformly randomly from $\{1,...,n\}$ independent of $k$. Then we compare
+$$\begin{array}{lll}
+\text{GD}: &
+x_{k+1}
+=
+x_k
+-
+\dfrac{\eta}{n}\sum\li_{i=1}^n \nabla f_i(x_k) \ ,
+& 
+\text{ complexity } O(T\times n) \ ,
+\\
+\text{SGD}: &
+x_{k+1}=x_k-\eta \nabla f_{i_k}(x_k) \ ,
+& \text{ complexity } O(T) \ .
+\end{array}$$
+Only one query of $\nabla f_i$ at each iteration.}
+\end{example}
+
+\begin{lemma}\label{Lm:MinibatchExpectationUnbiased}
+We have 
+$$\E\left(\dfrac{1}{m}\sum\li_{i\in \cB}f_i(x)\right)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x) \ .$$
+\end{lemma}
+
+\begin{proof}
+$B_k$ are a sequence of i.i.d. mini-batches: $B_k \subset \{1,\ldots,n\}
+\qquad
+|B_k|=m
+\qquad
+\text{``batch size''}
+$. Since $B_k$ is taken uniformly randomly among all size $m$-subsets of $\{1,\ldots,n\}$, the total number of size-$m$ subsets is $$\binom{n}{m}=\frac{n!}{m!(n-m)!} \ .$$ 
+This gives
+$$\begin{array}{ll}
+\overline{\mathbb{E}}
+\left(
+\frac{1}{m}\sum_{i\in B_k}\nabla f_i(x_k)
+\right)
+& =
+\dfrac{
+\dfrac{1}{m}\sum_{i=1}^n \binom{n-1}{m-1}\nabla f_i(x_k)
+}{
+\binom{n}{m}
+}
+\\
+& =
+\dfrac{1}{m}
+\cdot
+\dfrac{(n-1)!}{(m-1)!(n-m)!}
+\cdot
+\dfrac{1}{\binom{n}{m}}
+\sum_{i=1}^n \nabla f_i(x_k)
+=
+\dfrac{1}{n}\sum_{i=1}^n \nabla f_i(x_k) \ .
+\end{array}$$
+\end{proof}
+
 
 Convergence analysis of SGD.
 
