@@ -964,7 +964,7 @@ Su-Boyd-Cand\'{e}s differential equation: $$\ddot{X}_t+\dfrac{3}{t}\dot{X}_t+\gr
 
 \subsection{Nesterov's method reaches first-order optimality}
 
-Nesterov's method achieves first order optimal convergence rate \cite{NesterovBook}. Indeed, one can construct a carefully designed function for which \textit{no} method that makes use of all gradient observed up to and including iteration $k$ (namely $\grad f(x^i)$, $i=0,1,2,...,k$) can produce a sequence $\{x^k\}$ that achieves a rate better than the order $O(1/k^2)$.
+Nesterov's method achieves first order optimal convergence rate \cite{NesterovBook}. Indeed, one can construct a carefully designed function for which \textit{no} method that makes use of all gradient observed up to and including iteration $k$ (namely $\grad f(x^i)$, $i=0,1,2,...,k$) can produce a sequence $\{x^k\}$ that achieves a rate better than the order $O\left(\dfrac{1}{k^2}\right)$.
 
 Set $f(x)=\dfrac{1}{2}x^TAx-e_1^Tx$, where
 $$A=\begin{pmatrix}
@@ -980,16 +980,118 @@ $$A=\begin{pmatrix}
 \end{pmatrix} \ , \
 e_1=\begin{pmatrix}1\\0\\0\\...\\0\end{pmatrix} \ .$$
 
-Optimization $\min\li_{x\in \R^n}f(x)$ has a solution $x^*$ such that $Ax^*=e_1$, and its components are $x_i^*=1-\dfrac{i}{n+1}$ for $i=1,2,...,n$. Let the starting point $x^0=0$, and the iterate
+Optimization $\min\li_{x\in \R^n}f(x)$ has a solution $x^*$ such that 
+\begin{equation}\label{Eq:NesterovOptimalityExample_xstar}
+Ax^*=e_1 \ .
+\end{equation} 
+
+\begin{lemma}\label{Lm:NesterovOptimalityExampleSolutionOfx_star}
+The equation \emph{(\ref{Eq:NesterovOptimalityExample_xstar})} can be solved and its components are $$x_i^*=1-\dfrac{i}{n+1}$$ for $i=1,2,...,n$.
+\end{lemma}
+
+\begin{proof}
+We have 
+$$\left\{\begin{array}{lcl}
+2x^*_1-x^*_2 & = & 1
+\\
+-x^*_1+2x^*_2-x^*_3 & = & 0
+\\
+...
+\\
+-x^*_{j-1}+2x^*_j-x^*_{j+1} & = & 0
+\\
+...
+\\
+-x^*_{n-2}+2x^*_{n-1}-x^*_n & = & 0
+\\
+-x^*_{n-1}+2x^*_n & = & 0 
+\end{array}\right.$$ 
+
+The equation $-x^*_{n-1}+2x^*_n=0$ gives $x^*_{n-1}=2x^*_n$. Then for any $j=n-2,...,2$ we have $-x^*_{j-1}+2x^*_j-x^*_{j+1}=0$. This gives $x^*_{j-1}=2x^*_j-x^*_{j+1}$. Starting from $j=n-2$, this inductively gives $x^*_{n-2}=3x^*_n$, ..., $x^*_j=(n-j+1)x^*_n$, ..., $x^*_2=(n-1)x^*_n$. Then $2x^*_1-x^*_2=1$ which gives 
+\begin{equation}\label{Lm:NesterovOptimalityExampleSolutionOfx_star:Eq:a}
+2x^*_1-(n-1)x^*_n=1
+\end{equation}
+Let $S=x^*_1+...+x^*_n$ and summing all equations in the system gives $-(S-x^*_n)+2S-(S-x^*_1)=1$, i.e., 
+\begin{equation}\label{Lm:NesterovOptimalityExampleSolutionOfx_star:Eq:b}
+x^*_n+x^*_1=1 \ .
+\end{equation}
+Equation (\ref{Lm:NesterovOptimalityExampleSolutionOfx_star:Eq:a}) and (\ref{Lm:NesterovOptimalityExampleSolutionOfx_star:Eq:b}) together give $x^*_n=\dfrac{1}{n+1}=1-\dfrac{n}{n+1}$ so that $x^*_j=\dfrac{n-j+1}{n+1}=1-\dfrac{j}{n+1}$ for $j=2,...,n-1$, and $x^*_1=1-\dfrac{1}{n+1}$ as desired.
+\end{proof}
+
+Let the starting point $x^0=(0,...,0)^T$, and the iterate
 $$x^{k+1}=x^k+\sum\li_{j=0}^k \gm_j \grad f(x^j)$$
-for some coefficients $\gm_j$, $j=0,1,...,k$. Then each iterate $x^k$ can have nonzero entries only in its first $k$ components. Thus
+for some coefficients $\gm_j$, $j=0,1,...,k$. Then 
+$$x^{k+1}=x^k+\sum\li_{j=0}^k \gm_j (Ax^j-e_1) $$
+so that each iterate $x^k$ can have nonzero entries only in its first $k$ components. Thus
 $$\|x^k-x^*\|^2\geq \sum\li_{j=k+1}^n (x_j^*)^2=\sum\li_{j=k+1}^n \left(1-\dfrac{j}{n+1}\right)^2 \ .$$
-One can show that for $k=1,2,...,\dfrac{n}{2}-1$ we have
-$$\|x^k-x^*\|^2\geq \dfrac{1}{8}\|x^0-x^*\|^2 \ .$$
-This will lead to the bound that 
-$$f(x^k)-f(x^*)\geq \dfrac{3L}{32(k+1)^2}\|x^0-x^*\|^2 \
- , \ k=1,2,...,\dfrac{n}{2}-1$$
+
+\begin{lemma}\label{Lm:NesterovOptimalityExampleAuxiliaryBoundx_star}
+For $k=1,2,...,\dfrac{n}{2}-1$ we have
+\begin{equation}\label{Lm:NesterovOptimalityExampleAuxiliaryBoundx_star:Eq}
+\|x^k-x^*\|^2\geq \dfrac{1}{8}\|x^0-x^*\|^2 \ .
+\end{equation}
+\end{lemma}
+
+\begin{lemma}\label{Lm:NesterovOptimalityExampleFinalBound}
+We have 
+\begin{equation}\label{Lm:NesterovOptimalityExampleFinalBound:Eq:Bound}
+f(x^k)-f(x^*)\geq \dfrac{3L}{32(k+1)^2}\|x^0-x^*\|^2 \
+ , \ k=1,2,...,\dfrac{n}{2}-1
+\end{equation}
 where $L=\|A\|_2$. 
+\end{lemma}
+
+\begin{proof}
+We have 
+$$
+f(x)-f(x^*)
+=\frac12 (x-x^*)^T A(x-x^*)
+\ge \frac{\lambda_{\min}(A)}{2}\|x-x^*\|^2 \ .
+$$
+Applying this to \(x=x^k\), and using the estimate (\ref{Lm:NesterovOptimalityExampleAuxiliaryBoundx_star:Eq}) we obtain
+\[
+f(x^k)-f(x^*)
+\ge \frac{\lambda_{\min}(A)}{16}\|x^0-x^*\|^2.
+\]
+
+Now the eigenvalues of \(A\) are
+\[
+\lambda_j=2-2\cos\frac{j\pi}{n+1},
+\qquad j=1,2,\dots,n,
+\]
+so that
+\[
+\lambda_{\min}(A)=2-2\cos\frac{\pi}{n+1}.
+\]
+Using the inequality
+\[
+1-\cos t \ge \frac{3}{8}t^2,
+\qquad 0\le t\le \frac{\pi}{2},
+\]
+we get
+\[
+\lambda_{\min}(A)
+=2\left(1-\cos\frac{\pi}{n+1}\right)
+\ge \frac34\frac{\pi^2}{(n+1)^2}.
+\]
+Since \(L=\|A\|_2\le 4\), it follows that
+\[
+\lambda_{\min}(A)\ge \frac{3L}{4(n+1)^2}.
+\]
+Moreover, for \(k\le \frac n2-1\), we have
+\[
+2(k+1)\le n+1,
+\]
+and hence
+\[
+\frac{1}{(n+1)^2}\ge \frac{1}{4(k+1)^2}.
+\]
+Therefore,
+\[
+\lambda_{\min}(A)\ge \frac{3L}{16(k+1)^2}.
+\]
+Substituting this into the previous estimate yields (\ref{Lm:NesterovOptimalityExampleFinalBound:Eq:Bound}).
+\end{proof}
 
 \section{Conjugate gradient method}
 

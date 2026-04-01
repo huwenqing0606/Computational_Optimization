@@ -82,26 +82,26 @@ Only one query of $\nabla f_i$ at each iteration.}
 \end{example}
 
 \begin{lemma}\label{Lm:MinibatchExpectationUnbiased}
-We have 
+We have, for any $f_i(x)$, $i=1,2,...,n$, that
 $$\E\left(\dfrac{1}{m}\sum\li_{i\in \cB}f_i(x)\right)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x) \ .$$
 \end{lemma}
 
 \begin{proof}
 $B_k$ are a sequence of i.i.d. mini-batches: $B_k \subset \{1,\ldots,n\}
-\qquad
+\ , \ 
 |B_k|=m
-\qquad
+\ , \ 
 \text{``batch size''}
 $. Since $B_k$ is taken uniformly randomly among all size $m$-subsets of $\{1,\ldots,n\}$, the total number of size-$m$ subsets is $$\binom{n}{m}=\frac{n!}{m!(n-m)!} \ .$$ 
 This gives
 $$\begin{array}{ll}
-\overline{\mathbb{E}}
+\E
 \left(
-\frac{1}{m}\sum_{i\in B_k}\nabla f_i(x_k)
+\dfrac{1}{m}\sum\li_{i\in B_k} f_i(x)
 \right)
 & =
 \dfrac{
-\dfrac{1}{m}\sum_{i=1}^n \binom{n-1}{m-1}\nabla f_i(x_k)
+\dfrac{1}{m}\sum\li_{i=1}^n \binom{n-1}{m-1} f_i(x)
 }{
 \binom{n}{m}
 }
@@ -112,9 +112,9 @@ $$\begin{array}{ll}
 \dfrac{(n-1)!}{(m-1)!(n-m)!}
 \cdot
 \dfrac{1}{\binom{n}{m}}
-\sum_{i=1}^n \nabla f_i(x_k)
+\sum\li_{i=1}^n f_i(x)
 =
-\dfrac{1}{n}\sum_{i=1}^n \nabla f_i(x_k) \ .
+\dfrac{1}{n}\sum\li_{i=1}^n f_i(x) \ .
 \end{array}$$
 \end{proof}
 
