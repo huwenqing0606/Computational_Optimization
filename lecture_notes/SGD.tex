@@ -14,7 +14,7 @@ where the index random variable $\zeta$ follows some
 prescribed distribution $\mathcal{D}$, and the weight vector $x\in \mathbb{R}^d$.
 SGD updates via the iteration
 \begin{equation}\label{Eq:StochasticGradientDescent}
-x_{k+1}=x_k-\al_k g(x_k; \zeta_k) \ ,
+x^{k+1}=x^k-\al_k g(x^k; \zeta_k) \ ,
 \end{equation}
 where the noisy gradient $g(x; \zt)=\grad f(x; \zt)$, $\al_k>0$ is the learning rate, and $\zeta_k$ are i.i.d. random variables
 that have the same distribution as $\zeta\sim \cD$.
@@ -54,10 +54,10 @@ $$f(x; \zeta)=\dfrac{1}{m}\sum\limits_{i\in \mathcal{B}}f_i(x) \text{ and } f(x)
 \STATE \textbf{Input}: Input initialization $x^0$, index random variable $\zt\sim \cD$, noisy gradient $g(x;\zt)=\grad f(x;\zt)$ such that $\E g(x;\zt)=\grad f(x)$, learning rate $\al_k>0$, $k=0,1,2,...$
 \FOR {$k=0,1,2,...,K-1$}
     \STATE Sample the i.i.d. random variable $\zt_k\sim \cD$
-    \STATE Calculate the noisy gradient $g(x_k; \zt_k)=\grad f(x_k; \zt_k)$
-    \STATE $x_{k+1}=x_k-\al_k g(x_k; \zeta_k)$
+    \STATE Calculate the noisy gradient $g(x^k; \zt_k)=\grad f(x^k; \zt_k)$
+    \STATE $x^{k+1}=x^k-\al_k g(x^k; \zeta_k)$
 \ENDFOR
-\STATE \textbf{Output}: Output $x_K$
+\STATE \textbf{Output}: Output $x^K$
 \end{algorithmic}
 \end{algorithm}
 
@@ -66,16 +66,16 @@ $$f(x; \zeta)=\dfrac{1}{m}\sum\limits_{i\in \mathcal{B}}f_i(x) \text{ and } f(x)
 \emph{Assume $m=1$, then $\cB=\{i_k\}$ where $i_k$ is drawn uniformly randomly from $\{1,...,n\}$ independent of $k$. Then we compare
 $$\begin{array}{lll}
 \text{GD}: &
-x_{k+1}
+x^{k+1}
 =
-x_k
+x^k
 -
-\dfrac{\eta}{n}\sum\li_{i=1}^n \nabla f_i(x_k) \ ,
+\dfrac{\eta}{n}\sum\li_{i=1}^n \nabla f_i(x^k) \ ,
 & 
 \text{ complexity } O(T\times n) \ ,
 \\
 \text{SGD}: &
-x_{k+1}=x_k-\eta \nabla f_{i_k}(x_k) \ ,
+x^{k+1}=x^k-\eta \nabla f_{i_k}(x^k) \ ,
 & \text{ complexity } O(T) \ .
 \end{array}$$
 Only one query of $\nabla f_i$ at each iteration.}
@@ -119,10 +119,16 @@ $$\begin{array}{ll}
 \end{proof}
 
 
-Convergence analysis of SGD.
+Let us analyze the convergence properties of SGD. To measure the rate of convergence, our metrics are set as follows:
 
-$f$ is strongly convex: measure $\E\left[\|x_k-x^*\|^2\right]$; $f$ is convex but not necessarily strongly convex: measure
-$f(x_k)-f(x^*)$.
+\begin{itemize}
+\item $f$ is strongly convex: the metric is $\E\left[\|x^k-x^*\|^2\right]$.
+
+\item $f$ is convex but not necessarily strongly convex: the metric is 
+$f(x^k)-f(x^*)$.
+\end{itemize}
+
+We make the following assumption regarding the random gradient surrogate $g(x; \zt)$ used in (\ref{Eq:StochasticGradientDescent}):
 
 \begin{assumption}\label{Assumption:SGDBasicAssumption}
 We assume that for some $L_g>0$ and $B>0$ we have
@@ -150,45 +156,132 @@ $$\begin{array}{ll}
 \leq & 2\E\|\grad f_i(x)-\grad f_i(x^*)\|^2+B^2 \ .
 \end{array}$$
 So we can pick $L_g=\sqrt{2}L_{\grad f}$. If $L_g=0$ in \eqref{Assumption:SGDBasicAssumption:Eq:Assumption}, then $f$ cannot be $m$-strongly convex over an unbounded domain, since by Jensen's inequality 
-$\|\grad f(x)\|^2=\|\E g(x; \xi)\|^2\leq \E\left[\|g(x;\xi)\|^2\right]$ but $\langle x-x^*, \grad f(x)\rangle=\langle x-x^*, \grad f(x)-\grad f(x^*)\rangle=\langle x-x^*, \int_0^1 \grad^2 f(x^*+\gm(x-x^*))(x-x^*)d\gm\rangle \geq m\|x-x^*\|^2$ for all x.
+$$\|\grad f(x)\|^2=\|\E g(x; \zt)\|^2\leq \E\left[\|g(x;\zt)\|^2\right]\stackrel{\text{since } L_g=0}{\leq} B^2$$ but 
+$$\begin{array}{ll}
+& \|x-x^*\|\cdot \|\grad f(x)\|
+\\
+\geq & \langle x-x^*, \grad f(x)\rangle
+\\
+= & \langle x-x^*, \grad f(x)-\grad f(x^*)\rangle
+\\
+= & \left\langle x-x^*, \play{\int_0^1} \grad^2 f(x^*+\gm(x-x^*))(x-x^*)d\gm\right\rangle \geq m\|x-x^*\|^2
+\end{array}$$ for all $x$. This means $\|\grad f(x)\|^2\geq m^2\|x-x^*\|^2$, which further implies $B\geq m\|x-x^*\|$, a contradiction.
 \end{remark}
 
-Square expansion for a stochastic iteration:
+
+\begin{theorem}\label{Thm:ConvergenceSGD} Assume $B>0$ and $L_g>0$, and $f$ is $m$-strongly convex with unique minimizer $x^*$. We choose $\al\in \left(0, \dfrac{2m}{L_g^2}\right)$ such that $1-2m\al+\al^2L_g^2>0$. For the iteration \emph{(\ref{Eq:StochasticGradientDescent})} we set $\al_k=\al$. Then
+\begin{equation}\label{Thm:ConvergenceSGD:Eq:ConvergenceStronglyConvex}
+\E\|x^k-x^*\|^2\leq \left(1-2m\al+\al^2L_g^2\right)^k\|x^0-x^*\|^2+\dfrac{\al B^2}{2m-\al L_g^2} \ .
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+We perform a square expansion for the stochastic iteration (\ref{Eq:StochasticGradientDescent}) to get
 
 \begin{equation}\label{SquareExpansion:SGD}
 \begin{array}{ll}
-\|x_{k+1}-x^*\|^2&=\|x_k-\al_k g(x_k; \zt_k)-x^*\|^2
+\|x^{k+1}-x^*\|^2&=\|x^k-\al_k g(x^k; \zt_k)-x^*\|^2
 \\
-&=\|x_k-x^*\|^2-2\al_k\langle g(x_k; \zt_k), x_k-x^*\rangle+\al_k^2\|g(x_k; \zt_k)\|^2 \ .
+&=\|x^k-x^*\|^2-2\al_k\langle g(x^k; \zt_k), x^k-x^*\rangle+\al_k^2\|g(x^k; \zt_k)\|^2 \ .
 \end{array}
 \end{equation}
 
-Set $a_k=\E\left[\|x_k-x^*\|^2\right]$, then 
+So
+$$\E\,\|x^{k+1}-x^*\|^2
+=
+\E\,\|x^k-x^*\|^2
+-2\alpha_k\,\E\,\bigl\langle g(x^k;\zt_k),\,x^k-x^*\bigr\rangle
++\alpha_k^2\,\E\,\|g(x^k;\zt_k)\|^2 .
+$$
+
+We have
+$$\begin{array}{ll}
+& \E\,\bigl[\langle g(x^k;\zt_k),\,x^k-x^*\rangle\bigr]
+\\
+= &
+\E\!\left[
+\E_{\zt_k}
+\Bigl[
+\bigl\langle g(x^k;\zt_k),\,x^k-x^*\bigr\rangle
+\,\Big|\,\zt_0,\ldots,\zt_{k-1}
+\Bigr]
+\right]
+\qquad \text{(``telescoping'')}
+\\
+= & 
+\E\!\left[
+\left\langle
+\E_{\zt_k}\!\Bigl[g(x^k;\zt_k)\,\big|\,\zt_0,\ldots,\zt_{k-1}\Bigr],
+\,x^k-x^*
+\right\rangle
+\right]
+\\
+= & 
+\E\,\bigl[\langle \nabla f(x^k),\,x^k-x^*\rangle\bigr] \ .
+\end{array}
+$$
+Here in the last step we have used the fact that $
+\E_{\zt}\,g(x;\zt)=\nabla f(x)$. Similarly
+$$
+\E\,\|g(x^k;\zt_k)\|^2
+=
+\E\!\left[
+\E_{\zt_k}
+\Bigl[
+\|g(x^k;\zt_k)\|_2^2
+\,\Big|\,\zt_0,\ldots,\zt_{k-1}
+\Bigr]
+\right]
+\le
+\E\!\left[
+L_g^2\|x^k-x^*\|^2 + B^2
+\right].
+$$
+
+Set $a_k=\E\left[\|x^k-x^*\|^2\right]$, then from the above and (\ref{SquareExpansion:SGD}) we get
 
 \begin{equation}\label{SquareExpansionIteration:SGD}
-a_{k+1}\leq \left(1+\al_k^2L_g^2\right)a_k-2\al_k\E\left[\langle\grad f(x_k), x_k-x^*\rangle\right]+\al_k^2B^2 \ .
+a_{k+1}\leq \left(1+\al_k^2L_g^2\right)a_k-2\al_k\E\left[\langle\grad f(x^k), x^k-x^*\rangle\right]+\al_k^2B^2 \ .
 \end{equation}
 
-Case 1: $L_g=0$.
-Average output: $\bar{x}_K=\dfrac{\sum\li_{j=0}^K \al_jx_j}{\sum\li_{j=0}^K \al_j}$. 
+If $B>0$, $L_g>0$ and $f$ has strong-convexity constant $m>0$, then $
+\nabla^2 f(x) \succeq m I$ and the unique minimizer $x^*$ satisfies $\grad f(x^*)=0$. Since
+$$
+\langle \nabla f(x)-\nabla f(x^*), x-x^*\rangle
+=
+\int_0^1 \langle \nabla^2 f\bigl(x^*+\gamma(x-x^*)\bigr)(x-x^*), x-x^*\rangle \, d\gamma \geq m \|x-x^*\|^2 \ ,
+$$
+we have $
+\bigl\langle \nabla f(x),\,x-x^*\bigr\rangle
+\ge m \|x-x^*\|^2$. Putting $x=x^k$ and taking $\E$-expectation we get
+$\E\bigl[\langle \nabla f(x^k),\,x^k-x^*\rangle\bigr]
+\ge m\,\E\|x^k-x^*\|^2$. This together with (\ref{SquareExpansionIteration:SGD}) gives 
+$$a_{k+1}\leq (1-2m\al_k +\al_k^2 L_g^2)a_k+\al_k^2B^2 \ .$$
 
-Set $\al_k=\al>0$ and $\al_{\text{opt}}=\dfrac{D_0}{B\sqrt{T+1}}$, $\tht=\dfrac{\al}{\al_{\text{opt}}}$. Set $L_g=0$. Then
-$$\E\left[f(\bar{x}_T)-f(x^*)\right]\leq \left(\dfrac{1}{2}\tht+\dfrac{1}{2}\tht^{-1}\right)\dfrac{BD_0}{\sqrt{T+1}} \ .$$
+Set $\al_k=\al$ and $\mu = 1-2m\al+\al^2L_g^2$, then the above gives
+$$a_{k+1}\leq \mu^{k+1}a_0+\al^2B^2(1+\mu+...+\mu^k)=\mu^{k+1}a_0+\dfrac{\al^2B^2(1-\mu^k)}{1-\mu} \ .$$
+When $\mu \in (0,1)$ this gives (\ref{Thm:ConvergenceSGD:Eq:ConvergenceStronglyConvex}).
+\end{proof}
 
-Case 2: $B=0$.
+We see from (\ref{Thm:ConvergenceSGD:Eq:ConvergenceStronglyConvex}) that there is a ``threshold value" $\dfrac{\al B^2}{2m-\al L_g^2}$ which prevents SGD to converge (i.e. there is always a fluctuation). To over comes this, ``epoch doubling" and ``hyper-parameter tuning" have been used. 
+
+\begin{remark}\label{Remark:ConvergenceSGD:OtherCases}
+Some other cases can also be discussed similarly:
+\begin{itemize}
+\item $L_g=0$. Let the average output $\bar{x}^K=\dfrac{\sum\li_{j=0}^K \al_jx^j}{\sum\li_{j=0}^K \al_j}$. Set $D_0=\|x^0-x^*\|^2$,  $\al_k=\al>0$ and $\al_{\text{opt}}=\dfrac{D_0}{B\sqrt{T+1}}$, $\tht=\dfrac{\al}{\al_{\text{opt}}}$. If $L_g=0$, then
+$$\E\left[f(\bar{x}^T)-f(x^*)\right]\leq \left(\dfrac{1}{2}\tht+\dfrac{1}{2}\tht^{-1}\right)\dfrac{BD_0}{\sqrt{T+1}} \ .$$
+
+\item $B=0$.
 Assume that $\langle\grad f(x), x-x^*\rangle\geq m\|x-x^*\|^2$ for some $m>0$. Then if $\al_k=\al\in \left(0, \dfrac{2m}{L_g^2}\right)$, 
-then we obtain a linear rate of convergence. Optimal $\al=\dfrac{2}{L_g^2}$.
+then we obtain a linear rate of convergence. Optimal $\al=\dfrac{2}{L_g^2}$ and
 $$a_k\leq \left(1-\dfrac{m^2}{L_g^2}\right)^kD_0^2< \ve \Longleftrightarrow T\geq \left\lceil 
 \dfrac{L_g^2}{m^2}\ln\left(\dfrac{D_0^2}{\ve}\right)\right\rceil \ .$$
+\end{itemize}
+\end{remark}
 
-Case 3: $B>0$ and $L_g>0$, and $f$ is strongly convex. Choose $\al\in \left(0, \dfrac{2m}{L_g^2}\right)$
-and $\al_k=\al$.
-$$a_k\leq \left(1-2m\al+\al^2L_g^2\right)^kD_0^2+\dfrac{\al B^2}{2m-\al L_g^2} \ .$$
+\section{Stochastic Variance-Reduced Gradient Descent (SVRG) and its variants}
 
-``threshold value" $\dfrac{\al B^2}{2m-\al L_g^2}$. ``epoch doubling", ``hyper--parameter tuning"
-
-\section{Variance--reduction methods: SVRG, SAG, SAGA, SARAH, SPIDER, STORM}
-
+\subsection{SVRG and its Convergence Proof}
 Variance Reduction Methods: Goal is to reduce the variance produced by the stochastic terms in the iteration scheme.
 
 SVRG: Johnson, R., Zhang, T., Accelerating Stochastic Gradient using Predictive Variance Reduction,
@@ -235,6 +328,8 @@ $$\al=\dfrac{1}{\gm\eta(1-2L\eta)m}+\dfrac{2L\eta}{1-2L\eta}<1 \ ,$$
 then we have the linear convergence in expectation of SVRG algorithm \ref{Alg:SVRG}, i.e.
 $$\E [P(\widetilde{\om}_s)- P(\om_*)]\leq \al^s [P(\widetilde{\om}_0)-P(\om_*)] \ .$$
 \end{theorem}
+
+\subsection{SAG, SAGA, SARAH, SPIDER, STORM}
 
 SAG: Roux, Nicolas L., Mark Schmidt, Francis R. Bach,
 A stochastic gradient method with an exponential convergence rate for finite training sets. \textit{NIPS}, 2012.
@@ -393,7 +488,7 @@ $$\boldd_{t}= (1-a)\left[\boldd_{t-1}+(\grad f(\boldx_t, \xi_t)-\grad f(\boldx_{
 $$
 Here the first part is like SARAH update, but it is weighted with the stochastic gradient update. Moreover, different from the SARAH update, the STORM update does not have to compute checkpoint gradients. Rather, variance-reduction is achieved by tuning the weight parameter $a$ appropriately. The exact algorithm goes as follows:
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{STORM: STOchastic Recursive Momentum}
 	\label{Alg:STORM}
 	\begin{algorithmic}[1]
