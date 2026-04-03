@@ -89,10 +89,8 @@ $$\E\left(\dfrac{1}{m}\sum\li_{i\in \cB}f_i(x)\right)=\dfrac{1}{n}\sum\li_{i=1}^
 \begin{proof}
 $B_k$ are a sequence of i.i.d. mini-batches: $B_k \subset \{1,\ldots,n\}
 \ , \ 
-|B_k|=m
-\ , \ 
-\text{``batch size''}
-$. Since $B_k$ is taken uniformly randomly among all size $m$-subsets of $\{1,\ldots,n\}$, the total number of size-$m$ subsets is $$\binom{n}{m}=\frac{n!}{m!(n-m)!} \ .$$ 
+|B_k|=m$. Since $B_k$ is taken uniformly randomly among all size $m$-subsets of $\{1,\ldots,n\}$, the total number of size-$m$ subsets is $$\binom{n}{m}=\frac{n!}{m!(n-m)!} \ .$$ 
+When we enumerate all ${n\choose m}$ mini-batches $\cB$, each index $i\in \{1,...,n\}$ will be repeated $n-1 \choose m-1$ times. 
 This gives
 $$\begin{array}{ll}
 \E
