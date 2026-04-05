@@ -264,18 +264,108 @@ When $\mu \in (0,1)$ this gives (\ref{Thm:ConvergenceSGD:Eq:ConvergenceStronglyC
 We see from (\ref{Thm:ConvergenceSGD:Eq:ConvergenceStronglyConvex}) that there is a ``threshold value" $\dfrac{\al B^2}{2m-\al L_g^2}$ which prevents SGD to converge (i.e. there is always a fluctuation). To over comes this, ``epoch doubling" and ``hyper-parameter tuning" have been used. 
 
 \begin{remark}\label{Remark:ConvergenceSGD:OtherCases}
-Some other cases can also be discussed similarly:
+Assume $f$ is convex. We can similarly discuss the case when $L_g=0$ or $B=0$:
 \begin{itemize}
-\item $L_g=0$. Let the average output $\bar{x}^K=\dfrac{\sum\li_{j=0}^K \al_jx^j}{\sum\li_{j=0}^K \al_j}$. Set $D_0=\|x^0-x^*\|^2$,  $\al_k=\al>0$ and $\al_{\text{opt}}=\dfrac{D_0}{B\sqrt{T+1}}$, $\tht=\dfrac{\al}{\al_{\text{opt}}}$. If $L_g=0$, then
+\item[\emph{(1)}] Assume $L_g=0$. Let the average output $\bar{x}^K=\dfrac{\sum\li_{j=0}^K \al_jx^j}{\sum\li_{j=0}^K \al_j}$. Set $D_0^2=\|x^0-x^*\|^2$,  $\al_k=\al>0$ and $\al_{\text{opt}}=\dfrac{D_0}{B\sqrt{T+1}}$, $\tht=\dfrac{\al}{\al_{\text{opt}}}$. Then
 $$\E\left[f(\bar{x}^T)-f(x^*)\right]\leq \left(\dfrac{1}{2}\tht+\dfrac{1}{2}\tht^{-1}\right)\dfrac{BD_0}{\sqrt{T+1}} \ .$$
 
-\item $B=0$.
-Assume that $\langle\grad f(x), x-x^*\rangle\geq m\|x-x^*\|^2$ for some $m>0$. Then if $\al_k=\al\in \left(0, \dfrac{2m}{L_g^2}\right)$, 
+\item[\emph{(2)}] Assume $B=0$ and $\langle\grad f(x), x-x^*\rangle\geq m\|x-x^*\|^2$ for some $m>0$. If $\al_k=\al\in \left(0, \dfrac{2m}{L_g^2}\right)$, 
 then we obtain a linear rate of convergence. Optimal $\al=\dfrac{2}{L_g^2}$ and
-$$a_k\leq \left(1-\dfrac{m^2}{L_g^2}\right)^kD_0^2< \ve \Longleftrightarrow T\geq \left\lceil 
+in this case $$a_k\leq \left(1-\dfrac{m^2}{L_g^2}\right)^kD_0^2< \ve \Longleftrightarrow T\geq \left\lceil 
 \dfrac{L_g^2}{m^2}\ln\left(\dfrac{D_0^2}{\ve}\right)\right\rceil \ .$$
 \end{itemize}
 \end{remark}
+
+\begin{proof}[Proof of Remark 5.4]
+Since $f$ is convex, by (\ref{Thm:ConvexFunctionMainTheorem:Eq:FirstOrder}) we have $$f(y)-f(x)\geq \langle \grad f(x), y-x \rangle \ .$$ 
+Then the basic one-step estimate (\ref{SquareExpansionIteration:SGD}) can be written as
+\begin{equation}\label{Remark:ConvergenceSGD:OtherCases:Eq:basic-recursion}
+a_{k+1}
+\le
+a_k
+-2\alpha_k\,\E\bigl[f(x^k)-f(x^*)\bigr]
++\alpha_k^2\Bigl(B^2+L_g^2 a_k\Bigr),
+\end{equation}
+where $a_k=\E \|x^k-x^*\|^2$.
+
+We now discuss the two special cases.
+
+\noindent{(1) $L_g=0$.} In this case (\ref{Remark:ConvergenceSGD:OtherCases:Eq:basic-recursion}) reduces to
+\[
+a_{k+1}
+\le
+a_k
+-2\alpha_k\,\E \bigl[f(x^k)-f(x^*)\bigr]
++\alpha_k^2 B^2.
+\]
+Hence
+\[
+2\alpha_k\,\E \bigl[f(x^k)-f(x^*)\bigr]
+\le
+a_k-a_{k+1}+\alpha_k^2 B^2.
+\]
+Summing from $k=0$ to $T$ gives
+\[
+2\sum_{k=0}^T \alpha_k\,\E \bigl[f(x^k)-f(x^*)\bigr]
+\le
+a_0-a_{T+1}+B^2\sum_{k=0}^T \alpha_k^2
+\le
+D_0^2+B^2\sum_{k=0}^T \alpha_k^2 \ ,
+\]
+where $D_0^2=a_0=\|x^0-x^*\|^2$. 
+Let $\bar x^K:=\dfrac{\sum\li_{j=0}^K \alpha_j x^j}{\sum\li_{j=0}^K \alpha_j}$. By convexity of $f$,
+$
+f(\bar x^T)
+\le
+\dfrac{\sum\li_{k=0}^T \alpha_k f(x^k)}{\sum\li_{k=0}^T \alpha_k}$. Taking expectation and using the previous inequality, we obtain
+\[
+\E \bigl[f(\bar x^T)-f(x^*)\bigr]
+\le
+\dfrac{D_0^2+B^2\sum\li_{k=0}^T \alpha_k^2}{2\sum\li_{k=0}^T \alpha_k} \ .
+\]
+
+Now choose $\alpha_k=\alpha>0$ for all $k$. Then $\sum\li_{k=0}^T \alpha_k=(T+1)\alpha$,
+$\sum\li_{k=0}^T \alpha_k^2=(T+1)\alpha^2$,
+so
+$$
+\E\bigl[f(\bar x^T)-f(x^*)\bigr]
+\le
+\frac{D_0^2}{2(T+1)\alpha}+\frac{\alpha B^2}{2} \ .$$
+Minimizing the right-hand side of the above leads to $$\E \bigl[f(\bar x^T)-f(x^*)\bigr]
+\le
+\left(\frac{1}{2}\theta+\frac{1}{2}\theta^{-1}\right)
+\frac{BD_0}{\sqrt{T+1}} \ .$$
+
+\noindent{(2) $B=0$.}
+Since we have assumed $\langle \nabla f(x),x-x^*\rangle \ge m\|x-x^*\|^2$ for some $m>0$, the basic one-step estimate (\ref{SquareExpansionIteration:SGD}) can be written as
+$$a_{k+1}
+\le
+a_k-2m\alpha_k a_k+\alpha_k^2 L_g^2 a_k
+=
+\bigl(1-2m\alpha_k+L_g^2\alpha_k^2\bigr)a_k \ .$$
+
+Now choose $\alpha_k=\alpha$ constant. Then
+\[
+a_{k+1}\le \bigl(1-2m\alpha+L_g^2\alpha^2\bigr)a_k.
+\]
+If
+$0<\alpha<\dfrac{2m}{L_g^2}$,
+then
+$0<1-2m\alpha+L_g^2\alpha^2<1$,
+so the method converges linearly as
+$$
+a_k
+\le
+\bigl(1-2m\alpha+L_g^2\alpha^2\bigr)^k D_0^2 \ .$$
+
+Minimizing the contraction factor $1-2m\alpha+L_g^2\alpha^2$ leads to the optimal $
+\alpha_{\mathrm{opt}}=\dfrac{m}{L_g^2}$.
+Therefore
+$a_k
+\le
+\left(1-\dfrac{m^2}{L_g^2}\right)^k D_0^2$.
+\end{proof}
+
 
 \section{Stochastic Variance-Reduced Gradient Descent (SVRG) and its variants}
 
