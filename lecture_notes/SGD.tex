@@ -370,10 +370,10 @@ $a_k
 \section{Stochastic Variance-Reduced Gradient Descent (SVRG) and its variants}
 
 \subsection{SVRG and its Convergence Proof}
-Variance Reduction Methods: Goal is to reduce the variance produced by the stochastic terms in the iteration scheme.
 
-SVRG: Johnson, R., Zhang, T., Accelerating Stochastic Gradient using Predictive Variance Reduction,
-\textit{NIPS}, 2013.
+As we have seen in Theorem \ref{Thm:ConvergenceSGD}, the ``threshold value" $\dfrac{\al B^2}{2m - \al L_g^2}$ prevents SGD to converge. This is due to the ``variance term" $B>0$. This inspires Variance Reduction, whose goal is to reduce the variance produced by the stochastic terms in the iteration scheme.
+
+We will introduce in detail the Stochastic Variance Reduced Gradient (SVRG) method (see \cite{johnsonzhangsvrg2013}) and provide a detailed analysis of its convergence.
 
 Goal is to minimize $\min P(\om)$ where $P(\om)=\dfrac{1}{n}\sum\li_{i=1}^n \psi_i(\om)$.
 
@@ -381,10 +381,10 @@ SGD: draw $i_t$ randomly from $\{1,...,n\}$ and set
 $$\om^{(t)}=\om^{(t-1)}-\eta_t \grad \psi_{i_t}(\om^{(t-1)}) \ .$$
 
 How to reduce variance? We can keep a snapshot $\widetilde{\om}$ after every $m$ SGD iterations, and we
-maintain the average gradient
+maintain the \textit{average gradient}
 $$\widetilde{\mu}=\grad P(\widetilde{\om})=\dfrac{1}{n}\sum\li_{i=1}^n \grad \psi_i(\widetilde{\om}) \ .$$
 
-Variance--reduction:
+This leads to the variance--reduction scheme as follows:
 $$\om^{(t)}=\om^{(t-1)}-\eta_t\left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right) \ .$$
 
 \begin{algorithm}[H]
@@ -406,16 +406,83 @@ $$\om^{(t)}=\om^{(t-1)}-\eta_t\left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_
 \end{algorithmic}
 \end{algorithm}
 
-Convergence analysis of SVRG. Follow the original SVRG paper.
+Suppose the SVRG Algorithm \ref{Alg:SVRG} indeed converge, then $\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})\ra 0$ and $\widetilde{\mu}\ra 0$, leading to the fact that 
+$$\text{Var}\left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right)\ra 0 \ ,$$
+while
+$$\E\left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right)\ra \grad P(\om^{(t-1)}) \ .$$
+That is to say, we have reached variance reduction. Figure \ref{Fig:SVRG-epochs} shows the process.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=stealth, scale=1.0]
+
+% Row 1
+\node at (0,0) {$\widetilde w_1$};
+\draw[->] (1,0) -- (2,0) node[midway, above] {$w^{(0)}$};
+\draw[->] (2,0) -- (3,0) node[midway, above] {$w^{(1)}$};
+\draw (3,0) -- (4,0);
+\node at (4.5,0) {$\cdots$};
+\draw[->] (5,0) -- (6,0) node[midway, above] {$w^{(m-1)}$};
+
+% Row 2
+\node at (0,-1.5) {$\widetilde w_2$};
+\draw[->] (1,-1.5) -- (2,-1.5) node[midway, above] {$w^{(m)}$};
+\draw[->] (2,-1.5) -- (3,-1.5) node[midway, above] {$w^{(m+1)}$};
+\draw (3,-1.5) -- (4,-1.5);
+\node at (4.5,-1.5) {$\cdots$};
+\draw[->] (5,-1.5) -- (6,-1.5) node[midway, above] {$w^{(2m-1)}$};
+
+% Row 3
+\node at (0,-3) {$\widetilde w_3$};
+\draw[->] (1,-3) -- (2,-3) node[midway, above] {$w^{(2m)}$};
+\node at (3,-3) {$\cdots$};
+
+% Diagonal connections (epoch transitions)
+\draw[->] (6,0) -- (1,-1.5);
+\draw[->] (6,-1.5) -- (1,-3);
+
+% Vertical arrow with label s
+\draw[->] (-0.8,0.3) -- (-0.8,-3.2);
+\node at (-1.2,-1.5) {$s$};
+
+% Time axis
+\draw[->] (1,0.8) -- (6.5,0.8);
+\node at (6.8,0.8) {$t$};
+
+% Optional brace (epoch 1)
+\draw[decorate,decoration={brace,amplitude=5pt}]
+(1,0.5) -- (6,0.5)
+node[midway, above=6pt] {epoch $s=1$};
+
+\end{tikzpicture}
+
+\caption{
+Illustration of SVRG Algorithm \ref{Alg:SVRG} iterates organized by epochs.
+Each row corresponds to one epoch of length $m$, with $\widetilde{w}_s = w^{((s-1)m)}$
+denoting the starting point of epoch $s$. The horizontal direction represents
+iteration index $t$, while the vertical direction indexes epochs $s$.
+}
+\label{Fig:SVRG-epochs}
+\end{figure}
+ 
+Here we provide a rigorous proof of the convergence of SVRG method by following the original SVRG paper.
 
 \begin{theorem}\label{Thm:ConvergenceSVRG}
-Consider the SVRG algorithm \ref{Alg:SVRG} and assume that each $\grad \psi_i$ is $L$--Lipschitz and convex, and the function
+Consider the SVRG \emph{Algorithm \ref{Alg:SVRG}} and assume that each $\grad \psi_i$ is $L$--Lipschitz and convex, and the function
 $P(\om)=\dfrac{1}{n}\sum\li_{i=1}^n \psi_i(\om)$ is $\gm$--strongly convex. Set $\om_*=\arg\min\li_{\om}P(\om)$
 and assume that the epoch length $m$ is so large that
-$$\al=\dfrac{1}{\gm\eta(1-2L\eta)m}+\dfrac{2L\eta}{1-2L\eta}<1 \ ,$$
-then we have the linear convergence in expectation of SVRG algorithm \ref{Alg:SVRG}, i.e.
-$$\E [P(\widetilde{\om}_s)- P(\om_*)]\leq \al^s [P(\widetilde{\om}_0)-P(\om_*)] \ .$$
+\begin{equation}\label{Thm:ConvergenceSVRG:Eq:AlphaCondition}
+\al=\dfrac{1}{\gm\eta(1-2L\eta)m}+\dfrac{2L\eta}{1-2L\eta}<1 \ ,
+\end{equation}
+then we have the \emph{linear convergence in expectation of SVRG Algorithm \ref{Alg:SVRG}}, i.e.
+\begin{equation}\label{Thm:ConvergenceSVRG:Eq:LinearConvergence}
+\E [P(\widetilde{\om}_s)- P(\om_*)]\leq \al^s [P(\widetilde{\om}_0)-P(\om_*)] \ .
+\end{equation}
 \end{theorem}
+
+\begin{proof}
+xxx
+\end{proof}
 
 \subsection{SAG, SAGA, SARAH, SPIDER, STORM}
 
