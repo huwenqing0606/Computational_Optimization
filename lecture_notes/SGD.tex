@@ -481,7 +481,7 @@ then we have the \emph{linear convergence in expectation of SVRG Algorithm \ref{
 \end{theorem}
 
 \begin{remark}\label{Rmk:Thm:ConvergenceSVRG:ChoiceParameters}
-\rm We can pick $\al=\dfrac{1}{2}$, for which we just need $\dfrac{1}{\gm \eta (1-2L\eta)m}=\dfrac{2L\eta}{1-2L\eta}=\dfrac{1}{4}$. The condition number for $\grad^2 P$ is $\kp=\dfrac{L}{\gm}$, and we set some integer $n$ so that $\kp = n$. Then we pick $\eta = \dfrac{0.1}{L}$ which gives 
+\rm We can pick $\al=\dfrac{1}{2}$, for which we just need $\dfrac{1}{\gm \eta (1-2L\eta)m}=\dfrac{2L\eta}{1-2L\eta}=\dfrac{1}{4}$. The condition number for $\grad^2 P$ is $\kp=\dfrac{L}{\gm}$, and usually $\kp\approx n$ (or $\kp=n$ for simplicity) where $n$ is the sample size. Then we pick $\eta = \dfrac{0.1}{L}$ which gives 
 $\dfrac{2L\eta}{1-2L\eta}=\dfrac{0.2}{0.8}=\dfrac{1}{4} \ , \ \dfrac{1}{\gm \eta (1-2L\eta)m}=\dfrac{1}{\gm \eta \cdot 0.8m}=\dfrac{n}{0.8m}$.
 Take $m=50n$ will yield $\dfrac{n}{0.8m}=\dfrac{1}{4}$. 
 \end{remark}
