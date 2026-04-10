@@ -169,7 +169,7 @@ $$\begin{array}{ll}
 
 \begin{theorem}\label{Thm:ConvergenceSGD} Assume $B>0$ and $L_g>0$, and $f$ is $m$-strongly convex with unique minimizer $x^*$. We choose $\al\in \left(0, \dfrac{2m}{L_g^2}\right)$ such that $1-2m\al+\al^2L_g^2>0$. For the iteration \emph{(\ref{Eq:StochasticGradientDescent})} we set $\al_k=\al$. Then
 \begin{equation}\label{Thm:ConvergenceSGD:Eq:ConvergenceStronglyConvex}
-\E\|x^k-x^*\|^2\leq \left(1-2m\al+\al^2L_g^2\right)^k\|x^0-x^*\|^2+\dfrac{\al B^2}{2m-\al L_g^2} \ .
+\E\|x^k-x^*\|^2\leq \left(1-2m\al+\al^2L_g^2\right)^k\|x^0-x^*\|^2+\dfrac{\al^2 B^2}{2m-\al L_g^2} \ .
 \end{equation}
 \end{theorem}
 
@@ -261,7 +261,7 @@ $$a_{k+1}\leq \mu^{k+1}a_0+\al^2B^2(1+\mu+...+\mu^k)=\mu^{k+1}a_0+\dfrac{\al^2B^
 When $\mu \in (0,1)$ this gives (\ref{Thm:ConvergenceSGD:Eq:ConvergenceStronglyConvex}).
 \end{proof}
 
-We see from (\ref{Thm:ConvergenceSGD:Eq:ConvergenceStronglyConvex}) that there is a ``threshold value" $\dfrac{\al B^2}{2m-\al L_g^2}$ which prevents SGD to converge (i.e. there is always a fluctuation). To over comes this, ``epoch doubling" and ``hyper-parameter tuning" have been used. 
+We see from (\ref{Thm:ConvergenceSGD:Eq:ConvergenceStronglyConvex}) that there is a ``threshold value" $\dfrac{\al^2 B^2}{2m-\al L_g^2}$ which prevents SGD to converge (i.e. there is always a fluctuation). To over comes this, ``epoch doubling" and ``hyper-parameter tuning" have been used. 
 
 \begin{remark}\label{Remark:ConvergenceSGD:OtherCases}
 Assume $f$ is convex. We can similarly discuss the case when $L_g=0$ or $B=0$:
@@ -371,7 +371,7 @@ $a_k
 
 \subsection{SVRG and its Convergence Proof}
 
-As we have seen in Theorem \ref{Thm:ConvergenceSGD}, the ``threshold value" $\dfrac{\al B^2}{2m - \al L_g^2}$ prevents SGD to converge. This is due to the ``variance term" $B>0$. This inspires Variance Reduction, whose goal is to reduce the variance produced by the stochastic terms in the iteration scheme.
+As we have seen in Theorem \ref{Thm:ConvergenceSGD}, the ``threshold value" $\dfrac{\al^2 B^2}{2m - \al L_g^2}$ prevents SGD to converge. This is due to the ``variance term" $B>0$. This inspires Variance Reduction, whose goal is to reduce the variance produced by the stochastic terms in the iteration scheme.
 
 We will introduce in detail the Stochastic Variance Reduced Gradient (SVRG) method (see \cite{johnsonzhangsvrg2013}) and provide a detailed analysis of its convergence.
 
@@ -391,16 +391,16 @@ $$\om^{(t)}=\om^{(t-1)}-\eta_t\left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_
 \caption{Stochastic Variance Reduced Gradient}
 \label{Alg:SVRG}
 \begin{algorithmic}[1]
-\STATE \textbf{Input}: Input initialization $\widetilde{\om}_0$, update frequency $m$ and learning rate $\eta$
+\STATE \textbf{Input}: Input initialization $\om^{(0)}$, update frequency $m$ and learning rate $\eta$
 \FOR {$s=1,2,...$}
     \STATE $\widetilde{\om}=\widetilde{\om}_{s-1}$
     \STATE $\widetilde{\mu}=\dfrac{1}{n}\sum\li_{i=1}^n \grad \psi_i(\widetilde{\om})$
-    \STATE $\om_0=\widetilde{\om}$
+    \STATE $\om^{(0)}=\widetilde{\om}$
     \FOR {$t=1,2,...,m$}
         \STATE Sample $i_t$ independently and uniformly from $\{1,...,n\}$
-        \STATE Update the weight $\om_t=\om_{t-1}-\eta \left(\grad \psi_{i_t}(\om_{t-1})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right)$
+        \STATE Update the weight $\om^{(t)}=\om^{(t-1)}-\eta \left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right)$
     \ENDFOR
-    \STATE $\widetilde{\om}_s\leftarrow \om_t$ for randomly chosen $t\in \{0,...,m-1\}$
+    \STATE $\widetilde{\om}_s\leftarrow \om^{(t)}$ for randomly chosen $t\in \{0,...,m-1\}$
 \ENDFOR
 \STATE \textbf{Output}: $\widetilde{\om}_s$
 \end{algorithmic}
@@ -458,7 +458,7 @@ node[midway, above=6pt] {epoch $s=1$};
 
 \caption{
 Illustration of SVRG Algorithm \ref{Alg:SVRG} iterates organized by epochs.
-Each row corresponds to one epoch of length $m$, with $\widetilde{w}_s = w^{((s-1)m)}$
+Each row corresponds to one epoch of length $m$, with $\widetilde{w}_s$ (randomly picked from previous epoch)
 denoting the starting point of epoch $s$. The horizontal direction represents
 iteration index $t$, while the vertical direction indexes epochs $s$.
 }
@@ -468,23 +468,211 @@ iteration index $t$, while the vertical direction indexes epochs $s$.
 Here we provide a rigorous proof of the convergence of SVRG method by following the original SVRG paper.
 
 \begin{theorem}\label{Thm:ConvergenceSVRG}
-Consider the SVRG \emph{Algorithm \ref{Alg:SVRG}} and assume that each $\grad \psi_i$ is $L$--Lipschitz and convex, and the function
-$P(\om)=\dfrac{1}{n}\sum\li_{i=1}^n \psi_i(\om)$ is $\gm$--strongly convex. Set $\om_*=\arg\min\li_{\om}P(\om)$
+Consider the \emph{SVRG Algorithm \ref{Alg:SVRG}} and assume that each $\psi_i$ is convex, each $\grad \psi_i$ is $L$-Lipschitz, and the function
+$P(\om)=\dfrac{1}{n}\sum\li_{i=1}^n \psi_i(\om)$ is $\gm$--strongly convex. Set $\om^*=\arg\min\li_{\om}P(\om)$
 and assume that the epoch length $m$ is so large that
 \begin{equation}\label{Thm:ConvergenceSVRG:Eq:AlphaCondition}
 \al=\dfrac{1}{\gm\eta(1-2L\eta)m}+\dfrac{2L\eta}{1-2L\eta}<1 \ ,
 \end{equation}
 then we have the \emph{linear convergence in expectation of SVRG Algorithm \ref{Alg:SVRG}}, i.e.
 \begin{equation}\label{Thm:ConvergenceSVRG:Eq:LinearConvergence}
-\E [P(\widetilde{\om}_s)- P(\om_*)]\leq \al^s [P(\widetilde{\om}_0)-P(\om_*)] \ .
+\E [P(\widetilde{\om}_s)- P(\om^*)]\leq \al^s [P(\widetilde{\om}_0)-P(\om^*)] \ .
 \end{equation}
 \end{theorem}
 
+\begin{remark}\label{Rmk:Thm:ConvergenceSVRG:ChoiceParameters}
+\rm We can pick $\al=\dfrac{1}{2}$, for which we just need $\dfrac{1}{\gm \eta (1-2L\eta)m}=\dfrac{2L\eta}{1-2L\eta}=\dfrac{1}{4}$. The condition number for $\grad^2 P$ is $\kp=\dfrac{L}{\gm}$, and we set some integer $n$ so that $\kp = n$. Then we pick $\eta = \dfrac{0.1}{L}$ which gives 
+$\dfrac{2L\eta}{1-2L\eta}=\dfrac{0.2}{0.8}=\dfrac{1}{4} \ , \ \dfrac{1}{\gm \eta (1-2L\eta)m}=\dfrac{1}{\gm \eta \cdot 0.8m}=\dfrac{n}{0.8m}$.
+Take $m=50n$ will yield $\dfrac{n}{0.8m}=\dfrac{1}{4}$. 
+\end{remark}
+
 \begin{proof}
-xxx
+Let the i.i.d sequence $
+i_t\in \{1,\ldots,n\}$, and
+$\Prob(i_t=k)=\dfrac{1}{n}$. Then we write the SVRG-update as 
+$$w^{(t)} = w^{(t-1)}-\eta V_t$$
+where
+\[
+V_t
+=
+\nabla \psi_{i_t}(w^{(t-1)})
+-
+\nabla \psi_{i_t}(\widetilde w)
++
+\mathbb{E}\,\nabla \psi_{i_t}(\widetilde w) \ ,
+\]
+where
+$\mathbb{E}(\bullet):=\E(\bullet\mid \mathcal{F}_{t-1})$. We expand
+$$\begin{array}{ll}
+\mathbb{E} \|w^{(t)}-w^*\|^2
+& =
+\mathbb{E} \|w^{(t-1)}-\eta V_t-w^*\|^2
+\\
+& =
+\|w^{(t-1)}-w^*\|^2
+-
+2\eta (w^{(t-1)}-w^*)^{T}\mathbb{E}V_t
++
+\eta^2 \mathbb{E}\|V_t\|^2 \ .
+\end{array}
+$$
+Then we calculate
+
+$$\begin{array}{ll}
+\mathbb{E}V_t
+& =
+\mathbb{E}\,\nabla \psi_{i_t}(w^{(t-1)})
+-
+\mathbb{E}\,\nabla \psi_{i_t}(\widetilde w)
++
+\mathbb{E}\,\nabla \psi_{i_t}(\widetilde w)
+\\
+& =
+\dfrac{1}{n}\sum\li_{i=1}^{n}\nabla \psi_i(w^{(t-1)})
+\\
+& =
+\nabla P(w^{(t-1)}) \ .
+\end{array}
+$$
+And
+$$\begin{array}{ll}
+\mathbb{E}\|V_t\|^2
+& = \mathbb{E}\left\| \underbrace{\nabla {\psi_{i_t}(w^{(t-1)})-\nabla \psi_{i_t}(w^*)}}_{(I)}
+-
+\underbrace{\Big[
+\nabla \psi_{i_t}(\widetilde w)-\nabla \psi_{i_t}(w^*)-\nabla P(\widetilde w)}_{(II)}
+\Big]\right\|^2
+\\
+& = \mathbb{E}\|(I)-(II)\|^2
+\\
+& \leq 2\mathbb{E}\|(I)\|^2 + 2\mathbb{E}\|(II)\|^2
+\\
+& \stackrel{(a)}{=}
+2\,\mathbb{E}\|\nabla \psi_{i_t}(w^{(t-1)})-\nabla \psi_{i_t}(w^*)\|^2
++ 2\,\mathbb{E}
+\Big\|
+\big[\nabla \psi_{i_t}(\widetilde w)-\nabla \psi_{i_t}(w^*)\big]
+-
+\mathbb{E}\big[\nabla \psi_{i_t}(\widetilde w)-\nabla \psi_{i_t}(w^*)\big]
+\Big\|^2
+\\
+&\stackrel{(b)}{\leq}
+2\,\mathbb{E}\|\nabla \psi_{i_t}(w^{(t-1)})-\nabla \psi_{i_t}(w^*)\|^2 +
+2\,\mathbb{E}\|\nabla \psi_{i_t}(\widetilde w)-\nabla \psi_{i_t}(w^*)\|^2 \ .
+\end{array}
+$$
+Here in (a) we used the fact that $\nabla P(\widetilde w)=\mathbb{E}{\nabla \psi_{i_t}(\widetilde w)}$ and $\nabla P(w^*)=\mathbb{E}\grad \psi_{i_t}(w^*)=0$, and in (b) we used the fact that $
+\mathbb{E}\|x-\mathbb{E}x\|^2\le \mathbb{E}\|x\|^2$. So we have in conclusion 
+\begin{equation}\label{Thm:ConvexFunctionMainTheorem:Eq:IterationEstimate}
+\begin{array}{ll}
+\mathbb{E}\|w^{(t)}-w^*\|^2
+& \leq \|w^{(t-1)}-w^*\|^2 -
+2\eta (w^{(t-1)}-w^*)^{T}\mathbb{E}V_t 
+\\
+& \qquad +2\eta^2\left(\mathbb{E}\|\nabla \psi_{i_t}(w^{(t-1)})-\nabla \psi_{i_t}(w^*)\|^2 
++
+\mathbb{E}\|\nabla \psi_{i_t}(\widetilde w)-\nabla \psi_{i_t}(w^*)\|^2\right) \ . 
+\end{array}
+\end{equation}
+By (\ref{Thm:GeneralizedStrongConvexity:Eq:UpperBound}) in Theorem \ref{Thm:GeneralizedStrongConvexity} we get
+$$\|\nabla \psi_i(w)-\nabla \psi_i(w^*)\|^2
+\le
+2L\Big[
+\psi_i(w)-\psi_i(w^*)
+-
+\nabla \psi_i(w^*)^{T}(w-w^*)
+\Big] \ .$$
+So
+$$\begin{array}{ll}
+& 2\,\mathbb{E}\|\nabla \psi_{i_t}(w^{(t-1)})-\nabla \psi_{i_t}(w^*)\|^2
++
+2\,\mathbb{E}\|\nabla \psi_{i_t}(\widetilde w)-\nabla \psi_{i_t}(w^*)\|^2
+\\
+& \leq 2\cdot 2L\,
+\mathbb{E}
+\Big[
+\psi_{i_t}(w^{(t-1)})-\psi_{i_t}(w^*)
+-
+\nabla \psi_{i_t}(w^*)^{T}(w^{(t-1)}-w^*)
+\Big]
+\\
+& \qquad 
++ 2\cdot 2L\,
+\mathbb{E}
+\Big[
+\psi_{i_t}(\widetilde w)-\psi_{i_t}(w^*)
+-
+\nabla \psi_{i_t}(w^*)^{T}(\widetilde w-w^*)
+\Big]
+\\
+& =
+4L
+\Big[
+P(w^{(t-1)})-P(w^*)-\nabla P(w^*)^{T}(w^{(t-1)}-w^*)
+\Big]
++ 4L
+\Big[
+P(\widetilde w)-P(w^*)-\nabla P(w^*)^{T}(\widetilde w-w^*)
+\Big]
+\\
+& = 4L\Big[P(w^{(t-1)})-P(w^*)+P(\widetilde w)-P(w^*)\Big] \ .
+\end{array}
+$$
+
+This combined with (\ref{Thm:ConvexFunctionMainTheorem:Eq:IterationEstimate}) gives 
+$$
+\mathbb{E}\|w^{(t)}-w^*\|^2
+\leq
+\|w^{(t-1)}-w^*\|^2
+-
+2\eta (w^{(t-1)}-w^*)^{T}\nabla P(w^{(t-1)})
++
+4L\eta^2\Big[P(w^{(t-1)})-P(w^*)+P(\widetilde w)-P(w^*)\Big] \ .
+$$
+Since $P(w)$ is convex, we get $P(w^{(t-1)})+(w^*-w^{(t-1)})^{T}\nabla P(w^{(t-1)})\le P(w^*)$. So we can bound $-2\eta (w^{(t-1)}-w^*)^{T}\nabla P(w^{(t-1)})\leq
+2\eta [P(w^*)-P(w^{(t-1)})]$. This gives
+$$\begin{array}{ll}
+\mathbb{E}\|w^{(t)}-w^*\|^2 & \le
+\|w^{(t-1)}-w^*\|^2
++
+2\eta [P(w^*)-P(w^{(t-1)})]
+\\
+& \qquad +
+4L\eta^2 [P(w^{(t-1)})-P(w^*)+P(\tilde w)-P(w^*)]
+\\
+& =
+\|w^{(t-1)}-w^*\|^2
+-
+2\eta (1-2L\eta)\,[P(w^{(t-1)})-P(w^*)]
++
+4L\eta^2 [P(\widetilde w)-P(w^*)]
+\end{array}
+$$
+for $t=1,2,...$. Summing in one epoch, starting from $w^{(0)}=\widetilde{w}=\widetilde{w}_{s-1}$ and running from $t=1$ to $t=m$ gives 
+$$\sum\li_{t=1}^m \mathbb{E}\|w^{(t)}-w^*\|^2\leq \sum\li_{t=1}^m \|w^{(t-1)}-w^*\|^2-2\eta(1-2L\eta)\sum\li_{t=1}^m [P(w^{(t-1)})-P(w^*)]+4L\eta^2m [P(\widetilde{w})-P(w^*)] \ .$$
+Take $\E$ expectation on both sides and cancel $\E\|w^{(m)}-w^*\|$ for $t=2,...,m-1$ we get
+$$\E\|w^{(m)}-w^*\|^2-\E\|\widetilde{w}_{s-1}-w^*\|^2\leq -2\eta(1-2L\eta)\sum\li_{t=1}^m [\E P(w^{(t-1)})-P(w^*)]+4L\eta^2m [\E P(\widetilde{w}_{s-1})-P(w^*)] \ .$$
+Since $\widetilde{w}_s$ is randomly uniformly taken from $w^{(0)},...,w^{(m-1)}$ we get $\sum\li_{t=1}^m \E P(w^{(t-1)})=m\E P(\widetilde{w}_s)$. So 
+\begin{equation}\label{Thm:ConvergenceSVRG:FinalBoundStep1}
+\E\|w^{(m)}-w^*\|^2-\E\|\widetilde{w}_{s-1}-w^*\|^2\leq -2\eta(1-2L\eta)m[\E P(\widetilde{w}_s)-P(w^*)]+4L\eta^2m [\E P(\widetilde{w}_{s-1})-P(w^*)] \ .
+\end{equation}
+Since $P(w)$ is $\gamma$-strongly convex, by (\ref{Thm:ConvexFunctionMainTheorem:Eq:SecondOrderLowerBound}) we have
+$$
+P(\widetilde{w}_{s-1})-P(w^*)-\frac{1}{2}\gamma \|\widetilde{w}_{s-1}-w^*\|^2
+\ge
+(\nabla P(w^*))^{T}(\widetilde{w}_{s-1}-w^*)=0 \ .
+$$
+So \begin{equation}\label{Thm:ConvergenceSVRG:FinalBoundStep2}
+-\E\|\widetilde{w}_{s-1}-w^*\|^2\geq -\dfrac{2}{\gm}[\E P(\widetilde{w}_{s-1})-P(w^*)] \ .
+\end{equation}
+Combining (\ref{Thm:ConvergenceSVRG:FinalBoundStep1}) and (\ref{Thm:ConvergenceSVRG:FinalBoundStep2}), using $\E\|w^{(m)}-w^*\|^2\geq 0$ we get
+$$2\eta (1-2L\eta)m [\E P(\widetilde{w}_s)-P(w^*)]\leq \left(4L\eta^2 m +\dfrac{2}{\gm}\right)[\E P(\widetilde{w}_{s-1})-P(w^*)] \ ,$$
+i.e.
+$$\E P(\widetilde{w}_s)-P(w^*) \leq \left(\dfrac{2L\eta}{1-2L\eta} +\dfrac{1}{\gm\eta (1-2L\eta)m}\right)[\E P(\widetilde{w}_{s-1})-P(w^*)]\equiv \al [\E P(\widetilde{w}_{s-1})-P(w^*)] \ .$$
+Iterating the above we get (\ref{Thm:ConvergenceSVRG:Eq:LinearConvergence}).
 \end{proof}
 
-\subsection{SAG, SAGA, SARAH, SPIDER, STORM}
+\subsection{Variants of SVRG: SAG, SAGA, SARAH, SPIDER, STORM}
 
 SAG: Roux, Nicolas L., Mark Schmidt, Francis R. Bach,
 A stochastic gradient method with an exponential convergence rate for finite training sets. \textit{NIPS}, 2012.
