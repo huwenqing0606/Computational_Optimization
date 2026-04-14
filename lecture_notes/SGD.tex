@@ -375,41 +375,41 @@ As we have seen in Theorem \ref{Thm:ConvergenceSGD}, the ``threshold value" $\df
 
 We will introduce in detail the Stochastic Variance Reduced Gradient (SVRG) method (see \cite{johnsonzhangsvrg2013}) and provide a detailed analysis of its convergence.
 
-Goal is to minimize $\min P(\om)$ where $P(\om)=\dfrac{1}{n}\sum\li_{i=1}^n \psi_i(\om)$.
+Goal is to minimize $\min P(w)$ where $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n \psi_i(w)$.
 
 SGD: draw $i_t$ randomly from $\{1,...,n\}$ and set
-$$\om^{(t)}=\om^{(t-1)}-\eta_t \grad \psi_{i_t}(\om^{(t-1)}) \ .$$
+$$w^{(t)}=w^{(t-1)}-\eta_t \grad \psi_{i_t}(w^{(t-1)}) \ .$$
 
-How to reduce variance? We can keep a snapshot $\widetilde{\om}$ after every $m$ SGD iterations, and we
+How to reduce variance? We can keep a snapshot $\widetilde{w}$ after every $m$ SGD iterations, and we
 maintain the \textit{average gradient}
-$$\widetilde{\mu}=\grad P(\widetilde{\om})=\dfrac{1}{n}\sum\li_{i=1}^n \grad \psi_i(\widetilde{\om}) \ .$$
+$$\widetilde{\mu}=\grad P(\widetilde{w})=\dfrac{1}{n}\sum\li_{i=1}^n \grad \psi_i(\widetilde{w}) \ .$$
 
 This leads to the variance--reduction scheme as follows:
-$$\om^{(t)}=\om^{(t-1)}-\eta_t\left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right) \ .$$
+$$w^{(t)}=w^{(t-1)}-\eta_t\left(\grad \psi_{i_t}(w^{(t-1)})-\grad \psi_{i_t}(\widetilde{w})+\widetilde{\mu}\right) \ .$$
 
 \begin{algorithm}[H]
-\caption{Stochastic Variance Reduced Gradient}
+\caption{Stochastic Variance Reduced Gradient (SVRG)}
 \label{Alg:SVRG}
 \begin{algorithmic}[1]
-\STATE \textbf{Input}: Input initialization $\om^{(0)}$, update frequency $m$ and learning rate $\eta$
+\STATE \textbf{Input}: Input initialization $w^{(0)}$, update frequency $m$ and learning rate $\eta$
 \FOR {$s=1,2,...$}
-    \STATE $\widetilde{\om}=\widetilde{\om}_{s-1}$
-    \STATE $\widetilde{\mu}=\dfrac{1}{n}\sum\li_{i=1}^n \grad \psi_i(\widetilde{\om})$
-    \STATE $\om^{(0)}=\widetilde{\om}$
+    \STATE $\widetilde{w}=\widetilde{w}_{s-1}$
+    \STATE $\widetilde{\mu}=\dfrac{1}{n}\sum\li_{i=1}^n \grad \psi_i(\widetilde{w})$
+    \STATE $w^{(0)}=\widetilde{w}$
     \FOR {$t=1,2,...,m$}
         \STATE Sample $i_t$ independently and uniformly from $\{1,...,n\}$
-        \STATE Update the weight $\om^{(t)}=\om^{(t-1)}-\eta \left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right)$
+        \STATE Update the weight $w^{(t)}=w^{(t-1)}-\eta \left(\grad \psi_{i_t}(w^{(t-1)})-\grad \psi_{i_t}(\widetilde{w})+\widetilde{\mu}\right)$
     \ENDFOR
-    \STATE $\widetilde{\om}_s\leftarrow \om^{(t)}$ for randomly chosen $t\in \{0,...,m-1\}$
+    \STATE $\widetilde{w}_s\leftarrow w^{(t)}$ for randomly chosen $t\in \{0,...,m-1\}$
 \ENDFOR
-\STATE \textbf{Output}: $\widetilde{\om}_s$
+\STATE \textbf{Output}: $\widetilde{w}_s$
 \end{algorithmic}
 \end{algorithm}
 
-Suppose the SVRG Algorithm \ref{Alg:SVRG} indeed converge, then $\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})\ra 0$ and $\widetilde{\mu}\ra 0$, leading to the fact that 
-$$\text{Var}\left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right)\ra 0 \ ,$$
+Suppose the SVRG Algorithm \ref{Alg:SVRG} indeed converge, then $\grad \psi_{i_t}(w^{(t-1)})-\grad \psi_{i_t}(\widetilde{w})\ra 0$ and $\widetilde{\mu}\ra 0$, leading to the fact that 
+$$\text{Var}\left(\grad \psi_{i_t}(w^{(t-1)})-\grad \psi_{i_t}(\widetilde{w})+\widetilde{\mu}\right)\ra 0 \ ,$$
 while
-$$\E\left(\grad \psi_{i_t}(\om^{(t-1)})-\grad \psi_{i_t}(\widetilde{\om})+\widetilde{\mu}\right)\ra \grad P(\om^{(t-1)}) \ .$$
+$$\E\left(\grad \psi_{i_t}(w^{(t-1)})-\grad \psi_{i_t}(\widetilde{w})+\widetilde{\mu}\right)\ra \grad P(w^{(t-1)}) \ .$$
 That is to say, we have reached variance reduction. Figure \ref{Fig:SVRG-epochs} shows the process.
 
 \begin{figure}[ht]
@@ -452,7 +452,7 @@ That is to say, we have reached variance reduction. Figure \ref{Fig:SVRG-epochs}
 % Optional brace (epoch 1)
 \draw[decorate,decoration={brace,amplitude=5pt}]
 (1,0.5) -- (6,0.5)
-node[midway, above=6pt] {epoch $s=1$};
+node[midway, above=6pt] {first epoch ($s=1$)};
 
 \end{tikzpicture}
 
@@ -469,14 +469,14 @@ Here we provide a rigorous proof of the convergence of SVRG method by following 
 
 \begin{theorem}\label{Thm:ConvergenceSVRG}
 Consider the \emph{SVRG Algorithm \ref{Alg:SVRG}} and assume that each $\psi_i$ is convex, each $\grad \psi_i$ is $L$-Lipschitz, and the function
-$P(\om)=\dfrac{1}{n}\sum\li_{i=1}^n \psi_i(\om)$ is $\gm$--strongly convex. Set $\om^*=\arg\min\li_{\om}P(\om)$
+$P(w)=\dfrac{1}{n}\sum\li_{i=1}^n \psi_i(w)$ is $\gm$--strongly convex. Set $w^*=\arg\min\li_{w}P(w)$
 and assume that the epoch length $m$ is so large that
 \begin{equation}\label{Thm:ConvergenceSVRG:Eq:AlphaCondition}
 \al=\dfrac{1}{\gm\eta(1-2L\eta)m}+\dfrac{2L\eta}{1-2L\eta}<1 \ ,
 \end{equation}
 then we have the \emph{linear convergence in expectation of SVRG Algorithm \ref{Alg:SVRG}}, i.e.
 \begin{equation}\label{Thm:ConvergenceSVRG:Eq:LinearConvergence}
-\E [P(\widetilde{\om}_s)- P(\om^*)]\leq \al^s [P(\widetilde{\om}_0)-P(\om^*)] \ .
+\E [P(\widetilde{w}_s)- P(w^*)]\leq \al^s [P(\widetilde{w}_0)-P(w^*)] \ .
 \end{equation}
 \end{theorem}
 
@@ -674,13 +674,12 @@ Iterating the above we get (\ref{Thm:ConvergenceSVRG:Eq:LinearConvergence}).
 
 \subsection{Variants of SVRG: SAG, SAGA, SARAH, SPIDER, STORM}
 
-SAG: Roux, Nicolas L., Mark Schmidt, Francis R. Bach,
-A stochastic gradient method with an exponential convergence rate for finite training sets. \textit{NIPS}, 2012.
+SVRG has various variants of the same variance-reduction nature and we introduce them below.
 
-Guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$.
+Stochastic Average Gradient (SAG, see \cite{SAGpaper}) has guaranteed linear convergence rate for strongly convex objective $P(x)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$.
 
-\begin{algorithm}[H]
-\caption{Stochastic Average Gradient: minimizing $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$}
+\begin{algorithm}[ht]
+\caption{Stochastic Average Gradient (SAG): minimizing $P(x)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$}
 \label{Alg:SAG}
 \begin{algorithmic}[1]
 \STATE \textbf{Input}: Input initialization $x_0$, stepsize $\al>0$, $d=0$, $y_i=0$, $i=1,2,...,n$
@@ -695,13 +694,10 @@ Guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}
 \end{algorithm}
 
 
-SAGA: Defazio, A., Bach, F., Lacoste-Julien, S.,
-SAGA: A Fast Incremental Gradient Method With Support for Non-Strongly Convex Composite Objectives, \textit{NIPS}, 2014.
+SAGA (see \cite{SAGApaper}) has guaranteed linear convergence rate for strongly convex objective $P(x)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$.
 
-Guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$.
-
-\begin{algorithm}[H]
-\caption{SAGA: minimizing $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$}
+\begin{algorithm}[ht]
+\caption{SAGA: minimizing $P(x)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$}
 \label{Alg:SAGA}
 \begin{algorithmic}[1]
 \STATE \textbf{Input}: Input initial vector $x^0\in \R^d$ and known gradients $\grad f_i(\phi_i^0)\in \R^d$ with $\phi_i^0=x^0$
@@ -719,14 +715,11 @@ Guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}
 \end{algorithmic}
 \end{algorithm}
 
-SARAH: Lam M. Nguyen, Jie Liu, Katya Scheinberg, Martin Tak\'{a}\v{c},
-SARAH: A Novel Method for Machine Learning Problems Using Stochastic Recursive Gradient,
-\textit{Proceedings of the 34th International Conference on Machine Learning, PMLR} \textbf{70}:2613-2621, 2017.
 
-Guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$.
+StochAstic Recursive grAdient algoritHm (SARAH, see \cite{SARAHpaper}) has guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$.
 
-\begin{algorithm}[H]
-\caption{StochAstic Recursive grAdient algoritHm: minimizing $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$}
+\begin{algorithm}[ht]
+\caption{StochAstic Recursive grAdient algoritHm (SARAH): minimizing $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$}
 \label{Alg:SARAH}
 \begin{algorithmic}[1]
 \STATE \textbf{Input}: Initialization $\widetilde{w}_0$, the learning rate $\eta>0$ and the inner loop size $m$
@@ -745,15 +738,12 @@ Guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}
 \end{algorithmic}
 \end{algorithm}
 
-SPIDER: Cong Fang, Chris Junchi Li, Zhouchen Lin, Tong Zhang,
-SPIDER: Near-Optimal Non-Convex Optimization via Stochastic Path-Integrated Differential Estimator,
-\textit{NIPS}, 2018.
 
-No assumption on convexity. Optimal Rate $O\left(\min(n^{1/2}\ve^{-2}, \ve^{-3})\right)$ for 
+Stochastic Path--Integrated Differential EstiamtoR (SPIDER, see \cite{SPIDERpaper}) requires no assumption on convexity. Optimal Rate $O\left(\min(n^{1/2}\ve^{-2}, \ve^{-3})\right)$ for 
 finding an $\ve$--approximate first order stationary point.
 
 \begin{algorithm}[H]
-\caption{Stochastic Path--Integrated Differential EstiamtoR: Searching First Order stationary point}
+\caption{Stochastic Path--Integrated Differential EstiamtoR (SPIDER): Searching First Order stationary point}
 \label{Alg:SPIDER}
 \begin{algorithmic}[1]
 \STATE \textbf{Input}: Input $\boldx^0$, $q$, $S_1$, $S_2$, $n_0$, $\ve$ and $\widetilde{\ve}$
@@ -779,7 +769,7 @@ finding an $\ve$--approximate first order stationary point.
 \end{algorithm}
 
 \begin{remark}\label{Remark:Minibatch}
-In the classical SGD algorithm, the minibatches $\cB$ are sampled uniformly randomly from the index set $\{1,2,...,n\}$ with fixed minibatch size $m\leq n$. This kind of minibatches can be regarded as \emph{``sample without replacement"} minibatches. This is the commonly understood minibatches in practice.
+\rm In the classical SGD algorithm, the minibatches $\cB$ are sampled uniformly randomly from the index set $\{1,2,...,n\}$ with fixed minibatch size $m\leq n$. This kind of minibatches can be regarded as \emph{``sample without replacement"} minibatches. This is the commonly understood minibatches in practice.
 
 In the SPIDER algorithm, the samples $\cS_1$ and $\cS_2$ are drawn with replacement, so that they form minibatches $\cS$ that are sampled uniformly randomly from the index set $\{1,2,...,n\}$ but with replacement, and the minibatch has a given size, say $m$ but counting multiplicities. This kind of minibacthes can be regarded as \emph{``sample with replacement"} minibacthes. This is less seen in the literature.
 
@@ -804,7 +794,7 @@ Previous mentioned methods typically use \textit{non-adaptive
 learning rates} and \textit{reliance on giant batch sizes} to construct variance reduced gradients through the use
 of low-noise gradients calculated at a ``checkpoint".
 
-STOchastic Recursive Momentum (STORM, Cutkosky, A., Orabona, F., Momentum-Based Variance Reduction in Non-Convex SGD, arXiv:1905.10018v2, 2020.) is a recently proposed novel variance-reduction method that achieves variance reduction through the use of a variant of the momentum term. 
+STOchastic Recursive Momentum (STORM, see \cite{STORMpaper}) is a recently proposed novel variance-reduction method that achieves variance reduction through the use of a variant of the momentum term. 
 
 This method never needs to compute a checkpoint gradient and achieves the optimal convergence rate of $O(1/T^{1/3})$. In fact, the key ideas in momentum-based methods 
 is to replace the gradient estimator with an exponential moving avearge of the gradient estimators in all previous iteration steps, i.e.
@@ -832,7 +822,7 @@ $$
 Here the first part is like SARAH update, but it is weighted with the stochastic gradient update. Moreover, different from the SARAH update, the STORM update does not have to compute checkpoint gradients. Rather, variance-reduction is achieved by tuning the weight parameter $a$ appropriately. The exact algorithm goes as follows:
 
 \begin{algorithm}[H]
-	\caption{STORM: STOchastic Recursive Momentum}
+	\caption{STOchastic Recursive Momentum (STORM)}
 	\label{Alg:STORM}
 	\begin{algorithmic}[1]
 		\STATE \textbf{Input}: Parameters $k, w, c$, initial point $\boldx_1$
@@ -855,18 +845,8 @@ Here the first part is like SARAH update, but it is weighted with the stochastic
 
 \section{Escape from saddle points and nonconvex problems, SGLD, Perturbed GD}
 
-Continuous point of view: 
-
-Hu, W., Li, C.J., Li, L., Liu, J., On the diffusion approximation of nonconvex stochastic gradient descent. \textit{Annals of Mathematical Science and Applications}, Vol. \textbf{4}, No. 1 (2019), pp. 3-32.
-
-SGLD: Maxim Raginsky, Alexander Rakhlin, Matus Telgarsky,
-Non-convex learning via Stochastic Gradient Langevin Dynamics: a nonasymptotic analysis,
-\textit{Proceedings of the 2017 Conference on Learning Theory, PMLR} \textbf{65}:1674-1703, 2017.
-
-SGLD is a continuous version of SGD with additional moderate and isotropic noise.
-
-Convergence Guarantee: Xu, P., Chen, J., Zou, D., Gu, Q., Global convergence of Langevin Dynamics 
-Based Algorithms for Nonconvex Optimization, \textit{NIPS}, 2018. 
+SGD and its variants can be viewed from continuous point as Stochastic Differential Equations (SDEs), see \cite{HuLiLiLiuDiffusionApproximateSGD}.
+This inspires SGLD (see \cite{SGLDpaper}), which is a continuous version of SGD with additional moderate and isotropic noise. Its convergence is guaranteed at \cite{SGLDConvergence}. 
 
 \begin{algorithm}[H]
 \caption{Stochastic Gradient Langevin Dynamics: minimizing $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$}
@@ -884,10 +864,7 @@ Based Algorithms for Nonconvex Optimization, \textit{NIPS}, 2018.
 \end{algorithm}
 
 
-Perturbed GD: Chi Jin, Rong Ge, Praneeth Netrapalli, Sham M. Kakade, Michael I. Jordan,
-How to Escape Saddle Points Efficiently, \textit{ICML} 2017.
-
-Perturbed GD has guaranteed escape rate from saddle points.
+Perturbed GD (see \cite{PerturbedGDpaper}) is another variant inspired by continuous SGD, and it has guaranteed escape rate from saddle points.
 
 
 \begin{algorithm}[H]
@@ -917,14 +894,7 @@ $t_{\text{noise}}\leftarrow -t_{\text{thres}}-1$.
 
 \section{Coordinate Descent and Stochastic Coordinate Descent}
 
-References:
-
-Wright, S.J., Coordinate Descent Algorithms, \textit{Mathematical Programming}, 2015, \textbf{151}(1): 3--34.
-
-Nesterov, Y., Efficiency of Coordinate Descent Methods on Huge--Scale Optimization Problems,
-\textit{SIAM Journal on Optimization}, 2012, \textbf{22}(2): 341. 
-
-The $k$--th iteration of Coordinate Descent applied to a function $f: \R^n\ra \R$ chooses some index $i_k\in \{1,2,...,n\}$
+The $k$--th iteration of Coordinate Descent (see \cite{CoordinateDescentWrightPaper}, \cite{CoordinateDescentNesterovPaper}) applied to a function $f: \R^n\ra \R$ chooses some index $i_k\in \{1,2,...,n\}$
 and takes iteration
 $$x^{k+1}=x^k+\gm_k e_{i_k} \ ,$$
 where $e_{i_k}$ is the $i_k$--th unit vector and $\gm_k$ is the step. 
@@ -939,3 +909,30 @@ for some $\al_k>0$.
 Example 3. If $i_k$ is chosen randomly the method is Stochastic Coordinate Descent.
 
 Descent methods need $f(x^{k+1})<f(x^k)$ for all $k$.
+
+\section{Experiment: SGD and Variance-Reduced SGD} 
+
+Consider a two-dimensional quadratic loss function $L(w_1, w_2; (x_1, x_2, y)) = 0.5(Aw_1x_1+Bw_2x_2-y)^2$ for $A, B>0$. Let the training data $(x_1, x_2, y)$ be a size $n$ sample of i.i.d normal distributions $\mathcal{N}(0, I_3)$. Use
+\begin{itemize} 
+\item[(a)] Stochastic Gradient Descent (SGD); 
+
+\item[(b)] Stochastic Variance-Reduced Gradient (SVRG); 
+
+\item[(c)] StochAstic Recursive grAdient algoritHm (SARAH) 
+\end{itemize}
+to optimize the empirical loss function. You can calculate the gradients using the automatic differentiation in tensorflow.
+
+Experiment 
+\begin{itemize}
+\item[(1)] different/random initializations; 
+
+\item[(2)] plot the trajectory as well as show its dynamics via an animation; 
+
+\item[(3)] plot the evolution of the training error (loss) as a function of number of iterations; 
+
+\item[(4)] plot the evolution of the test error as a function of number of iterations; 
+
+\item[(5)] compare on different parmeters $A, B$; 
+
+\item[(6)] compare for different training sample size and different batchsizes, as well as different epoch lengthes for SVRG and SARAH.
+\end{itemize}
