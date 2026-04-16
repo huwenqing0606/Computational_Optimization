@@ -567,7 +567,7 @@ Here in (a) we used the fact that $\nabla P(\widetilde w)=\mathbb{E}{\nabla \psi
 \begin{array}{ll}
 \mathbb{E}\|w^{(t)}-w^*\|^2
 & \leq \|w^{(t-1)}-w^*\|^2 -
-2\eta (w^{(t-1)}-w^*)^{T}\mathbb{E}V_t 
+2\eta (w^{(t-1)}-w^*)^{T}\nabla P(w^{(t-1)})
 \\
 & \qquad +2\eta^2\left(\mathbb{E}\|\nabla \psi_{i_t}(w^{(t-1)})-\nabla \psi_{i_t}(w^*)\|^2 
 +
@@ -676,17 +676,17 @@ Iterating the above we get (\ref{Thm:ConvergenceSVRG:Eq:LinearConvergence}).
 
 SVRG has various variants of the same variance-reduction nature and we introduce them below.
 
-Stochastic Average Gradient (SAG, see \cite{SAGpaper}) has guaranteed linear convergence rate for strongly convex objective $P(x)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$.
+Stochastic Average Gradient (SAG, see \cite{SAGpaper}) has guaranteed linear convergence rate for strongly convex objective $P(x)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$. It is a variance-reduced optimization method that maintains and incrementally updates an average of gradients evaluated at previous iterates. At each iteration, it samples a single component function $f_i$, computes its gradient at the current point, and replaces the stored gradient for that index while keeping others unchanged. The algorithm then updates the iterate using the average of all stored gradients. In this way, SAG combines the low per-iteration cost of stochastic gradient methods with a progressively more accurate approximation of the full gradient, leading to faster (typically linear) convergence for strongly convex problems.
 
 \begin{algorithm}[ht]
 \caption{Stochastic Average Gradient (SAG): minimizing $P(x)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$}
 \label{Alg:SAG}
 \begin{algorithmic}[1]
-\STATE \textbf{Input}: Input initialization $x_0$, stepsize $\al>0$, $d=0$, $y_i=0$, $i=1,2,...,n$
+\STATE \textbf{Input}: Input initialization $x_0$, stepsize $\al>0$, $d=0$, $y=0$, $i=1,2,...,n$
 \FOR {$k=0,1,..., K-1$}
     \STATE Sample $i$ uniformly randomly from $\{1,2,...,n\}$
-    \STATE $d \leftarrow d-y_i+\grad f_i(x)$
-    \STATE $y_i=\grad f_i(x)$
+    \STATE $d \leftarrow d-y+\grad f_i(x)$
+    \STATE $y=\grad f_i(x)$
     \STATE $x \leftarrow x-\dfrac{\al}{n}d$
 \ENDFOR
 \STATE \textbf{Output}: $x_K$
@@ -694,7 +694,7 @@ Stochastic Average Gradient (SAG, see \cite{SAGpaper}) has guaranteed linear con
 \end{algorithm}
 
 
-SAGA (see \cite{SAGApaper}) has guaranteed linear convergence rate for strongly convex objective $P(x)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$.
+SAGA (see \cite{SAGApaper}) has guaranteed linear convergence rate for strongly convex objective $P(x)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$. It is a variance-reduced stochastic optimization method that improves upon SAG by maintaining a table of past gradients and using a correction term to produce an unbiased gradient estimator at each iteration. Specifically, it updates one component gradient at a time and combines the new gradient with a correction based on the difference between the current and stored gradients, together with the average of all stored gradients. This construction ensures that the stochastic direction is an unbiased estimate of the full gradient while significantly reducing variance, leading to fast (often linear) convergence for strongly convex problems and improved theoretical guarantees compared to SAG.
 
 \begin{algorithm}[ht]
 \caption{SAGA: minimizing $P(x)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(x)$}
@@ -716,9 +716,9 @@ SAGA (see \cite{SAGApaper}) has guaranteed linear convergence rate for strongly 
 \end{algorithm}
 
 
-StochAstic Recursive grAdient algoritHm (SARAH, see \cite{SARAHpaper}) has guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$.
+StochAstic Recursive grAdient algoritHm (SARAH, see \cite{SARAHpaper}) has guaranteed linear convergence rate for strongly convex objective $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$. It is a variance-reduced stochastic optimization method that constructs a recursive gradient estimator along the trajectory. Starting from a full gradient at the beginning of each outer loop, SARAH updates the estimator using differences of stochastic gradients between consecutive iterates, thereby maintaining a low-variance approximation of the true gradient without storing past gradients. This recursive structure allows the estimator variance to decrease as the iterates approach the optimum, leading to efficient convergence behavior comparable to SVRG-type methods, while often being more memory-efficient and practically stable.
 
-\begin{algorithm}[ht]
+\begin{algorithm}[ht!]
 \caption{StochAstic Recursive grAdient algoritHm (SARAH): minimizing $P(w)=\dfrac{1}{n}\sum\li_{i=1}^n f_i(w)$}
 \label{Alg:SARAH}
 \begin{algorithmic}[1]
@@ -740,7 +740,7 @@ StochAstic Recursive grAdient algoritHm (SARAH, see \cite{SARAHpaper}) has guara
 
 
 Stochastic Path--Integrated Differential EstiamtoR (SPIDER, see \cite{SPIDERpaper}) requires no assumption on convexity. Optimal Rate $O\left(\min(n^{1/2}\ve^{-2}, \ve^{-3})\right)$ for 
-finding an $\ve$--approximate first order stationary point.
+finding an $\ve$--approximate first order stationary point. It is a variance-reduced method designed for efficiently finding first-order stationary points, especially in nonconvex optimization. It constructs a recursive gradient estimator similar to SARAH, but periodically refreshes it using a large batch (or full gradient) and then updates it through small mini-batch differences along the optimization path. This path-integrated structure ensures that the estimator maintains high accuracy with significantly reduced computational cost. Combined with carefully chosen step sizes, SPIDER achieves near-optimal complexity for stochastic nonconvex optimization while controlling gradient noise effectively.
 
 \begin{algorithm}[H]
 \caption{Stochastic Path--Integrated Differential EstiamtoR (SPIDER): Searching First Order stationary point}
@@ -899,14 +899,19 @@ and takes iteration
 $$x^{k+1}=x^k+\gm_k e_{i_k} \ ,$$
 where $e_{i_k}$ is the $i_k$--th unit vector and $\gm_k$ is the step. 
 
-Example 1. Gauss--Seidel method: 
+\begin{example}
+Gauss--Seidel method: 
 $$\gm_k=\arg\min\li_{\gm}f(x^k+\gm e_{i_k})  \ .$$
+\end{example}
 
-Example 2. Coordinate Gradient Descent method:
+\begin{example} Coordinate Gradient Descent method:
 $$\gm_k=-\al_k \dfrac{\pt f}{\pt x_{i_k}}(x^k)e_{i_k}$$
 for some $\al_k>0$. 
+\end{example}
 
-Example 3. If $i_k$ is chosen randomly the method is Stochastic Coordinate Descent.
+\begin{example}
+If $i_k$ is chosen randomly the method is Stochastic Coordinate Descent.
+\end{example}
 
 Descent methods need $f(x^{k+1})<f(x^k)$ for all $k$.
 
