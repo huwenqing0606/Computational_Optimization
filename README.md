@@ -32,6 +32,10 @@ in root dir, under venv:
 
 - backpropgation: `python -m src.main backpropagation`
 
+- GD-AGD: `python -m src.main GD_AGD`
+
+- SGD and variance reduction `python -m src.main SGD_variance_reduction`
+
 ## (for students) how to contribute
 
 you must checkout your own branch from main, and then propose a PR to main.
