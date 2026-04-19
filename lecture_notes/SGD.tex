@@ -917,7 +917,7 @@ Descent methods need $f(x^{k+1})<f(x^k)$ for all $k$.
 
 \section{Experiment: SGD and Variance-Reduced SGD} 
 
-Consider a two-dimensional quadratic loss function $L(w_1, w_2; (x_1, x_2, y)) = 0.5(Aw_1x_1+Bw_2x_2-y)^2$ for $A, B>0$. Let the training data $(x_1, x_2, y)$ be a size $n$ sample of i.i.d normal distributions $\mathcal{N}(0, I_3)$. Use
+Consider a two-dimensional quadratic loss function $$L(w_1, w_2; (x_1, x_2, y)) = \dfrac{1}{2}(Aw_1x_1+Bw_2x_2-y)^2$$ for $A, B>0$. Let the training data $(x_1, x_2, y)$ be a size $n$ sample of i.i.d normal distributions $\mathcal{N}(0, I_3)$. Use
 \begin{itemize} 
 \item[(a)] Stochastic Gradient Descent (SGD); 
 
@@ -941,3 +941,24 @@ Experiment
 
 \item[(6)] compare for different training sample size and different batchsizes, as well as different epoch lengthes for SVRG and SARAH.
 \end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/Loss_SGD_A=1_B=1_trainingsize=10_batchsize=1_learningrate=0.01_steps=1000.jpg}
+\caption{Convergence of SGD: $A=1$, $B=1$, trainingsize$=10$, batchsize$=1$, learningrate$=0.01$, steps$=1000$}
+\label{Fig:SGD_VR:SGD}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/Loss_SVRG_A=1_B=1_trainingsize=10_learningrate=0.01_epochs=100_epochlength=10.jpg}
+\caption{Convergence of SVRG: $A=1$, $B=1$, trainingsize$=10$,learningrate$=0.01$, epochs$=100$, epochlength$=10$}
+\label{Fig:SGD_VR:SVRG}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=5.8cm, width=9cm]{figures/Loss_SARAH_A=1_B=1_trainingsize=10_learningrate=0.01_epochs=100_epochlength=10.jpg}
+\caption{Convergence of SARAH: $A=1$, $B=1$, trainingsize$=10$, learningrate$=0.01$, epochs$=100$, epochlength$=10$}
+\label{Fig:SGD_VR:SARAH}
+\end{figure}
