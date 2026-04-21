@@ -444,7 +444,7 @@ This split reflects Muon's matrix-specific design: the orthogonalization step is
 
 \subsection{Dual Coordinate Descent/Ascent}
 
-Reference: Chapter 13 \& 14 of Nocedal, J., Wright, S.J., \textit{Numerical Optimization}, Second Edition, Springer, 2006.
+Reference: \cite[Chapters 13 and 14]{NocedalWrightNumericalOptimization}.
 
 Constraint optimization problem $P_0$:
 
@@ -504,8 +504,7 @@ If the solution is acceptable then it is the optimal solution for the original p
 
 \subsection{SDCA}
 
-Shalev--Schwarz, S., Zhang, T., Stochastic Dual Coordinate Ascent Methods for Regularized Loss Minimization,
-\textit{Journal of Machine Learning Research}, \textbf{14}(2013), pp. 567--599.
+Reference: \cite{SchwarzZhangSDCA}.
 
 Let $x_1,...,x_n$ be vectors in $\R^d$ and $\phi_1,...,\phi_n$ be a sequence of scalar convex functions, 
 and let $\lb>0$ be a regularization parameter. Our goal is to solve the optimization problem 
@@ -568,14 +567,7 @@ $$w(\al^*)=w^* \ , \ P(w^*)=D(\al^*) \ .$$
 
 \subsection{Subgradient Projection Method, Frank--Wolfe Method}
 
-References:
-
-Levitin, E.S., Polyak, B.T., Constrained Minimization Methods, \textit{USSR Computational Mathematics and Mathematical Physics},
-1966, \textbf{6}(5), pp. 1--50.
-
-Frank, M., Wolfe, P., An algorithm for quadratic programming, \textit{Naval Research Logistics (NRL)}, 1956, \textbf{3}(1--2), pp. 95--110.
-
-\
+References: \cite{LevintinPolyakConstrainedMinimization}, \cite{FrankWolfe}.
 
 The subgradient $\pt f(x_0)$ for a convex function at point $x_0$ is defined as
 $$\pt f(x_0)=\{c\in \R: f(x)-f(x_0)\geq c(x-x_0) \} \ . $$
@@ -625,11 +617,7 @@ $$d_{\text{optimal}}=\arg\inf\li_{d\in \cX}d^T \grad f(x) \ .$$
 
 \subsection{ADMM}
 
-Reference: Boyd, S., Parikh, N., Chu, E., Peleato, B., Eckstein, J.,
-Distributed Optimization and Statistical Learning via the Alternating Direction Method of Multipliers,
-\textit{Foundations and Trends in Machine Learning}, Vol. 3, No. 1 (2010), pp. 1--122.
-
-\
+Reference: \cite{BoydEtAlADMMpaper}.
 
 Equality--constrained convex optimization problem:
 $$\text{minimize } f(x) \text{ subject to } Ax=b \ .$$
@@ -693,10 +681,7 @@ for the term \textit{alternating direction}.
 
 \subsection{Proximal operators and proximal algorithms}
 
-Reference: Parikh, N., Boyd, S., Proximal Algorithms, \textit{Foundations and Trends in Optimization},
-Vol. 1, No. 3 (2013), pp. 123--231.
-
-Also see \url{http://stanford.edu/~boyd/papers/pdf/prox_slides.pdf}
+Reference: \cite{PrkishBoydProximal}. Also see \url{http://stanford.edu/~boyd/papers/pdf/prox_slides.pdf}
 
 Let $R=R(v)$ be a convex function. With respect to the convex function $R$ 
 the proximal operator $\text{prox}_R(w): \R^d\ra \R^d$ is defined as 
@@ -766,8 +751,7 @@ We further define the \textit{two-sided generalization gaps} as
 
 
 In classical statistical learning theory, the basic estimates of generalization gap
-bounds \footnote{see Vapnik, V., \textit{Statistical Learning Theory}, Wiley-Interscience, first edition, 1988.}
-are bounding $\text{Gap}_N$
+bounds (see \cite{VapnikStatisticalLearningTheory}) are bounding $\text{Gap}_N$
 in \eqref{Eq:GeneralizationGap} in terms of features of the family of functions
 that consists of the loss functions $\ell_i(\tht)$ in which we vary the parameters $\tht$ and
 the training data points $(x_i, y_i)$, $i=1,2,...,N$.
@@ -827,21 +811,13 @@ a specific one that achieves good generalization properties.
 
 \subsection{Training Matters: Connecting Optimization with Generalization}
 
-When applying the classical gap estimates such as \eqref{Eq:Gap-Estimate-VC-dimension} and \eqref{Eq:Gap-Estimate-Rademacher} to deep learning models, the immense size of the number of parameters will make the complexity measuraments such as VC-dimensional and Rademacher complexity very large, and thus estimates \eqref{Eq:Gap-Estimate-VC-dimension} and \eqref{Eq:Gap-Estimate-Rademacher} become very rough and useless in practice. This phenomenon is called the ``curse of dimensionality", indicating that deep models may overfit the training data and cannot generalize well on test data. However, in practical experiments people found that deep learning models almost never have this bad generalization, and instead, models that are trained by such optimization methods as SGD generalizes very well on test data, with test accuracies often reaching $80$-$85\%+$. This seemingly mysterious phenomenon has been one of the major challenges of the theory of deep learning. Currently (at the writing of these lecture notes, in the middle of 2020) we have made only shallow understanding of this phenomenon. It is commonly believed that such strange behavior may be due to the interaction of two effects: the \textit{implicit regularization} of the optimization dynamics and the \textit{network architecture}. 
+When applying the classical gap estimates such as \eqref{Eq:Gap-Estimate-VC-dimension} and \eqref{Eq:Gap-Estimate-Rademacher} to deep learning models, the immense size of the number of parameters will make the complexity measuraments such as VC-dimensional and Rademacher complexity very large, and thus estimates \eqref{Eq:Gap-Estimate-VC-dimension} and \eqref{Eq:Gap-Estimate-Rademacher} become very rough and useless in practice. This phenomenon is called the ``curse of dimensionality", indicating that deep models may overfit the training data and cannot generalize well on test data. However, in practical experiments people found that deep learning models almost never have this bad generalization, and instead, models that are trained by such optimization methods as SGD generalizes very well on test data, with test accuracies often reaching $80$-$85\%+$. This seemingly mysterious phenomenon has been one of the major challenges of the theory of deep learning. As of the middle of 2020, we have made only shallow understanding of this phenomenon. It is commonly believed that such strange behavior may be due to the interaction of two effects: the \textit{implicit regularization} of the optimization dynamics and the \textit{network architecture}. 
 
-A few papers/preprints suggested:
-
-Cao, Y. and Gu, Q., Generalization Bounds of Stochastic Gradient
-Descent for Wide and Deep Neural Networks, \textit{NeurIPS}, 2019.
-
-Mei, S. and Montanari, A., The generalization error of random features regression: Precise asymptotics and double descent curve, arXiv:1908.05355 [math.ST]
-
-Jacot, A., Gabriel, F., and Hongler, C., Neural Tangent Kernel: Convergence and generalization in neural networks, NIPS, 2018.
-
-Wu, J., Hu, W., Xiong, H., Huan, J., Braverman, V. and Zhu, Z., On the Noisy Gradient Descent that Generalizes as SGD, arXiv:1906.07405 [cs.LG]
+A few suggested references: \cite{Cao-GuSGDGeneralization}, \cite{MeiMontanariDoubleDescent}, \cite{NTKpaper}.
 
 
-\subsection{Experiments: Real Data Sets}
+
+\subsection{Real Data Sets}
 
 $\bullet$ CIFAR-10 is a common benchmark in machine learning for image recognition. The CIFAR-10 dataset consists of 60000 32$\times$32 colour images in 10 classes, with 6000 images per class. There are 50000 training images and 10000 test images. 
 

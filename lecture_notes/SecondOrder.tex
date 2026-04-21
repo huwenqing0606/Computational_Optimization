@@ -34,26 +34,143 @@ Convergence of Newton's method.
 
 \begin{theorem}[Local superlinear convergence of the Newton's method]\label{Thm:LocalConvergenceNewton}
 Suppose that the function $f$ is twice differentiable and the Hessian $\grad^2 f(x)$ is
-Lipschitz--continuous with Lipschitz constant $M>0$, i.e.
+Lipschitz-continuous with Lipschitz constant $M>0$, i.e.
 $$\|\grad^2 f(x)-\grad^2 f(y)\|\leq M\|x-y\| \ .$$
-Let $x^*$ be a second--order stationary point in the sense of
-Theorem \ref{Thm:NecessaryConditionsSmoothUnconstrainedOptimization} (b),
+Let $x^*$ be a second-order stationary point in the sense of
+\emph{Theorem \ref{Thm:NecessaryConditionsSmoothUnconstrainedOptimization} (b)},
 then if the starting point $x_0$ is sufficiently close to $x^*$, then the sequence of iterates from Newton's
 method \eqref{Eq:NewtonMethod} converges to $x^*$ at a superlinear rate (in particular, this rate is quadratic).
 \end{theorem}
 
 \begin{proof}
-See the proof of Theorem 3.5 of the textbook: Nocedal, J., Wright, S.J., \textit{Numerical Optimization}, Second Edition, Springer, 2006.
+See the proof of \cite[Theorem 3.5]{NocedalWrightNumericalOptimization}. Since $x^*$ is second-order stationary, we have $\nabla^2 f(x^*) \succeq \mu I$ for some $\mu>0$, so the matrix $\nabla^2 f(x^*)$ is invertible.
+By continuity of $\nabla^2 f$, if $x_k$ is sufficiently close to $x^*$, then $\nabla^2 f(x_k)$
+remains invertible and
+\[
+\|[\nabla^2 f(x_k)]^{-1}\|
+\le
+2\|[\nabla^2 f(x^*)]^{-1}\|.
+\]
+
+We now estimate the Newton error. Since $\nabla f(x^*)=0$, we write
+\begin{align*}
+x_{k+1}-x^*
+&=
+x_k-x^*-[\nabla^2 f(x_k)]^{-1}\bigl(\nabla f(x_k)-\nabla f(x^*)\bigr) \\
+&=
+[\nabla^2 f(x_k)]^{-1}
+\Bigl(
+\nabla^2 f(x_k)(x_k-x^*)
+-
+(\nabla f(x_k)-\nabla f(x^*))
+\Bigr).
+\end{align*}
+Using the integral form of Taylor's theorem,
+\[
+\nabla f(x_k)-\nabla f(x^*)
+=
+\int_0^1
+\nabla^2 f\bigl(x_k+\gamma(x^*-x_k)\bigr)(x_k-x^*)\,d\gamma.
+\]
+Hence
+\begin{align*}
+&\nabla^2 f(x_k)(x_k-x^*)
+-
+(\nabla f(x_k)-\nabla f(x^*)) \\
+&\qquad
+=
+\int_0^1
+\Bigl[
+\nabla^2 f(x_k)
+-
+\nabla^2 f\bigl(x_k+\gamma(x^*-x_k)\bigr)
+\Bigr](x_k-x^*)\,d\gamma.
+\end{align*}
+Therefore
+\begin{align*}
+x_{k+1}-x^*
+=
+[\nabla^2 f(x_k)]^{-1}
+\int_0^1
+\Bigl[
+\nabla^2 f\bigl(x_k+\gamma(x^*-x_k)\bigr)-\nabla^2 f(x_k)
+\Bigr](x_k-x^*)\,d\gamma.
+\end{align*}
+Taking norms and using the Hessian Lipschitz condition,
+\begin{align*}
+\|x_{k+1}-x^*\|
+&\le
+\|[\nabla^2 f(x_k)]^{-1}\|
+\int_0^1
+\left\|
+\nabla^2 f\bigl(x_k+\gamma(x^*-x_k)\bigr)-\nabla^2 f(x_k)
+\right\|
+\cdot
+\|x_k-x^*\|\,d\gamma \\
+&\le
+\|[\nabla^2 f(x_k)]^{-1}\|
+\int_0^1
+M\gamma\|x_k-x^*\|^2\,d\gamma \\
+&=
+\frac{M}{2}\|[\nabla^2 f(x_k)]^{-1}\|\|x_k-x^*\|^2.
+\end{align*}
+Using
+\[
+\|[\nabla^2 f(x_k)]^{-1}\|
+\le
+2\|[\nabla^2 f(x^*)]^{-1}\|,
+\]
+we obtain
+\[
+\|x_{k+1}-x^*\|
+\le
+M\|[\nabla^2 f(x^*)]^{-1}\|\|x_k-x^*\|^2.
+\]
+Thus, with
+\[
+\alpha:=M\|[\nabla^2 f(x^*)]^{-1}\|,
+\]
+we have
+\[
+\|x_{k+1}-x^*\|
+\le
+\alpha \|x_k-x^*\|^2.
+\]
+
+Finally, if
+\[
+\|x_0-x^*\|<\frac{1}{2\alpha},
+\]
+then
+\[
+\|x_1-x^*\|
+\le
+\alpha\|x_0-x^*\|^2
+<
+\frac12\|x_0-x^*\|,
+\]
+and inductively the iterates remain in the local neighborhood and converge to $x^*$.
+Since the error satisfies a quadratic recursion, the convergence is quadratic. In particular,
+\[
+\frac{\|x_{k+1}-x^*\|}{\|x_k-x^*\|}
+\le
+\alpha \|x_k-x^*\| \to 0,
+\]
+so the convergence is also superlinear.
+
 \end{proof}
 
-Drawbacks of Newton's method: (1) Inverse of Hessian $[\grad^2 f(x)]^{-1}$ hard to calculate for high--dimensional problems;
-(2) No positive definite guarantee of Hessian $\grad^2 f(x)$.
+Drawbacks of Newton's method:
+
+\begin{enumerate} 
+\item[(1)] Inverse of Hessian $[\grad^2 f(x)]^{-1}$ hard to calculate for high--dimensional problems;
+
+\item[(2)] No positive definite guarantee of Hessian $\grad^2 f(x)$.
+\end{enumerate}
 
 \section{Quasi--Newton: BFGS}
 
-Reference:  J. E. Dennis, Jr., Jorge J. Mor\'{e},
-Quasi--Newton methods, motivation and theory,
-\textit{SIAM Review}, Vol. \textbf{19}, No. 1 (Jan. 1977), pp. 46--89.
+Reference: \cite{DennisMoreQuasiNewtonSIAMReview}.
 
 Quasi--Newton method: If the Hessian $\grad^2 f(x^k)$ is not positive definite or it is hard to calculate,
 we need to replace it with a positive definite matrix $B_k$
@@ -86,7 +203,7 @@ for any $x,y \in \text{Dom}(f)$ we have
 (x-y)^T(\grad f(x)-\grad f(y))>0 \ .
 \end{equation}
 
-It can be shown that when $f$ is strongly convex then \eqref{Eq:CurvatureCondition} is satisfied. This is left as one problem in Homework 4.
+It can be shown that when $f$ is strongly convex then \eqref{Eq:CurvatureCondition} is satisfied. 
 
 Secant equation is solved by doing minimization such as
 $$\min\li_{B}\|B-B_k\| \text{ subject to } B=B^T  \ , \ Bs_k=y_k \ .$$
@@ -144,13 +261,11 @@ B_{k+1}=B_k-\dfrac{B_ks_ks_k^TB_k}{s_k^TB_ks_k}+\dfrac{y_ky_k^T}{y_k^Ts_k} \ .
 \end{algorithmic}
 \end{algorithm}
 
-Superlinear convergence of BFGS method (see Theorem 6.6 in
-Nocedal, J., Wright, S.J., \textit{Numerical Optimization}, Second Edition, Springer 2006.).
+Superlinear convergence of BFGS method (see \cite[Theorem 6.6]{NocedalWrightNumericalOptimization}).
 
 \section{Stochastic Quasi--Newton}
 
-Reference: Byrd, R.H., Hansen, S.L., Nocedal, J. et al, A stochastic quasi--Newton method
-for large--scale optimization, \textit{SIAM Journal on Optimization}, 2016, 26(2): 1008--1031.
+Reference: \cite{ByrdHansenNocedalStochasticQuasiNewtonSIAMOptimization}.
 
 Large--scale optimization
 $$F(w)=\dfrac{1}{N}\sum\li_{i=1}^N f_i(w) \ .$$
@@ -167,7 +282,7 @@ achieved by differencing stochastic gradients based on small samples.
 
 To achieve stable Hessian approximation one needs to \textit{decouple} the stochastic gradient and curvature estimation calculations.
 
-\begin{algorithm}[H]
+\begin{algorithm}
 \caption{Stochastic Quasi--Newton Method}
 \label{Alg:StochasticQuasiNewton}
 \begin{algorithmic}[1]
@@ -199,7 +314,7 @@ To achieve stable Hessian approximation one needs to \textit{decouple} the stoch
 \end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}[H]
+\begin{algorithm}
 \caption{Stochastic Quasi--Newton Method: Hessian Updating}
 \label{Alg:StochasticQuasiNewtonHUpdate}
 \begin{algorithmic}[1]
