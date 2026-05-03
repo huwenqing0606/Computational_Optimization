@@ -435,7 +435,7 @@ Let $\theta$ be partitioned into (i) matrix parameters $\theta_{\mathrm{mat}}$ (
 \[
 \theta_{\mathrm{mat}} \;\text{updated by Muon (}\eqref{eq:muon_update}\text{)}, 
 \qquad
-\theta_{\mathrm{vec}} \;\text{updated by AdamW (}\S\ref{subsec:adam_adamw}\text{)}.
+\theta_{\mathrm{vec}} \;\text{updated by AdamW}.
 \]
 This split reflects Muon's matrix-specific design: the orthogonalization step is meaningful for linear transformations (2D), whereas for vectors and scalars it is either undefined or not beneficial. In implementation, the hybrid approach is realized through optimizer parameter groups and typically entails maintaining separate optimizer states and optionally separate learning-rate schedules for $\theta_{\mathrm{mat}}$ and $\theta_{\mathrm{vec}}$.
 
@@ -681,7 +681,7 @@ for the term \textit{alternating direction}.
 
 \subsection{Proximal operators and proximal algorithms}
 
-Reference: \cite{PrkishBoydProximal}. Also see \url{http://stanford.edu/~boyd/papers/pdf/prox_slides.pdf}
+Reference: \cite{PrkishBoydProximal}. Also see \cite{BoydProximalNotes}.
 
 Let $R=R(v)$ be a convex function. With respect to the convex function $R$ 
 the proximal operator $\text{prox}_R(w): \R^d\ra \R^d$ is defined as 
@@ -823,36 +823,22 @@ $\bullet$ CIFAR-10 is a common benchmark in machine learning for image recogniti
 
 The dataset is divided into five training batches and one test batch, each with 10000 images. The test batch contains exactly 1000 randomly-selected images from each class. The training batches contain the remaining images in random order, but some training batches may contain more images from one class than another. Between them, the training batches contain exactly 5000 images from each class. 
 
-The CIFAR-10 and CIFAR-100 datasets are introduced at this webpage
+The CIFAR-10 and CIFAR-100 datasets are introduced at this webpage \cite{CIFAR10}.
 
-\url{http://www.cs.toronto.edu/~kriz/cifar.html}
 
-$\bullet$ Convolutional Neural Networks: see
+$\bullet$ Convolutional Neural Networks: see \cite{ConvolutionalNN}
 
-\url{http://cs231n.github.io/convolutional-networks/}
 
-$\bullet$ Use TensorFlow to train and evaluate a convolutional neural network (CNN) on both CPU and GPU. We also demonstrate how to train a CNN over multiple GPUs. Availabe at 
 
-\url{https://github.com/tensorflow/models/tree/master/tutorials/image/cifar10}
+$\bullet$ Use TensorFlow to train and evaluate a convolutional neural network (CNN) on both CPU and GPU. We also demonstrate how to train a CNN over multiple GPUs. Availabe at \cite{GPUTraining1}, \cite{GPUTraining2}.
 
-\url{https://github.com/keras-team/keras/blob/master/examples/cifar10_cnn.py}
+Detailed instructions on how to get started available at \cite{GPUTraining3}.
 
-Detailed instructions on how to get started available at:
 
-\url{https://www.tensorflow.org/tutorials/images/deep_cnn}
 
-$\bullet$ Make use of Google-Colab for GPU/TPU support. See 
-
-\url{https://medium.com/deep-learning-turkey/google-colab-free-gpu-tutorial-e113627b9f5d}
+$\bullet$ Make use of Google-Colab for GPU/TPU support. See \cite{Google-Colab}.
 
 $\bullet$ The MNIST database of handwritten digits, has a training set of 60,000 examples, and a test set of 10,000 examples. It is a subset of a larger set available from NIST. The digits have been size-normalized and centered in a fixed-size image.
-It is a good database for people who want to try learning techniques and pattern recognition methods on real-world data while spending minimal efforts on preprocessing and formatting. See
+It is a good database for people who want to try learning techniques and pattern recognition methods on real-world data while spending minimal efforts on preprocessing and formatting. See \cite{MNIST1}, \cite{MNIST2}.
 
-\url{http://yann.lecun.com/exdb/mnist/}
-
-\url{https://github.com/keras-team/keras/blob/master/examples/mnist_cnn.py}
-
-
-$\bullet$ More Datasets and Error/Accuracy results in recent Papers. See
-
-\url{http://rodrigob.github.io/are_we_there_yet/build/classification_datasets_results.html}.
+$\bullet$ More Datasets and Error/Accuracy results in recent Papers. See \cite{MoreDataSets}.
